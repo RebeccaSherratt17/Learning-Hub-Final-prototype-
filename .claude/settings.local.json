@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s https://registry.npmjs.org/next-sanity/latest)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(''''Version:'''', d.get\\(''''version'''',''''''''\\)\\); print\\(''''Deps:'''', json.dumps\\(d.get\\(''''dependencies'''',{}\\), indent=2\\)\\); print\\(''''Peers:'''', json.dumps\\(d.get\\(''''peerDependencies'''',{}\\), indent=2\\)\\)\")",
+      "Bash(node -e \"let d='''''''';process.stdin.on\\(''''data'''',c=>d+=c\\);process.stdin.on\\(''''end'''',\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\(''''Version:'''',j.version\\);console.log\\(''''Deps:'''',JSON.stringify\\(j.dependencies,null,2\\)\\);console.log\\(''''Peers:'''',JSON.stringify\\(j.peerDependencies,null,2\\)\\)}\\)\")",
+      "WebFetch(domain:www.sanity.io)",
+      "WebFetch(domain:github.com)",
+      "Bash(curl -s https://registry.npmjs.org/next-sanity/9.12.3)",
+      "Bash(node -e \"let d='''''''';process.stdin.on\\(''''data'''',c=>d+=c\\);process.stdin.on\\(''''end'''',\\(\\)=>{const j=JSON.parse\\(d\\); console.log\\(''''Version:'''', j.version\\); console.log\\(''''Peers:'''', JSON.stringify\\(j.peerDependencies,null,2\\)\\); console.log\\(''''Deps:'''', JSON.stringify\\(j.dependencies,null,2\\)\\)}\\)\")",
+      "WebSearch",
+      "Bash(curl -s https://registry.npmjs.org/sanity/latest)",
+      "Bash(node -e \"let d='''''''';process.stdin.on\\(''''data'''',c=>d+=c\\);process.stdin.on\\(''''end'''',\\(\\)=>{const j=JSON.parse\\(d\\); console.log\\(''''Sanity latest:'''', j.version\\); console.log\\(''''Peers:'''', JSON.stringify\\(j.peerDependencies||{},null,2\\)\\)}\\)\")",
+      "Bash(curl -s https://registry.npmjs.org/sanity)",
+      "Bash(curl -s https://registry.npmjs.org/@sanity/image-url/latest)",
+      "Bash(node -e \"let d='''''''';process.stdin.on\\(''''data'''',c=>d+=c\\);process.stdin.on\\(''''end'''',\\(\\)=>{const j=JSON.parse\\(d\\); console.log\\(''''Version:'''', j.version\\)}\\)\")",
+      "Bash(curl -s https://registry.npmjs.org/@sanity/vision/latest)",
+      "Bash(node -e \"let d='''''''';process.stdin.on\\(''''data'''',c=>d+=c\\);process.stdin.on\\(''''end'''',\\(\\)=>{const j=JSON.parse\\(d\\); console.log\\(''''@sanity/vision:'''', j.version\\)}\\)\")"
+    ]
+  }
+}
