@@ -1,3 +1,11 @@
 import type { SchemaTypeDefinition } from 'sanity'
 
-export const schemaTypes: SchemaTypeDefinition[] = []
+import persona from './taxonomy/persona'
+import region from './taxonomy/region'
+import subject from './taxonomy/subject'
+
+export const schemaTypes: SchemaTypeDefinition[] = [
+  persona,
+  region,
+  subject,
+]
