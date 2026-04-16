@@ -6,6 +6,7 @@ import subject from './taxonomy/subject'
 import course from './documents/course'
 import template from './documents/template'
 import video from './documents/video'
+import learningPath from './documents/learningPath'
 
 export const schemaTypes: SchemaTypeDefinition[] = [
   persona,
@@ -14,4 +15,5 @@ export const schemaTypes: SchemaTypeDefinition[] = [
   course,
   template,
   video,
+  learningPath,
 ]
