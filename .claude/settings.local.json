@@ -15,7 +15,17 @@
       "Bash(curl -s https://registry.npmjs.org/@sanity/image-url/latest)",
       "Bash(node -e \"let d='''''''';process.stdin.on\\(''''data'''',c=>d+=c\\);process.stdin.on\\(''''end'''',\\(\\)=>{const j=JSON.parse\\(d\\); console.log\\(''''Version:'''', j.version\\)}\\)\")",
       "Bash(curl -s https://registry.npmjs.org/@sanity/vision/latest)",
-      "Bash(node -e \"let d='''''''';process.stdin.on\\(''''data'''',c=>d+=c\\);process.stdin.on\\(''''end'''',\\(\\)=>{const j=JSON.parse\\(d\\); console.log\\(''''@sanity/vision:'''', j.version\\)}\\)\")"
+      "Bash(node -e \"let d='''''''';process.stdin.on\\(''''data'''',c=>d+=c\\);process.stdin.on\\(''''end'''',\\(\\)=>{const j=JSON.parse\\(d\\); console.log\\(''''@sanity/vision:'''', j.version\\)}\\)\")",
+      "Bash(mkdir -p \"C:/Users/rsherratt/!Claude-Code-projects/next-temp\")",
+      "Read(//c/Users/rsherratt/!Claude-Code-projects/**)",
+      "Bash(npx create-next-app@14 . --typescript --tailwind --eslint --app --src-dir=false --import-alias=\"@/*\" --use-npm --yes)",
+      "Bash(rm -rf \"C:/Users/rsherratt/!Claude-Code-projects/next-temp\")",
+      "Bash(npx create-next-app@14 . --typescript --tailwind --eslint --app --import-alias=\"@/*\" --use-npm)",
+      "Bash(ls -la C:/Users/rsherratt/!Claude-Code-projects/next-temp/.*)",
+      "Bash(npm install:*)",
+      "Bash(timeout 20 npm run dev)",
+      "Bash(ls \"app/\\(hub\\)\")",
+      "Bash(git add:*)"
     ]
   }
 }
