@@ -121,6 +121,22 @@ export default defineType({
       title: 'Archived',
       type: 'boolean',
       initialValue: false,
+      validation: (rule) =>
+        rule.custom(async (isArchived, context) => {
+          if (!isArchived) return true
+
+          const client = context.getClient({ apiVersion: '2024-06-01' })
+          const docId = (context.document?._id || '').replace('drafts.', '')
+          const count = await client.fetch(
+            `count(*[_type == "learningPath" && references($docId)])`,
+            { docId }
+          )
+
+          if (count > 0) {
+            return `Warning: this template is included in ${count} learning path(s). Archiving it will affect those paths.`
+          }
+          return true
+        }).warning(),
     }),
     defineField({
       name: 'viewCount',
