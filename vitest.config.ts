@@ -9,6 +9,9 @@ export default defineConfig({
     setupFiles: ['./vitest.setup.ts'],
     globals: true,
     include: ['**/__tests__/**/*.{test,spec}.{ts,tsx}'],
+    typecheck: {
+      tsconfig: './tsconfig.test.json',
+    },
   },
   resolve: {
     alias: {
