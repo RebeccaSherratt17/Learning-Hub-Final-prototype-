@@ -36,11 +36,11 @@ export default defineConfig({
         : input,
 
     badges: (prev, context) => {
-      if (contentTypes.has(context.schemaType)) {
-        return [ArchivedBadge, ...prev]
-      }
       if (context.schemaType === 'course') {
         return [RestrictedBadge, ArchivedBadge, ...prev]
+      }
+      if (contentTypes.has(context.schemaType)) {
+        return [ArchivedBadge, ...prev]
       }
       return prev
     },
