@@ -171,13 +171,32 @@ Edit `package.json` scripts:
 
 Edit `tsconfig.json` — add `"paths"` inside `compilerOptions` (or merge if exists):
 ```json
-"baseUrl": ".",
 "paths": {
   "@/*": ["./*"]
 }
 ```
 
-And add `"types": ["vitest/globals", "@testing-library/jest-dom"]` inside `compilerOptions`.
+**Do NOT add `baseUrl`.** The project has a local folder named `sanity/` which collides with the `sanity` npm package; setting `baseUrl: "."` makes TypeScript resolve bare imports like `sanity/structure` against the local folder instead of `node_modules/sanity`, breaking the Studio config types. With `moduleResolution: "bundler"` (TS 5+) prefixed paths like `@/*` work correctly without `baseUrl`.
+
+Create a separate **`tsconfig.test.json`** at project root so test-runner types don't leak into production TypeScript scope:
+```json
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["vitest/globals", "@testing-library/jest-dom"]
+  },
+  "include": [
+    "**/__tests__/**/*.ts",
+    "**/__tests__/**/*.tsx",
+    "vitest.setup.ts",
+    "vitest.config.ts"
+  ]
+}
+```
+
+Point Vitest at the test tsconfig by adding `typecheck: { tsconfig: './tsconfig.test.json' }` inside the `test` block of `vitest.config.ts`.
+
+Do **not** add `"types"` to the root `tsconfig.json` — leaking test globals into production code was a real issue caught by the code-quality reviewer.
 
 - [ ] **Step 5: Write failing test for `cn`**
 
