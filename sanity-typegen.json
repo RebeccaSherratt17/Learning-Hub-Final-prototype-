@@ -1,0 +1,6 @@
+{
+  "path": ["./sanity/**/*.{ts,tsx}", "./lib/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
+  "schema": "./schema.json",
+  "generates": "./types/sanity.generated.ts",
+  "overloadClientMethods": true
+}

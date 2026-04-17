@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "sanity:extract": "sanity schema extract --path=./schema.json",
+    "sanity:typegen": "sanity typegen generate",
+    "sanity:types": "npm run sanity:extract && npm run sanity:typegen"
   },
   "dependencies": {
     "@sanity/image-url": "^2.1.1",
