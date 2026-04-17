@@ -1,0 +1,302 @@
+'use client'
+
+import { useState, useMemo, useCallback } from 'react'
+import { useSearchParams, useRouter, usePathname } from 'next/navigation'
+import { ContentCard } from '@/components/hub/ContentCard'
+import { SearchBar } from '@/components/hub/SearchBar'
+import { SortDropdown, type SortOption } from '@/components/hub/SortDropdown'
+import { FilterBar, type FilterState } from '@/components/hub/FilterBar'
+import { FilterDrawer } from '@/components/hub/FilterDrawer'
+import { Pagination } from '@/components/hub/Pagination'
+import { Icon } from '@/components/ui/Icon'
+import type { ContentItem } from '@/types/content'
+
+const ITEMS_PER_PAGE = 15
+
+interface TaxonomyItem {
+  _id: string
+  title: string | null
+}
+
+interface SubjectItem extends TaxonomyItem {
+  group: string | null
+}
+
+interface ResourceLibraryProps {
+  heading: string | null
+  items: ContentItem[]
+  personas: TaxonomyItem[]
+  regions: TaxonomyItem[]
+  subjects: SubjectItem[]
+}
+
+/** Filter items by search term and multi-select filters. Exported for testing. */
+export function filterItems(
+  items: ContentItem[],
+  search: string,
+  filters: FilterState,
+): ContentItem[] {
+  return items.filter((item) => {
+    // Search term (case-insensitive substring match on title)
+    if (search && !item.title?.toLowerCase().includes(search.toLowerCase())) {
+      return false
+    }
+    // Content type filter
+    if (filters.types.length > 0 && !filters.types.includes(item._type)) {
+      return false
+    }
+    // Persona filter (OR within — item matches if it has ANY selected persona)
+    if (filters.personas.length > 0) {
+      const itemPersonaIds = (item as any).personas?.map((p: any) => p._id) ?? []
+      if (!filters.personas.some((id) => itemPersonaIds.includes(id))) {
+        return false
+      }
+    }
+    // Region filter (OR within)
+    if (filters.regions.length > 0) {
+      const itemRegionIds = (item as any).regions?.map((r: any) => r._id) ?? []
+      if (!filters.regions.some((id) => itemRegionIds.includes(id))) {
+        return false
+      }
+    }
+    // Subject filter (OR within)
+    if (filters.subjects.length > 0) {
+      const itemSubjectIds = item.subjects?.map((s) => s._id) ?? []
+      if (!filters.subjects.some((id) => itemSubjectIds.includes(id))) {
+        return false
+      }
+    }
+    return true
+  })
+}
+
+/** Sort items by selected sort option. Exported for testing. */
+export function sortItems(
+  items: ContentItem[],
+  sort: SortOption,
+): ContentItem[] {
+  const sorted = [...items]
+  switch (sort) {
+    case 'newest':
+      return sorted.sort(
+        (a, b) =>
+          new Date(b.publishedAt ?? 0).getTime() -
+          new Date(a.publishedAt ?? 0).getTime(),
+      )
+    case 'popular':
+      return sorted // already sorted by viewCount in GROQ; for client sort, keep original order
+    case 'az':
+      return sorted.sort((a, b) =>
+        (a.title ?? '').localeCompare(b.title ?? ''),
+      )
+  }
+}
+
+export function ResourceLibrary({
+  heading,
+  items,
+  personas,
+  regions,
+  subjects,
+}: ResourceLibraryProps) {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+
+  // Initialize state from URL params
+  const [search, setSearch] = useState(searchParams.get('q') ?? '')
+  const [sort, setSort] = useState<SortOption>(
+    (searchParams.get('sort') as SortOption) || 'newest',
+  )
+  const [filters, setFilters] = useState<FilterState>(() => ({
+    types: searchParams.getAll('type'),
+    personas: searchParams.getAll('persona'),
+    regions: searchParams.getAll('region'),
+    subjects: searchParams.getAll('subject'),
+  }))
+  const [page, setPage] = useState(
+    Number(searchParams.get('page')) || 1,
+  )
+  const [drawerOpen, setDrawerOpen] = useState(false)
+
+  // Sync state to URL
+  const syncUrl = useCallback(
+    (newState: {
+      search?: string
+      sort?: SortOption
+      filters?: FilterState
+      page?: number
+    }) => {
+      const params = new URLSearchParams()
+      const s = newState.search ?? search
+      const so = newState.sort ?? sort
+      const f = newState.filters ?? filters
+      const p = newState.page ?? page
+
+      if (s) params.set('q', s)
+      if (so !== 'newest') params.set('sort', so)
+      f.types.forEach((v) => params.append('type', v))
+      f.personas.forEach((v) => params.append('persona', v))
+      f.regions.forEach((v) => params.append('region', v))
+      f.subjects.forEach((v) => params.append('subject', v))
+      if (p > 1) params.set('page', String(p))
+
+      const qs = params.toString()
+      router.replace(`${pathname}${qs ? `?${qs}` : ''}#library`, {
+        scroll: false,
+      })
+    },
+    [search, sort, filters, page, pathname, router],
+  )
+
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearch(value)
+      setPage(1)
+      syncUrl({ search: value, page: 1 })
+    },
+    [syncUrl],
+  )
+
+  const handleSortChange = useCallback(
+    (value: SortOption) => {
+      setSort(value)
+      setPage(1)
+      syncUrl({ sort: value, page: 1 })
+    },
+    [syncUrl],
+  )
+
+  const handleFilterChange = useCallback(
+    (newFilters: FilterState) => {
+      setFilters(newFilters)
+      setPage(1)
+      syncUrl({ filters: newFilters, page: 1 })
+    },
+    [syncUrl],
+  )
+
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      setPage(newPage)
+      syncUrl({ page: newPage })
+    },
+    [syncUrl],
+  )
+
+  // Compute filtered, sorted, paginated items
+  const filtered = useMemo(
+    () => filterItems(items, search, filters),
+    [items, search, filters],
+  )
+  const sorted = useMemo(() => sortItems(filtered, sort), [filtered, sort])
+  const totalPages = Math.ceil(sorted.length / ITEMS_PER_PAGE)
+  const safePage = Math.min(page, Math.max(totalPages, 1))
+  const paginatedItems = sorted.slice(
+    (safePage - 1) * ITEMS_PER_PAGE,
+    safePage * ITEMS_PER_PAGE,
+  )
+
+  return (
+    <section id="library" className="py-16">
+      <div className="mx-auto max-w-[var(--max-content-width)] px-6">
+        <h2 className="mb-8 text-heading-1 font-bold text-diligent-gray-5">
+          {heading ?? 'Full resource library'}
+        </h2>
+
+        {/* Controls row */}
+        <div className="mb-6 flex flex-wrap items-center gap-4">
+          <SearchBar value={search} onChange={handleSearchChange} />
+          <SortDropdown value={sort} onChange={handleSortChange} />
+          {/* Mobile filter toggle */}
+          <button
+            type="button"
+            onClick={() => setDrawerOpen(true)}
+            className="flex items-center gap-1.5 rounded-sm border border-diligent-gray-2 px-3 py-2 text-sm text-diligent-gray-4 hover:border-diligent-gray-3 md:hidden"
+          >
+            <Icon name="filter_list" className="text-[18px]" />
+            Filters
+          </button>
+        </div>
+
+        <div className="flex gap-8">
+          {/* Desktop sidebar filters */}
+          <aside className="hidden w-60 flex-shrink-0 md:block">
+            <FilterBar
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              personas={personas}
+              regions={regions}
+              subjects={subjects}
+            />
+          </aside>
+
+          {/* Content grid */}
+          <div className="min-w-0 flex-1">
+            {paginatedItems.length === 0 ? (
+              <div className="py-12 text-center">
+                <p className="text-diligent-gray-4">
+                  {search
+                    ? `No results found for \u201c${search}\u201d`
+                    : 'No content matches the current filters.'}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch('')
+                    setFilters({
+                      types: [],
+                      personas: [],
+                      regions: [],
+                      subjects: [],
+                    })
+                    setPage(1)
+                    syncUrl({
+                      search: '',
+                      filters: {
+                        types: [],
+                        personas: [],
+                        regions: [],
+                        subjects: [],
+                      },
+                      page: 1,
+                    })
+                  }}
+                  className="mt-2 text-sm font-medium text-link hover:underline"
+                >
+                  Clear all filters
+                </button>
+              </div>
+            ) : (
+              <>
+                <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {paginatedItems.map((item) => (
+                    <li key={item._id}>
+                      <ContentCard item={item} />
+                    </li>
+                  ))}
+                </ul>
+                <Pagination
+                  currentPage={safePage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile filter drawer */}
+      <FilterDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        personas={personas}
+        regions={regions}
+        subjects={subjects}
+      />
+    </section>
+  )
+}
