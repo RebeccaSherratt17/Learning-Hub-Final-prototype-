@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import type { Image as SanityImage } from 'sanity'
 import { Badge, type BadgeVariant } from '@/components/ui/Badge'
 import { FallbackThumbnail } from '@/components/hub/FallbackThumbnail'
 import { urlForImage } from '@/sanity/lib/image'
@@ -38,7 +39,7 @@ export interface ContentCardProps {
 export function ContentCard({ item, className }: ContentCardProps) {
   const href = `${routePrefix[item._type]}/${item.slug ?? ''}`
   const thumbUrl = item.thumbnail
-    ? urlForImage(item.thumbnail).width(1200).height(675).url()
+    ? urlForImage(item.thumbnail as SanityImage).width(1200).height(675).url()
     : null
 
   return (
