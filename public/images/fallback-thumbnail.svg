@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="Diligent Learning Hub">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#EE312E"/>
+      <stop offset="1" stop-color="#5F091D"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#g)"/>
+  <text x="600" y="355" font-family="ui-sans-serif, system-ui, sans-serif" font-size="72" font-weight="700" fill="#ffffff" text-anchor="middle">Diligent</text>
+  <text x="600" y="430" font-family="ui-sans-serif, system-ui, sans-serif" font-size="32" font-weight="400" fill="#ffffff" text-anchor="middle" opacity="0.85">Learning Hub</text>
+</svg>
