@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { filterItems, sortItems } from '@/components/hub/ResourceLibrary'
+import type { ContentItem } from '@/types/content'
 
 // Mock next/navigation for useSearchParams / useRouter
 vi.mock('next/navigation', () => ({
@@ -55,7 +56,7 @@ const items = [
 
 describe('filterItems', () => {
   it('returns all items with empty filters', () => {
-    const result = filterItems(items as any, '', {
+    const result = filterItems(items as unknown as ContentItem[], '', {
       types: [],
       personas: [],
       regions: [],
@@ -65,7 +66,7 @@ describe('filterItems', () => {
   })
 
   it('filters by search term (case-insensitive)', () => {
-    const result = filterItems(items as any, 'ai', {
+    const result = filterItems(items as unknown as ContentItem[], 'ai', {
       types: [],
       personas: [],
       regions: [],
@@ -76,7 +77,7 @@ describe('filterItems', () => {
   })
 
   it('filters by content type', () => {
-    const result = filterItems(items as any, '', {
+    const result = filterItems(items as unknown as ContentItem[], '', {
       types: ['course'],
       personas: [],
       regions: [],
@@ -87,7 +88,7 @@ describe('filterItems', () => {
   })
 
   it('filters by persona (OR within category)', () => {
-    const result = filterItems(items as any, '', {
+    const result = filterItems(items as unknown as ContentItem[], '', {
       types: [],
       personas: ['p1'],
       regions: [],
@@ -97,7 +98,7 @@ describe('filterItems', () => {
   })
 
   it('combines filters with AND between categories', () => {
-    const result = filterItems(items as any, '', {
+    const result = filterItems(items as unknown as ContentItem[], '', {
       types: ['course'],
       personas: ['p1'],
       regions: [],
@@ -110,12 +111,12 @@ describe('filterItems', () => {
 
 describe('sortItems', () => {
   it('sorts by newest (publishedAt desc)', () => {
-    const sorted = sortItems([...items] as any, 'newest')
+    const sorted = sortItems([...items] as unknown as ContentItem[], 'newest')
     expect(sorted[0]._id).toBe('2')
   })
 
   it('sorts alphabetically', () => {
-    const sorted = sortItems([...items] as any, 'az')
+    const sorted = sortItems([...items] as unknown as ContentItem[], 'az')
     expect(sorted[0].title).toBe('AI Risk Template')
     expect(sorted[2].title).toBe('Compliance Overview')
   })

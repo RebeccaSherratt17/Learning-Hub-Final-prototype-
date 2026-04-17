@@ -47,14 +47,16 @@ export function filterItems(
     }
     // Persona filter (OR within — item matches if it has ANY selected persona)
     if (filters.personas.length > 0) {
-      const itemPersonaIds = (item as any).personas?.map((p: any) => p._id) ?? []
+      const itemWithPersonas = item as ContentItem & { personas?: { _id: string }[] | null }
+      const itemPersonaIds = itemWithPersonas.personas?.map((p) => p._id) ?? []
       if (!filters.personas.some((id) => itemPersonaIds.includes(id))) {
         return false
       }
     }
     // Region filter (OR within)
     if (filters.regions.length > 0) {
-      const itemRegionIds = (item as any).regions?.map((r: any) => r._id) ?? []
+      const itemWithRegions = item as ContentItem & { regions?: { _id: string }[] | null }
+      const itemRegionIds = itemWithRegions.regions?.map((r) => r._id) ?? []
       if (!filters.regions.some((id) => itemRegionIds.includes(id))) {
         return false
       }
