@@ -18,10 +18,11 @@ export async function sanityFetch<QueryResponse>({
   tags = [],
 }: SanityFetchOptions<QueryResponse>): Promise<QueryResponse> {
   const isDraft = isDraftMode()
+  const isDev = process.env.NODE_ENV === 'development'
   const activeClient = isDraft ? draftClient : client
   return activeClient.fetch<QueryResponse>(query, params, {
-    // Draft mode bypasses all caching; published fetches use tag-based revalidation
-    cache: isDraft ? 'no-store' : 'force-cache',
-    next: isDraft ? undefined : { tags },
+    // Draft mode and dev bypass caching; production uses tag-based ISR revalidation
+    cache: isDraft || isDev ? 'no-store' : 'force-cache',
+    next: isDraft || isDev ? undefined : { tags },
   })
 }
