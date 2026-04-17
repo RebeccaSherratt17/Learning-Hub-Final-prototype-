@@ -1,44 +1,135 @@
 import { sanityFetch } from '@/sanity/lib/sanity-fetch'
-import { allContentItemsQuery } from '@/sanity/lib/queries'
-import type { AllContentItemsQueryResult } from '@/types/sanity.generated'
-import { ContentCard } from '@/components/hub/ContentCard'
+import {
+  hubSettingsQuery,
+  popularContentQuery,
+  newestContentQuery,
+  allContentItemsQuery,
+  educationalPartnersQuery,
+  certificationBadgesQuery,
+  allPersonasQuery,
+  allRegionsQuery,
+  allSubjectsQuery,
+} from '@/sanity/lib/queries'
+import type {
+  HubSettingsQueryResult,
+  PopularContentQueryResult,
+  NewestContentQueryResult,
+  AllContentItemsQueryResult,
+  EducationalPartnersQueryResult,
+  CertificationBadgesQueryResult,
+  AllPersonasQueryResult,
+  AllRegionsQueryResult,
+  AllSubjectsQueryResult,
+} from '@/types/sanity.generated'
+import { HeroSection } from '@/components/hub/HeroSection'
+import { PopularFeaturedSection } from '@/components/hub/PopularFeaturedSection'
+import { PartnerLogoScroller } from '@/components/hub/PartnerLogoScroller'
+import { ResourceLibrary } from '@/components/hub/ResourceLibrary'
+import { QuestionsSection } from '@/components/hub/QuestionsSection'
+import { CertificationsSection } from '@/components/hub/CertificationsSection'
+import { FooterCTASection } from '@/components/hub/FooterCTASection'
 
 export default async function HubHomePage() {
-  const items = await sanityFetch<AllContentItemsQueryResult>({
-    query: allContentItemsQuery,
-    tags: ['content'],
-  })
+  const [
+    settings,
+    popularItems,
+    newestItems,
+    allItems,
+    partners,
+    badges,
+    personas,
+    regions,
+    subjects,
+  ] = await Promise.all([
+    sanityFetch<HubSettingsQueryResult>({
+      query: hubSettingsQuery,
+      tags: ['settings'],
+    }),
+    sanityFetch<PopularContentQueryResult>({
+      query: popularContentQuery,
+      tags: ['content'],
+    }),
+    sanityFetch<NewestContentQueryResult>({
+      query: newestContentQuery,
+      tags: ['content'],
+    }),
+    sanityFetch<AllContentItemsQueryResult>({
+      query: allContentItemsQuery,
+      tags: ['content'],
+    }),
+    sanityFetch<EducationalPartnersQueryResult>({
+      query: educationalPartnersQuery,
+      tags: ['partners'],
+    }),
+    sanityFetch<CertificationBadgesQueryResult>({
+      query: certificationBadgesQuery,
+      tags: ['badges'],
+    }),
+    sanityFetch<AllPersonasQueryResult>({
+      query: allPersonasQuery,
+      tags: ['taxonomy'],
+    }),
+    sanityFetch<AllRegionsQueryResult>({
+      query: allRegionsQuery,
+      tags: ['taxonomy'],
+    }),
+    sanityFetch<AllSubjectsQueryResult>({
+      query: allSubjectsQuery,
+      tags: ['taxonomy'],
+    }),
+  ])
 
   return (
-    <div className="mx-auto max-w-[var(--max-content-width)] px-6 py-12">
-      <header className="mb-10">
-        <h1 className="text-display-1 font-bold text-diligent-gray-5">
-          Diligent Learning Hub
-        </h1>
-        <p className="mt-4 max-w-2xl text-diligent-gray-4">
-          Phase 2 demo — this page will be replaced with the full homepage in
-          Phase 3. For now, it lists all published content items to verify the
-          data + design pipeline.
-        </p>
-      </header>
+    <>
+      {/* Section 1: Hero */}
+      <HeroSection
+        heading={settings?.heroHeading ?? null}
+        subheading={settings?.heroSubheading ?? null}
+        overview={settings?.heroOverview ?? null}
+      />
 
-      {items.length === 0 ? (
-        <p className="text-diligent-gray-4">
-          No content published yet. Open{' '}
-          <a href="/studio" className="font-medium">
-            Studio
-          </a>{' '}
-          and publish at least one item.
-        </p>
-      ) : (
-        <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((item) => (
-            <li key={item._id}>
-              <ContentCard item={item} />
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+      {/* Section 2: Popular & Featured Content */}
+      <PopularFeaturedSection
+        heading={settings?.popularSectionHeading ?? null}
+        popularItems={popularItems}
+        newestItems={newestItems}
+      />
+
+      {/* Section 3: Educational Partners */}
+      <PartnerLogoScroller
+        heading={settings?.partnersSectionHeading ?? null}
+        partners={partners}
+      />
+
+      {/* Section 4: Full Resource Library */}
+      <ResourceLibrary
+        heading={settings?.librarySectionHeading ?? null}
+        items={allItems}
+        personas={personas}
+        regions={regions}
+        subjects={subjects}
+      />
+
+      {/* Section 5: Got Questions? */}
+      <QuestionsSection
+        heading={settings?.questionsSectionHeading ?? null}
+        body={settings?.questionsSectionBody ?? null}
+      />
+
+      {/* Section 6: Professionally-Accredited Certifications */}
+      <CertificationsSection
+        heading={settings?.certificationsSectionHeading ?? null}
+        body={settings?.certificationsSectionBody ?? null}
+        badges={badges}
+      />
+
+      {/* Section 7: Footer CTA */}
+      <FooterCTASection
+        heading={settings?.footerHeading ?? null}
+        body={settings?.footerBody ?? null}
+        ctaText={settings?.footerCTAText ?? null}
+        ctaUrl={settings?.demoCTAUrl ?? null}
+      />
+    </>
   )
 }
