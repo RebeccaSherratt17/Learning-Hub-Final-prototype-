@@ -10,41 +10,106 @@ const cardProjection = `
   thumbnail,
   accessTier,
   "subjects": subjects[]->{ _id, title, group },
+  "personas": personas[]->{ _id, title },
+  "regions": regions[]->{ _id, title },
   publishedAt,
   archived
 `
 
+// Shared content filter — excludes drafts, archived, and restricted courses.
+const contentFilter = `
+  _type in ["course", "template", "video", "learningPath"]
+  && !(_id in path("drafts.**"))
+  && archived != true
+  && (_type != "course" || restricted != true)
+`
+
 /** All published, non-archived content items across all 4 content types. */
 export const allContentItemsQuery = defineQuery(`
-  *[
-    _type in ["course", "template", "video", "learningPath"]
-    && !(_id in path("drafts.**"))
-    && archived != true
-    && (_type != "course" || restricted != true)
-  ] | order(publishedAt desc) {
+  *[${contentFilter}] | order(publishedAt desc) {
     ${cardProjection}
   }
 `)
 
-/** The Hub Settings singleton. */
+/** The Hub Settings singleton — all fields needed by the homepage. */
 export const hubSettingsQuery = defineQuery(`
   *[_type == "hubSettings"][0]{
+    siteTitle,
+    siteDescription,
+    demoCTAUrl,
     heroHeading,
     heroSubheading,
     heroOverview,
-    demoCTAUrl
+    popularSectionHeading,
+    partnersSectionHeading,
+    librarySectionHeading,
+    questionsSectionHeading,
+    questionsSectionBody,
+    certificationsSectionHeading,
+    certificationsSectionBody,
+    footerHeading,
+    footerBody,
+    footerCTAText,
+    privacyPolicyUrl
   }
 `)
 
-/** Newest 3 — used by homepage Widget 2 in Phase 3. */
+/** Newest 3 — homepage Widget 2. */
 export const newestContentQuery = defineQuery(`
-  *[
-    _type in ["course", "template", "video", "learningPath"]
-    && !(_id in path("drafts.**"))
-    && archived != true
-    && (_type != "course" || restricted != true)
-  ] | order(publishedAt desc)[0...3] {
+  *[${contentFilter}] | order(publishedAt desc)[0...3] {
     ${cardProjection}
+  }
+`)
+
+/** Most popular 3 — homepage Widget 1 (by viewCount). */
+export const popularContentQuery = defineQuery(`
+  *[${contentFilter}] | order(viewCount desc, publishedAt desc)[0...3] {
+    ${cardProjection}
+  }
+`)
+
+/** Educational partner logos for the homepage scroller. */
+export const educationalPartnersQuery = defineQuery(`
+  *[_type == "educationalPartner"] | order(order asc) {
+    _id,
+    name,
+    logo,
+    url
+  }
+`)
+
+/** Certification badges for the homepage row. */
+export const certificationBadgesQuery = defineQuery(`
+  *[_type == "certificationBadge"] | order(order asc) {
+    _id,
+    title,
+    image,
+    url
+  }
+`)
+
+/** All personas — for filter dropdown. */
+export const allPersonasQuery = defineQuery(`
+  *[_type == "persona"] | order(title asc) {
+    _id,
+    title
+  }
+`)
+
+/** All regions — for filter dropdown. */
+export const allRegionsQuery = defineQuery(`
+  *[_type == "region"] | order(title asc) {
+    _id,
+    title
+  }
+`)
+
+/** All subjects — for filter dropdown (grouped). */
+export const allSubjectsQuery = defineQuery(`
+  *[_type == "subject"] | order(group asc, title asc) {
+    _id,
+    title,
+    group
   }
 `)
 

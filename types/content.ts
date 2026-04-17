@@ -22,3 +22,11 @@ export const accessTierLabels: Record<AccessTier, string> = {
   gated: 'Gated',
   premium: 'Premium',
 }
+
+export const subjectGroupLabels: Record<string, string> = {
+  'board-leadership-operations': 'Board Leadership & Operations',
+  'risk-management': 'Risk Management',
+  'regulations-compliance': 'Regulations & Compliance',
+  'entity-management': 'Entity Management',
+  'organization-type': 'Organization Type',
+}

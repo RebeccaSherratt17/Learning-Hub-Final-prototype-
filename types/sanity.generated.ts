@@ -670,7 +670,7 @@ export type AllSanitySchemaTypes = Feedback | Redirect | CertificationBadge | Ed
 export declare const internalGroqTypeReferenceTo: unique symbol;
 // Source: ./sanity/lib/queries.ts
 // Variable: allContentItemsQuery
-// Query: *[    _type in ["course", "template", "video", "learningPath"]    && !(_id in path("drafts.**"))    && archived != true    && (_type != "course" || restricted != true)  ] | order(publishedAt desc) {      _id,  _type,  title,  "slug": slug.current,  description,  thumbnail,  accessTier,  "subjects": subjects[]->{ _id, title, group },  publishedAt,  archived  }
+// Query: *[  _type in ["course", "template", "video", "learningPath"]  && !(_id in path("drafts.**"))  && archived != true  && (_type != "course" || restricted != true)] | order(publishedAt desc) {      _id,  _type,  title,  "slug": slug.current,  description,  thumbnail,  accessTier,  "subjects": subjects[]->{ _id, title, group },  "personas": personas[]->{ _id, title },  "regions": regions[]->{ _id, title },  publishedAt,  archived  }
 export type AllContentItemsQueryResult = Array<{
   _id: string;
   _type: "course";
@@ -696,6 +696,14 @@ export type AllContentItemsQueryResult = Array<{
     title: string | null;
     group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
   }> | null;
+  personas: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
+  regions: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
   publishedAt: string | null;
   archived: boolean | null;
 } | {
@@ -722,6 +730,14 @@ export type AllContentItemsQueryResult = Array<{
     _id: string;
     title: string | null;
     group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+  }> | null;
+  personas: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
+  regions: Array<{
+    _id: string;
+    title: string | null;
   }> | null;
   publishedAt: string | null;
   archived: boolean | null;
@@ -750,6 +766,14 @@ export type AllContentItemsQueryResult = Array<{
     title: string | null;
     group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
   }> | null;
+  personas: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
+  regions: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
   publishedAt: string | null;
   archived: boolean | null;
 } | {
@@ -777,19 +801,40 @@ export type AllContentItemsQueryResult = Array<{
     title: string | null;
     group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
   }> | null;
+  personas: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
+  regions: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
   publishedAt: string | null;
   archived: boolean | null;
 }>;
 // Variable: hubSettingsQuery
-// Query: *[_type == "hubSettings"][0]{    heroHeading,    heroSubheading,    heroOverview,    demoCTAUrl  }
+// Query: *[_type == "hubSettings"][0]{    siteTitle,    siteDescription,    demoCTAUrl,    heroHeading,    heroSubheading,    heroOverview,    popularSectionHeading,    partnersSectionHeading,    librarySectionHeading,    questionsSectionHeading,    questionsSectionBody,    certificationsSectionHeading,    certificationsSectionBody,    footerHeading,    footerBody,    footerCTAText,    privacyPolicyUrl  }
 export type HubSettingsQueryResult = {
+  siteTitle: string | null;
+  siteDescription: string | null;
+  demoCTAUrl: string | null;
   heroHeading: string | null;
   heroSubheading: string | null;
   heroOverview: string | null;
-  demoCTAUrl: string | null;
+  popularSectionHeading: string | null;
+  partnersSectionHeading: string | null;
+  librarySectionHeading: string | null;
+  questionsSectionHeading: string | null;
+  questionsSectionBody: string | null;
+  certificationsSectionHeading: string | null;
+  certificationsSectionBody: string | null;
+  footerHeading: string | null;
+  footerBody: string | null;
+  footerCTAText: string | null;
+  privacyPolicyUrl: string | null;
 } | null;
 // Variable: newestContentQuery
-// Query: *[    _type in ["course", "template", "video", "learningPath"]    && !(_id in path("drafts.**"))    && archived != true    && (_type != "course" || restricted != true)  ] | order(publishedAt desc)[0...3] {      _id,  _type,  title,  "slug": slug.current,  description,  thumbnail,  accessTier,  "subjects": subjects[]->{ _id, title, group },  publishedAt,  archived  }
+// Query: *[  _type in ["course", "template", "video", "learningPath"]  && !(_id in path("drafts.**"))  && archived != true  && (_type != "course" || restricted != true)] | order(publishedAt desc)[0...3] {      _id,  _type,  title,  "slug": slug.current,  description,  thumbnail,  accessTier,  "subjects": subjects[]->{ _id, title, group },  "personas": personas[]->{ _id, title },  "regions": regions[]->{ _id, title },  publishedAt,  archived  }
 export type NewestContentQueryResult = Array<{
   _id: string;
   _type: "course";
@@ -815,6 +860,14 @@ export type NewestContentQueryResult = Array<{
     title: string | null;
     group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
   }> | null;
+  personas: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
+  regions: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
   publishedAt: string | null;
   archived: boolean | null;
 } | {
@@ -841,6 +894,14 @@ export type NewestContentQueryResult = Array<{
     _id: string;
     title: string | null;
     group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+  }> | null;
+  personas: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
+  regions: Array<{
+    _id: string;
+    title: string | null;
   }> | null;
   publishedAt: string | null;
   archived: boolean | null;
@@ -869,6 +930,14 @@ export type NewestContentQueryResult = Array<{
     title: string | null;
     group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
   }> | null;
+  personas: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
+  regions: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
   publishedAt: string | null;
   archived: boolean | null;
 } | {
@@ -896,11 +965,221 @@ export type NewestContentQueryResult = Array<{
     title: string | null;
     group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
   }> | null;
+  personas: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
+  regions: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
   publishedAt: string | null;
   archived: boolean | null;
 }>;
+// Variable: popularContentQuery
+// Query: *[  _type in ["course", "template", "video", "learningPath"]  && !(_id in path("drafts.**"))  && archived != true  && (_type != "course" || restricted != true)] | order(viewCount desc, publishedAt desc)[0...3] {      _id,  _type,  title,  "slug": slug.current,  description,  thumbnail,  accessTier,  "subjects": subjects[]->{ _id, title, group },  "personas": personas[]->{ _id, title },  "regions": regions[]->{ _id, title },  publishedAt,  archived  }
+export type PopularContentQueryResult = Array<{
+  _id: string;
+  _type: "course";
+  title: string | null;
+  slug: string | null;
+  description: string | null;
+  thumbnail: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  accessTier: "free" | "gated" | "premium" | null;
+  subjects: Array<{
+    _id: string;
+    title: string | null;
+    group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+  }> | null;
+  personas: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
+  regions: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
+  publishedAt: string | null;
+  archived: boolean | null;
+} | {
+  _id: string;
+  _type: "learningPath";
+  title: string | null;
+  slug: string | null;
+  description: string | null;
+  thumbnail: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  accessTier: "free" | "gated" | "premium" | null;
+  subjects: Array<{
+    _id: string;
+    title: string | null;
+    group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+  }> | null;
+  personas: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
+  regions: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
+  publishedAt: string | null;
+  archived: boolean | null;
+} | {
+  _id: string;
+  _type: "template";
+  title: string | null;
+  slug: string | null;
+  description: string | null;
+  thumbnail: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  accessTier: "free" | "gated" | "premium" | null;
+  subjects: Array<{
+    _id: string;
+    title: string | null;
+    group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+  }> | null;
+  personas: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
+  regions: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
+  publishedAt: string | null;
+  archived: boolean | null;
+} | {
+  _id: string;
+  _type: "video";
+  title: string | null;
+  slug: string | null;
+  description: string | null;
+  thumbnail: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  accessTier: "free" | "gated" | "premium" | null;
+  subjects: Array<{
+    _id: string;
+    title: string | null;
+    group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+  }> | null;
+  personas: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
+  regions: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
+  publishedAt: string | null;
+  archived: boolean | null;
+}>;
+// Variable: educationalPartnersQuery
+// Query: *[_type == "educationalPartner"] | order(order asc) {    _id,    name,    logo,    url  }
+export type EducationalPartnersQueryResult = Array<{
+  _id: string;
+  name: string | null;
+  logo: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  url: string | null;
+}>;
+// Variable: certificationBadgesQuery
+// Query: *[_type == "certificationBadge"] | order(order asc) {    _id,    title,    image,    url  }
+export type CertificationBadgesQueryResult = Array<{
+  _id: string;
+  title: string | null;
+  image: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  url: string | null;
+}>;
+// Variable: allPersonasQuery
+// Query: *[_type == "persona"] | order(title asc) {    _id,    title  }
+export type AllPersonasQueryResult = Array<{
+  _id: string;
+  title: string | null;
+}>;
+// Variable: allRegionsQuery
+// Query: *[_type == "region"] | order(title asc) {    _id,    title  }
+export type AllRegionsQueryResult = Array<{
+  _id: string;
+  title: string | null;
+}>;
+// Variable: allSubjectsQuery
+// Query: *[_type == "subject"] | order(group asc, title asc) {    _id,    title,    group  }
+export type AllSubjectsQueryResult = Array<{
+  _id: string;
+  title: string | null;
+  group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+}>;
 // Variable: courseBySlugQuery
-// Query: *[_type == "course" && slug.current == $slug && archived != true][0] {      _id,  _type,  title,  "slug": slug.current,  description,  thumbnail,  accessTier,  "subjects": subjects[]->{ _id, title, group },  publishedAt,  archived,    scormCourseId,    estimatedDuration,    author,    restricted,    restrictedAccessNote  }
+// Query: *[_type == "course" && slug.current == $slug && archived != true][0] {      _id,  _type,  title,  "slug": slug.current,  description,  thumbnail,  accessTier,  "subjects": subjects[]->{ _id, title, group },  "personas": personas[]->{ _id, title },  "regions": regions[]->{ _id, title },  publishedAt,  archived,    scormCourseId,    estimatedDuration,    author,    restricted,    restrictedAccessNote  }
 export type CourseBySlugQueryResult = {
   _id: string;
   _type: "course";
@@ -926,6 +1205,14 @@ export type CourseBySlugQueryResult = {
     title: string | null;
     group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
   }> | null;
+  personas: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
+  regions: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
   publishedAt: string | null;
   archived: boolean | null;
   scormCourseId: string | null;
@@ -935,7 +1222,7 @@ export type CourseBySlugQueryResult = {
   restrictedAccessNote: string | null;
 } | null;
 // Variable: templateBySlugQuery
-// Query: *[_type == "template" && slug.current == $slug && archived != true][0] {      _id,  _type,  title,  "slug": slug.current,  description,  thumbnail,  accessTier,  "subjects": subjects[]->{ _id, title, group },  publishedAt,  archived,    file  }
+// Query: *[_type == "template" && slug.current == $slug && archived != true][0] {      _id,  _type,  title,  "slug": slug.current,  description,  thumbnail,  accessTier,  "subjects": subjects[]->{ _id, title, group },  "personas": personas[]->{ _id, title },  "regions": regions[]->{ _id, title },  publishedAt,  archived,    file  }
 export type TemplateBySlugQueryResult = {
   _id: string;
   _type: "template";
@@ -961,6 +1248,14 @@ export type TemplateBySlugQueryResult = {
     title: string | null;
     group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
   }> | null;
+  personas: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
+  regions: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
   publishedAt: string | null;
   archived: boolean | null;
   file: {
@@ -975,7 +1270,7 @@ export type TemplateBySlugQueryResult = {
   } | null;
 } | null;
 // Variable: videoBySlugQuery
-// Query: *[_type == "video" && slug.current == $slug && archived != true][0] {      _id,  _type,  title,  "slug": slug.current,  description,  thumbnail,  accessTier,  "subjects": subjects[]->{ _id, title, group },  publishedAt,  archived,    vidyardEmbed,    duration  }
+// Query: *[_type == "video" && slug.current == $slug && archived != true][0] {      _id,  _type,  title,  "slug": slug.current,  description,  thumbnail,  accessTier,  "subjects": subjects[]->{ _id, title, group },  "personas": personas[]->{ _id, title },  "regions": regions[]->{ _id, title },  publishedAt,  archived,    vidyardEmbed,    duration  }
 export type VideoBySlugQueryResult = {
   _id: string;
   _type: "video";
@@ -1001,13 +1296,21 @@ export type VideoBySlugQueryResult = {
     title: string | null;
     group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
   }> | null;
+  personas: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
+  regions: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
   publishedAt: string | null;
   archived: boolean | null;
   vidyardEmbed: string | null;
   duration: string | null;
 } | null;
 // Variable: learningPathBySlugQuery
-// Query: *[_type == "learningPath" && slug.current == $slug && archived != true][0] {      _id,  _type,  title,  "slug": slug.current,  description,  thumbnail,  accessTier,  "subjects": subjects[]->{ _id, title, group },  publishedAt,  archived,    estimatedCompletionTime,    credlyBadgeId,    items[]->{   _id,  _type,  title,  "slug": slug.current,  description,  thumbnail,  accessTier,  "subjects": subjects[]->{ _id, title, group },  publishedAt,  archived }  }
+// Query: *[_type == "learningPath" && slug.current == $slug && archived != true][0] {      _id,  _type,  title,  "slug": slug.current,  description,  thumbnail,  accessTier,  "subjects": subjects[]->{ _id, title, group },  "personas": personas[]->{ _id, title },  "regions": regions[]->{ _id, title },  publishedAt,  archived,    estimatedCompletionTime,    credlyBadgeId,    items[]->{   _id,  _type,  title,  "slug": slug.current,  description,  thumbnail,  accessTier,  "subjects": subjects[]->{ _id, title, group },  "personas": personas[]->{ _id, title },  "regions": regions[]->{ _id, title },  publishedAt,  archived }  }
 export type LearningPathBySlugQueryResult = {
   _id: string;
   _type: "learningPath";
@@ -1032,6 +1335,14 @@ export type LearningPathBySlugQueryResult = {
     _id: string;
     title: string | null;
     group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+  }> | null;
+  personas: Array<{
+    _id: string;
+    title: string | null;
+  }> | null;
+  regions: Array<{
+    _id: string;
+    title: string | null;
   }> | null;
   publishedAt: string | null;
   archived: boolean | null;
@@ -1062,6 +1373,14 @@ export type LearningPathBySlugQueryResult = {
       title: string | null;
       group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
     }> | null;
+    personas: Array<{
+      _id: string;
+      title: string | null;
+    }> | null;
+    regions: Array<{
+      _id: string;
+      title: string | null;
+    }> | null;
     publishedAt: string | null;
     archived: boolean | null;
   } | {
@@ -1088,6 +1407,14 @@ export type LearningPathBySlugQueryResult = {
       _id: string;
       title: string | null;
       group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+    }> | null;
+    personas: Array<{
+      _id: string;
+      title: string | null;
+    }> | null;
+    regions: Array<{
+      _id: string;
+      title: string | null;
     }> | null;
     publishedAt: string | null;
     archived: boolean | null;
@@ -1116,6 +1443,14 @@ export type LearningPathBySlugQueryResult = {
       title: string | null;
       group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
     }> | null;
+    personas: Array<{
+      _id: string;
+      title: string | null;
+    }> | null;
+    regions: Array<{
+      _id: string;
+      title: string | null;
+    }> | null;
     publishedAt: string | null;
     archived: boolean | null;
   }> | null;
@@ -1125,12 +1460,18 @@ export type LearningPathBySlugQueryResult = {
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
-    "\n  *[\n    _type in [\"course\", \"template\", \"video\", \"learningPath\"]\n    && !(_id in path(\"drafts.**\"))\n    && archived != true\n    && (_type != \"course\" || restricted != true)\n  ] | order(publishedAt desc) {\n    \n  _id,\n  _type,\n  title,\n  \"slug\": slug.current,\n  description,\n  thumbnail,\n  accessTier,\n  \"subjects\": subjects[]->{ _id, title, group },\n  publishedAt,\n  archived\n\n  }\n": AllContentItemsQueryResult;
-    "\n  *[_type == \"hubSettings\"][0]{\n    heroHeading,\n    heroSubheading,\n    heroOverview,\n    demoCTAUrl\n  }\n": HubSettingsQueryResult;
-    "\n  *[\n    _type in [\"course\", \"template\", \"video\", \"learningPath\"]\n    && !(_id in path(\"drafts.**\"))\n    && archived != true\n    && (_type != \"course\" || restricted != true)\n  ] | order(publishedAt desc)[0...3] {\n    \n  _id,\n  _type,\n  title,\n  \"slug\": slug.current,\n  description,\n  thumbnail,\n  accessTier,\n  \"subjects\": subjects[]->{ _id, title, group },\n  publishedAt,\n  archived\n\n  }\n": NewestContentQueryResult;
-    "\n  *[_type == \"course\" && slug.current == $slug && archived != true][0] {\n    \n  _id,\n  _type,\n  title,\n  \"slug\": slug.current,\n  description,\n  thumbnail,\n  accessTier,\n  \"subjects\": subjects[]->{ _id, title, group },\n  publishedAt,\n  archived\n,\n    scormCourseId,\n    estimatedDuration,\n    author,\n    restricted,\n    restrictedAccessNote\n  }\n": CourseBySlugQueryResult;
-    "\n  *[_type == \"template\" && slug.current == $slug && archived != true][0] {\n    \n  _id,\n  _type,\n  title,\n  \"slug\": slug.current,\n  description,\n  thumbnail,\n  accessTier,\n  \"subjects\": subjects[]->{ _id, title, group },\n  publishedAt,\n  archived\n,\n    file\n  }\n": TemplateBySlugQueryResult;
-    "\n  *[_type == \"video\" && slug.current == $slug && archived != true][0] {\n    \n  _id,\n  _type,\n  title,\n  \"slug\": slug.current,\n  description,\n  thumbnail,\n  accessTier,\n  \"subjects\": subjects[]->{ _id, title, group },\n  publishedAt,\n  archived\n,\n    vidyardEmbed,\n    duration\n  }\n": VideoBySlugQueryResult;
-    "\n  *[_type == \"learningPath\" && slug.current == $slug && archived != true][0] {\n    \n  _id,\n  _type,\n  title,\n  \"slug\": slug.current,\n  description,\n  thumbnail,\n  accessTier,\n  \"subjects\": subjects[]->{ _id, title, group },\n  publishedAt,\n  archived\n,\n    estimatedCompletionTime,\n    credlyBadgeId,\n    items[]->{ \n  _id,\n  _type,\n  title,\n  \"slug\": slug.current,\n  description,\n  thumbnail,\n  accessTier,\n  \"subjects\": subjects[]->{ _id, title, group },\n  publishedAt,\n  archived\n }\n  }\n": LearningPathBySlugQueryResult;
+    "\n  *[\n  _type in [\"course\", \"template\", \"video\", \"learningPath\"]\n  && !(_id in path(\"drafts.**\"))\n  && archived != true\n  && (_type != \"course\" || restricted != true)\n] | order(publishedAt desc) {\n    \n  _id,\n  _type,\n  title,\n  \"slug\": slug.current,\n  description,\n  thumbnail,\n  accessTier,\n  \"subjects\": subjects[]->{ _id, title, group },\n  \"personas\": personas[]->{ _id, title },\n  \"regions\": regions[]->{ _id, title },\n  publishedAt,\n  archived\n\n  }\n": AllContentItemsQueryResult;
+    "\n  *[_type == \"hubSettings\"][0]{\n    siteTitle,\n    siteDescription,\n    demoCTAUrl,\n    heroHeading,\n    heroSubheading,\n    heroOverview,\n    popularSectionHeading,\n    partnersSectionHeading,\n    librarySectionHeading,\n    questionsSectionHeading,\n    questionsSectionBody,\n    certificationsSectionHeading,\n    certificationsSectionBody,\n    footerHeading,\n    footerBody,\n    footerCTAText,\n    privacyPolicyUrl\n  }\n": HubSettingsQueryResult;
+    "\n  *[\n  _type in [\"course\", \"template\", \"video\", \"learningPath\"]\n  && !(_id in path(\"drafts.**\"))\n  && archived != true\n  && (_type != \"course\" || restricted != true)\n] | order(publishedAt desc)[0...3] {\n    \n  _id,\n  _type,\n  title,\n  \"slug\": slug.current,\n  description,\n  thumbnail,\n  accessTier,\n  \"subjects\": subjects[]->{ _id, title, group },\n  \"personas\": personas[]->{ _id, title },\n  \"regions\": regions[]->{ _id, title },\n  publishedAt,\n  archived\n\n  }\n": NewestContentQueryResult;
+    "\n  *[\n  _type in [\"course\", \"template\", \"video\", \"learningPath\"]\n  && !(_id in path(\"drafts.**\"))\n  && archived != true\n  && (_type != \"course\" || restricted != true)\n] | order(viewCount desc, publishedAt desc)[0...3] {\n    \n  _id,\n  _type,\n  title,\n  \"slug\": slug.current,\n  description,\n  thumbnail,\n  accessTier,\n  \"subjects\": subjects[]->{ _id, title, group },\n  \"personas\": personas[]->{ _id, title },\n  \"regions\": regions[]->{ _id, title },\n  publishedAt,\n  archived\n\n  }\n": PopularContentQueryResult;
+    "\n  *[_type == \"educationalPartner\"] | order(order asc) {\n    _id,\n    name,\n    logo,\n    url\n  }\n": EducationalPartnersQueryResult;
+    "\n  *[_type == \"certificationBadge\"] | order(order asc) {\n    _id,\n    title,\n    image,\n    url\n  }\n": CertificationBadgesQueryResult;
+    "\n  *[_type == \"persona\"] | order(title asc) {\n    _id,\n    title\n  }\n": AllPersonasQueryResult;
+    "\n  *[_type == \"region\"] | order(title asc) {\n    _id,\n    title\n  }\n": AllRegionsQueryResult;
+    "\n  *[_type == \"subject\"] | order(group asc, title asc) {\n    _id,\n    title,\n    group\n  }\n": AllSubjectsQueryResult;
+    "\n  *[_type == \"course\" && slug.current == $slug && archived != true][0] {\n    \n  _id,\n  _type,\n  title,\n  \"slug\": slug.current,\n  description,\n  thumbnail,\n  accessTier,\n  \"subjects\": subjects[]->{ _id, title, group },\n  \"personas\": personas[]->{ _id, title },\n  \"regions\": regions[]->{ _id, title },\n  publishedAt,\n  archived\n,\n    scormCourseId,\n    estimatedDuration,\n    author,\n    restricted,\n    restrictedAccessNote\n  }\n": CourseBySlugQueryResult;
+    "\n  *[_type == \"template\" && slug.current == $slug && archived != true][0] {\n    \n  _id,\n  _type,\n  title,\n  \"slug\": slug.current,\n  description,\n  thumbnail,\n  accessTier,\n  \"subjects\": subjects[]->{ _id, title, group },\n  \"personas\": personas[]->{ _id, title },\n  \"regions\": regions[]->{ _id, title },\n  publishedAt,\n  archived\n,\n    file\n  }\n": TemplateBySlugQueryResult;
+    "\n  *[_type == \"video\" && slug.current == $slug && archived != true][0] {\n    \n  _id,\n  _type,\n  title,\n  \"slug\": slug.current,\n  description,\n  thumbnail,\n  accessTier,\n  \"subjects\": subjects[]->{ _id, title, group },\n  \"personas\": personas[]->{ _id, title },\n  \"regions\": regions[]->{ _id, title },\n  publishedAt,\n  archived\n,\n    vidyardEmbed,\n    duration\n  }\n": VideoBySlugQueryResult;
+    "\n  *[_type == \"learningPath\" && slug.current == $slug && archived != true][0] {\n    \n  _id,\n  _type,\n  title,\n  \"slug\": slug.current,\n  description,\n  thumbnail,\n  accessTier,\n  \"subjects\": subjects[]->{ _id, title, group },\n  \"personas\": personas[]->{ _id, title },\n  \"regions\": regions[]->{ _id, title },\n  publishedAt,\n  archived\n,\n    estimatedCompletionTime,\n    credlyBadgeId,\n    items[]->{ \n  _id,\n  _type,\n  title,\n  \"slug\": slug.current,\n  description,\n  thumbnail,\n  accessTier,\n  \"subjects\": subjects[]->{ _id, title, group },\n  \"personas\": personas[]->{ _id, title },\n  \"regions\": regions[]->{ _id, title },\n  publishedAt,\n  archived\n }\n  }\n": LearningPathBySlugQueryResult;
   }
 }
