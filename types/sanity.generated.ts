@@ -668,3 +668,469 @@ export type SanityAssetSourceData = {
 
 export type AllSanitySchemaTypes = Feedback | Redirect | CertificationBadge | EducationalPartner | HubSettings | LearningPath | Video | Template | Course | Subject | Region | Persona | SanityImagePaletteSwatch | SanityImagePalette | SanityImageDimensions | SanityImageHotspot | SanityImageCrop | SanityFileAsset | SanityImageAsset | SanityImageMetadata | Geopoint | Slug | SanityAssetSourceData;
 export declare const internalGroqTypeReferenceTo: unique symbol;
+// Source: ./sanity/lib/queries.ts
+// Variable: allContentItemsQuery
+// Query: *[    _type in ["course", "template", "video", "learningPath"]    && !(_id in path("drafts.**"))    && archived != true    && (_type != "course" || restricted != true)  ] | order(publishedAt desc) {      _id,  _type,  title,  "slug": slug.current,  description,  thumbnail,  accessTier,  "subjects": subjects[]->{ _id, title, group },  publishedAt,  archived  }
+export type AllContentItemsQueryResult = Array<{
+  _id: string;
+  _type: "course";
+  title: string | null;
+  slug: string | null;
+  description: string | null;
+  thumbnail: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  accessTier: "free" | "gated" | "premium" | null;
+  subjects: Array<{
+    _id: string;
+    title: string | null;
+    group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+  }> | null;
+  publishedAt: string | null;
+  archived: boolean | null;
+} | {
+  _id: string;
+  _type: "learningPath";
+  title: string | null;
+  slug: string | null;
+  description: string | null;
+  thumbnail: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  accessTier: "free" | "gated" | "premium" | null;
+  subjects: Array<{
+    _id: string;
+    title: string | null;
+    group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+  }> | null;
+  publishedAt: string | null;
+  archived: boolean | null;
+} | {
+  _id: string;
+  _type: "template";
+  title: string | null;
+  slug: string | null;
+  description: string | null;
+  thumbnail: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  accessTier: "free" | "gated" | "premium" | null;
+  subjects: Array<{
+    _id: string;
+    title: string | null;
+    group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+  }> | null;
+  publishedAt: string | null;
+  archived: boolean | null;
+} | {
+  _id: string;
+  _type: "video";
+  title: string | null;
+  slug: string | null;
+  description: string | null;
+  thumbnail: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  accessTier: "free" | "gated" | "premium" | null;
+  subjects: Array<{
+    _id: string;
+    title: string | null;
+    group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+  }> | null;
+  publishedAt: string | null;
+  archived: boolean | null;
+}>;
+// Variable: hubSettingsQuery
+// Query: *[_type == "hubSettings"][0]{    heroHeading,    heroSubheading,    heroOverview,    demoCTAUrl  }
+export type HubSettingsQueryResult = {
+  heroHeading: string | null;
+  heroSubheading: string | null;
+  heroOverview: string | null;
+  demoCTAUrl: string | null;
+} | null;
+// Variable: newestContentQuery
+// Query: *[    _type in ["course", "template", "video", "learningPath"]    && !(_id in path("drafts.**"))    && archived != true    && (_type != "course" || restricted != true)  ] | order(publishedAt desc)[0...3] {      _id,  _type,  title,  "slug": slug.current,  description,  thumbnail,  accessTier,  "subjects": subjects[]->{ _id, title, group },  publishedAt,  archived  }
+export type NewestContentQueryResult = Array<{
+  _id: string;
+  _type: "course";
+  title: string | null;
+  slug: string | null;
+  description: string | null;
+  thumbnail: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  accessTier: "free" | "gated" | "premium" | null;
+  subjects: Array<{
+    _id: string;
+    title: string | null;
+    group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+  }> | null;
+  publishedAt: string | null;
+  archived: boolean | null;
+} | {
+  _id: string;
+  _type: "learningPath";
+  title: string | null;
+  slug: string | null;
+  description: string | null;
+  thumbnail: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  accessTier: "free" | "gated" | "premium" | null;
+  subjects: Array<{
+    _id: string;
+    title: string | null;
+    group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+  }> | null;
+  publishedAt: string | null;
+  archived: boolean | null;
+} | {
+  _id: string;
+  _type: "template";
+  title: string | null;
+  slug: string | null;
+  description: string | null;
+  thumbnail: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  accessTier: "free" | "gated" | "premium" | null;
+  subjects: Array<{
+    _id: string;
+    title: string | null;
+    group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+  }> | null;
+  publishedAt: string | null;
+  archived: boolean | null;
+} | {
+  _id: string;
+  _type: "video";
+  title: string | null;
+  slug: string | null;
+  description: string | null;
+  thumbnail: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  accessTier: "free" | "gated" | "premium" | null;
+  subjects: Array<{
+    _id: string;
+    title: string | null;
+    group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+  }> | null;
+  publishedAt: string | null;
+  archived: boolean | null;
+}>;
+// Variable: courseBySlugQuery
+// Query: *[_type == "course" && slug.current == $slug && archived != true][0] {      _id,  _type,  title,  "slug": slug.current,  description,  thumbnail,  accessTier,  "subjects": subjects[]->{ _id, title, group },  publishedAt,  archived,    scormCourseId,    estimatedDuration,    author,    restricted,    restrictedAccessNote  }
+export type CourseBySlugQueryResult = {
+  _id: string;
+  _type: "course";
+  title: string | null;
+  slug: string | null;
+  description: string | null;
+  thumbnail: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  accessTier: "free" | "gated" | "premium" | null;
+  subjects: Array<{
+    _id: string;
+    title: string | null;
+    group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+  }> | null;
+  publishedAt: string | null;
+  archived: boolean | null;
+  scormCourseId: string | null;
+  estimatedDuration: string | null;
+  author: string | null;
+  restricted: boolean | null;
+  restrictedAccessNote: string | null;
+} | null;
+// Variable: templateBySlugQuery
+// Query: *[_type == "template" && slug.current == $slug && archived != true][0] {      _id,  _type,  title,  "slug": slug.current,  description,  thumbnail,  accessTier,  "subjects": subjects[]->{ _id, title, group },  publishedAt,  archived,    file  }
+export type TemplateBySlugQueryResult = {
+  _id: string;
+  _type: "template";
+  title: string | null;
+  slug: string | null;
+  description: string | null;
+  thumbnail: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  accessTier: "free" | "gated" | "premium" | null;
+  subjects: Array<{
+    _id: string;
+    title: string | null;
+    group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+  }> | null;
+  publishedAt: string | null;
+  archived: boolean | null;
+  file: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+    };
+    media?: unknown;
+    _type: "file";
+  } | null;
+} | null;
+// Variable: videoBySlugQuery
+// Query: *[_type == "video" && slug.current == $slug && archived != true][0] {      _id,  _type,  title,  "slug": slug.current,  description,  thumbnail,  accessTier,  "subjects": subjects[]->{ _id, title, group },  publishedAt,  archived,    vidyardEmbed,    duration  }
+export type VideoBySlugQueryResult = {
+  _id: string;
+  _type: "video";
+  title: string | null;
+  slug: string | null;
+  description: string | null;
+  thumbnail: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  accessTier: "free" | "gated" | "premium" | null;
+  subjects: Array<{
+    _id: string;
+    title: string | null;
+    group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+  }> | null;
+  publishedAt: string | null;
+  archived: boolean | null;
+  vidyardEmbed: string | null;
+  duration: string | null;
+} | null;
+// Variable: learningPathBySlugQuery
+// Query: *[_type == "learningPath" && slug.current == $slug && archived != true][0] {      _id,  _type,  title,  "slug": slug.current,  description,  thumbnail,  accessTier,  "subjects": subjects[]->{ _id, title, group },  publishedAt,  archived,    estimatedCompletionTime,    credlyBadgeId,    items[]->{   _id,  _type,  title,  "slug": slug.current,  description,  thumbnail,  accessTier,  "subjects": subjects[]->{ _id, title, group },  publishedAt,  archived }  }
+export type LearningPathBySlugQueryResult = {
+  _id: string;
+  _type: "learningPath";
+  title: string | null;
+  slug: string | null;
+  description: string | null;
+  thumbnail: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    alt?: string;
+    _type: "image";
+  } | null;
+  accessTier: "free" | "gated" | "premium" | null;
+  subjects: Array<{
+    _id: string;
+    title: string | null;
+    group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+  }> | null;
+  publishedAt: string | null;
+  archived: boolean | null;
+  estimatedCompletionTime: string | null;
+  credlyBadgeId: string | null;
+  items: Array<{
+    _id: string;
+    _type: "course";
+    title: string | null;
+    slug: string | null;
+    description: string | null;
+    thumbnail: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      alt?: string;
+      _type: "image";
+    } | null;
+    accessTier: "free" | "gated" | "premium" | null;
+    subjects: Array<{
+      _id: string;
+      title: string | null;
+      group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+    }> | null;
+    publishedAt: string | null;
+    archived: boolean | null;
+  } | {
+    _id: string;
+    _type: "template";
+    title: string | null;
+    slug: string | null;
+    description: string | null;
+    thumbnail: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      alt?: string;
+      _type: "image";
+    } | null;
+    accessTier: "free" | "gated" | "premium" | null;
+    subjects: Array<{
+      _id: string;
+      title: string | null;
+      group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+    }> | null;
+    publishedAt: string | null;
+    archived: boolean | null;
+  } | {
+    _id: string;
+    _type: "video";
+    title: string | null;
+    slug: string | null;
+    description: string | null;
+    thumbnail: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      alt?: string;
+      _type: "image";
+    } | null;
+    accessTier: "free" | "gated" | "premium" | null;
+    subjects: Array<{
+      _id: string;
+      title: string | null;
+      group: "board-leadership-operations" | "entity-management" | "organization-type" | "regulations-compliance" | "risk-management" | null;
+    }> | null;
+    publishedAt: string | null;
+    archived: boolean | null;
+  }> | null;
+} | null;
+
+// Query TypeMap
+import "@sanity/client";
+declare module "@sanity/client" {
+  interface SanityQueries {
+    "\n  *[\n    _type in [\"course\", \"template\", \"video\", \"learningPath\"]\n    && !(_id in path(\"drafts.**\"))\n    && archived != true\n    && (_type != \"course\" || restricted != true)\n  ] | order(publishedAt desc) {\n    \n  _id,\n  _type,\n  title,\n  \"slug\": slug.current,\n  description,\n  thumbnail,\n  accessTier,\n  \"subjects\": subjects[]->{ _id, title, group },\n  publishedAt,\n  archived\n\n  }\n": AllContentItemsQueryResult;
+    "\n  *[_type == \"hubSettings\"][0]{\n    heroHeading,\n    heroSubheading,\n    heroOverview,\n    demoCTAUrl\n  }\n": HubSettingsQueryResult;
+    "\n  *[\n    _type in [\"course\", \"template\", \"video\", \"learningPath\"]\n    && !(_id in path(\"drafts.**\"))\n    && archived != true\n    && (_type != \"course\" || restricted != true)\n  ] | order(publishedAt desc)[0...3] {\n    \n  _id,\n  _type,\n  title,\n  \"slug\": slug.current,\n  description,\n  thumbnail,\n  accessTier,\n  \"subjects\": subjects[]->{ _id, title, group },\n  publishedAt,\n  archived\n\n  }\n": NewestContentQueryResult;
+    "\n  *[_type == \"course\" && slug.current == $slug && archived != true][0] {\n    \n  _id,\n  _type,\n  title,\n  \"slug\": slug.current,\n  description,\n  thumbnail,\n  accessTier,\n  \"subjects\": subjects[]->{ _id, title, group },\n  publishedAt,\n  archived\n,\n    scormCourseId,\n    estimatedDuration,\n    author,\n    restricted,\n    restrictedAccessNote\n  }\n": CourseBySlugQueryResult;
+    "\n  *[_type == \"template\" && slug.current == $slug && archived != true][0] {\n    \n  _id,\n  _type,\n  title,\n  \"slug\": slug.current,\n  description,\n  thumbnail,\n  accessTier,\n  \"subjects\": subjects[]->{ _id, title, group },\n  publishedAt,\n  archived\n,\n    file\n  }\n": TemplateBySlugQueryResult;
+    "\n  *[_type == \"video\" && slug.current == $slug && archived != true][0] {\n    \n  _id,\n  _type,\n  title,\n  \"slug\": slug.current,\n  description,\n  thumbnail,\n  accessTier,\n  \"subjects\": subjects[]->{ _id, title, group },\n  publishedAt,\n  archived\n,\n    vidyardEmbed,\n    duration\n  }\n": VideoBySlugQueryResult;
+    "\n  *[_type == \"learningPath\" && slug.current == $slug && archived != true][0] {\n    \n  _id,\n  _type,\n  title,\n  \"slug\": slug.current,\n  description,\n  thumbnail,\n  accessTier,\n  \"subjects\": subjects[]->{ _id, title, group },\n  publishedAt,\n  archived\n,\n    estimatedCompletionTime,\n    credlyBadgeId,\n    items[]->{ \n  _id,\n  _type,\n  title,\n  \"slug\": slug.current,\n  description,\n  thumbnail,\n  accessTier,\n  \"subjects\": subjects[]->{ _id, title, group },\n  publishedAt,\n  archived\n }\n  }\n": LearningPathBySlugQueryResult;
+  }
+}
