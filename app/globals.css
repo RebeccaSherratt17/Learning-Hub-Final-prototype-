@@ -47,6 +47,16 @@ a:focus-visible {
   outline-offset: 2px;
 }
 
+/* Partner logo scroller marquee */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
 /* Respect prefers-reduced-motion per brand + WCAG */
 @media (prefers-reduced-motion: reduce) {
   *,
