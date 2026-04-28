@@ -1,0 +1,597 @@
+// Diligent Learning Hub — Prisma Schema
+// PostgreSQL via Supabase
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  // URL configured in prisma.config.ts via env vars
+}
+
+// ─────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────
+
+enum AccessTier {
+  FREE
+  GATED
+  PREMIUM
+}
+
+enum ContentStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ContentType {
+  COURSE
+  TEMPLATE
+  VIDEO
+  LEARNING_PATH
+}
+
+// ─────────────────────────────────────────────
+// Admin Users
+// ─────────────────────────────────────────────
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("admin_users")
+}
+
+// ─────────────────────────────────────────────
+// Taxonomy
+// ─────────────────────────────────────────────
+
+model Persona {
+  id   String @id @default(cuid())
+  name String @unique
+  slug String @unique
+
+  courses       CoursePersona[]
+  templates     TemplatePersona[]
+  videos        VideoPersona[]
+  learningPaths LearningPathPersona[]
+
+  @@map("personas")
+}
+
+model Region {
+  id   String @id @default(cuid())
+  name String @unique
+  slug String @unique
+
+  courses       CourseRegion[]
+  templates     TemplateRegion[]
+  videos        VideoRegion[]
+  learningPaths LearningPathRegion[]
+
+  @@map("regions")
+}
+
+model SubjectGroup {
+  id       String    @id @default(cuid())
+  name     String    @unique
+  slug     String    @unique
+  subjects Subject[]
+
+  @@map("subject_groups")
+}
+
+model Subject {
+  id      String @id @default(cuid())
+  name    String @unique
+  slug    String @unique
+  groupId String
+
+  group         SubjectGroup          @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  courses       CourseSubject[]
+  templates     TemplateSubject[]
+  videos        VideoSubject[]
+  learningPaths LearningPathSubject[]
+
+  @@map("subjects")
+}
+
+// ─────────────────────────────────────────────
+// Content Type: Course
+// ─────────────────────────────────────────────
+
+model Course {
+  id                 String        @id @default(cuid())
+  title              String
+  slug               String        @unique
+  description        String        @db.Text
+  scormCourseId      String?
+  thumbnailUrl       String?
+  thumbnailAlt       String?
+  ogImageUrl         String?
+  accessTier         AccessTier    @default(FREE)
+  author             String?
+  publishedAt        DateTime?
+  scheduledPublishAt DateTime?
+  estimatedDuration  String?
+  status             ContentStatus @default(DRAFT)
+  restricted         Boolean       @default(false)
+  accessToken        String?       @unique
+  restrictedNote     String?
+  seoTitle           String?
+  seoDescription     String?       @db.Text
+  viewCount          Int           @default(0)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  personas  CoursePersona[]
+  regions   CourseRegion[]
+  subjects  CourseSubject[]
+  revisions ContentRevision[]
+
+  @@map("courses")
+}
+
+// ─────────────────────────────────────────────
+// Content Type: Template
+// ─────────────────────────────────────────────
+
+model Template {
+  id                 String        @id @default(cuid())
+  title              String
+  slug               String        @unique
+  description        String        @db.Text
+  fileUrl            String?
+  fileName           String?
+  fileType           String?
+  thumbnailUrl       String?
+  thumbnailAlt       String?
+  ogImageUrl         String?
+  accessTier         AccessTier    @default(GATED)
+  publishedAt        DateTime?
+  scheduledPublishAt DateTime?
+  status             ContentStatus @default(DRAFT)
+  seoTitle           String?
+  seoDescription     String?       @db.Text
+  viewCount          Int           @default(0)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  personas  TemplatePersona[]
+  regions   TemplateRegion[]
+  subjects  TemplateSubject[]
+  revisions ContentRevision[]
+
+  @@map("templates")
+}
+
+// ─────────────────────────────────────────────
+// Content Type: Video
+// ─────────────────────────────────────────────
+
+model Video {
+  id                 String        @id @default(cuid())
+  title              String
+  slug               String        @unique
+  description        String        @db.Text
+  vidyardUrl         String?
+  duration           String?
+  thumbnailUrl       String?
+  thumbnailAlt       String?
+  ogImageUrl         String?
+  accessTier         AccessTier    @default(FREE)
+  publishedAt        DateTime?
+  scheduledPublishAt DateTime?
+  status             ContentStatus @default(DRAFT)
+  seoTitle           String?
+  seoDescription     String?       @db.Text
+  viewCount          Int           @default(0)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  personas  VideoPersona[]
+  regions   VideoRegion[]
+  subjects  VideoSubject[]
+  revisions ContentRevision[]
+
+  @@map("videos")
+}
+
+// ─────────────────────────────────────────────
+// Content Type: Learning Path
+// ─────────────────────────────────────────────
+
+model LearningPath {
+  id                      String        @id @default(cuid())
+  title                   String
+  slug                    String        @unique
+  description             String        @db.Text
+  estimatedCompletionTime String?
+  credlyBadgeId           String?
+  thumbnailUrl            String?
+  thumbnailAlt            String?
+  ogImageUrl              String?
+  accessTier              AccessTier    @default(FREE)
+  publishedAt             DateTime?
+  scheduledPublishAt      DateTime?
+  status                  ContentStatus @default(DRAFT)
+  seoTitle                String?
+  seoDescription          String?       @db.Text
+  viewCount               Int           @default(0)
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  personas  LearningPathPersona[]
+  regions   LearningPathRegion[]
+  subjects  LearningPathSubject[]
+  items     LearningPathItem[]
+  progress  LearnerProgress[]
+  revisions ContentRevision[]
+
+  @@map("learning_paths")
+}
+
+// ─────────────────────────────────────────────
+// Learning Path Items (ordered content references)
+// ─────────────────────────────────────────────
+
+model LearningPathItem {
+  id             String      @id @default(cuid())
+  learningPathId String
+  contentType    ContentType
+  contentId      String
+  order          Int
+
+  learningPath LearningPath      @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+  progress     LearnerProgress[]
+
+  @@unique([learningPathId, order])
+  @@map("learning_path_items")
+}
+
+// ─────────────────────────────────────────────
+// Taxonomy Join Tables (many-to-many)
+// ─────────────────────────────────────────────
+
+// Course joins
+model CoursePersona {
+  courseId  String
+  personaId String
+  course    Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  persona   Persona @relation(fields: [personaId], references: [id], onDelete: Cascade)
+
+  @@id([courseId, personaId])
+  @@map("course_personas")
+}
+
+model CourseRegion {
+  courseId String
+  regionId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  region   Region @relation(fields: [regionId], references: [id], onDelete: Cascade)
+
+  @@id([courseId, regionId])
+  @@map("course_regions")
+}
+
+model CourseSubject {
+  courseId  String
+  subjectId String
+  course    Course  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@id([courseId, subjectId])
+  @@map("course_subjects")
+}
+
+// Template joins
+model TemplatePersona {
+  templateId String
+  personaId  String
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  persona    Persona  @relation(fields: [personaId], references: [id], onDelete: Cascade)
+
+  @@id([templateId, personaId])
+  @@map("template_personas")
+}
+
+model TemplateRegion {
+  templateId String
+  regionId   String
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  region     Region   @relation(fields: [regionId], references: [id], onDelete: Cascade)
+
+  @@id([templateId, regionId])
+  @@map("template_regions")
+}
+
+model TemplateSubject {
+  templateId String
+  subjectId  String
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  subject    Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@id([templateId, subjectId])
+  @@map("template_subjects")
+}
+
+// Video joins
+model VideoPersona {
+  videoId   String
+  personaId String
+  video     Video   @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  persona   Persona @relation(fields: [personaId], references: [id], onDelete: Cascade)
+
+  @@id([videoId, personaId])
+  @@map("video_personas")
+}
+
+model VideoRegion {
+  videoId  String
+  regionId String
+  video    Video  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  region   Region @relation(fields: [regionId], references: [id], onDelete: Cascade)
+
+  @@id([videoId, regionId])
+  @@map("video_regions")
+}
+
+model VideoSubject {
+  videoId   String
+  subjectId String
+  video     Video   @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  subject   Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@id([videoId, subjectId])
+  @@map("video_subjects")
+}
+
+// Learning Path joins
+model LearningPathPersona {
+  learningPathId String
+  personaId      String
+  learningPath   LearningPath @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+  persona        Persona      @relation(fields: [personaId], references: [id], onDelete: Cascade)
+
+  @@id([learningPathId, personaId])
+  @@map("learning_path_personas")
+}
+
+model LearningPathRegion {
+  learningPathId String
+  regionId       String
+  learningPath   LearningPath @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+  region         Region       @relation(fields: [regionId], references: [id], onDelete: Cascade)
+
+  @@id([learningPathId, regionId])
+  @@map("learning_path_regions")
+}
+
+model LearningPathSubject {
+  learningPathId String
+  subjectId      String
+  learningPath   LearningPath @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+  subject        Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@id([learningPathId, subjectId])
+  @@map("learning_path_subjects")
+}
+
+// ─────────────────────────────────────────────
+// Related Items (manual cross-content links)
+// ─────────────────────────────────────────────
+
+model RelatedItem {
+  id         String      @id @default(cuid())
+  sourceType ContentType
+  sourceId   String
+  targetType ContentType
+  targetId   String
+
+  @@unique([sourceType, sourceId, targetType, targetId])
+  @@map("related_items")
+}
+
+// ─────────────────────────────────────────────
+// Hub Settings (singleton — one row)
+// ─────────────────────────────────────────────
+
+model HubSettings {
+  id String @id @default("hub_settings_singleton")
+
+  // Section 1: Hero
+  heroHeading    String? @db.Text
+  heroSubheading String? @db.Text
+  heroOverview   String? @db.Text
+
+  // Section 2: Popular & Featured
+  popularSectionHeading String?
+
+  // Section 3: Partners
+  partnersSectionHeading String?
+
+  // Section 4: Resource Library
+  librarySectionHeading String?
+
+  // Section 5: Got Questions?
+  questionsSectionHeading String?
+  questionsSectionBody    String? @db.Text
+
+  // Section 6: Certifications
+  certificationsSectionHeading String?
+  certificationsSectionBody    String? @db.Text
+
+  // Section 7: Footer CTA
+  footerHeading String?
+  footerBody    String? @db.Text
+  footerCTAText String?
+
+  // Global settings
+  demoCTAUrl String?
+
+  updatedAt DateTime @updatedAt
+
+  @@map("hub_settings")
+}
+
+// ─────────────────────────────────────────────
+// Educational Partners
+// ─────────────────────────────────────────────
+
+model EducationalPartner {
+  id      String  @id @default(cuid())
+  name    String
+  logoUrl String
+  logoAlt String?
+  linkUrl String?
+  order   Int     @default(0)
+
+  @@map("educational_partners")
+}
+
+// ─────────────────────────────────────────────
+// Certification Badges
+// ─────────────────────────────────────────────
+
+model CertificationBadge {
+  id       String  @id @default(cuid())
+  name     String
+  imageUrl String
+  imageAlt String?
+  linkUrl  String?
+  order    Int     @default(0)
+
+  @@map("certification_badges")
+}
+
+// ─────────────────────────────────────────────
+// Redirects (301)
+// ─────────────────────────────────────────────
+
+model Redirect {
+  id              String   @id @default(cuid())
+  sourcePath      String   @unique
+  destinationPath String
+  createdAt       DateTime @default(now())
+
+  @@map("redirects")
+}
+
+// ─────────────────────────────────────────────
+// Feedback
+// ─────────────────────────────────────────────
+
+model Feedback {
+  id           String      @id @default(cuid())
+  contentType  ContentType
+  contentId    String
+  rating       Int
+  comment      String?     @db.Text
+  learnerEmail String?
+  createdAt    DateTime    @default(now())
+
+  @@map("feedback")
+}
+
+// ─────────────────────────────────────────────
+// Analytics Events (custom hub events)
+// ─────────────────────────────────────────────
+
+model AnalyticsEvent {
+  id          String       @id @default(cuid())
+  eventType   String
+  contentType ContentType?
+  contentId   String?
+  metadata    Json?
+  createdAt   DateTime     @default(now())
+
+  @@index([eventType])
+  @@index([createdAt])
+  @@map("analytics_events")
+}
+
+// ─────────────────────────────────────────────
+// Media Library
+// ─────────────────────────────────────────────
+
+model MediaAsset {
+  id          String   @id @default(cuid())
+  url         String
+  fileName    String
+  mimeType    String
+  size        Int?
+  width       Int?
+  height      Int?
+  altText     String?
+  focalPointX Float?
+  focalPointY Float?
+  createdAt   DateTime @default(now())
+
+  @@map("media_assets")
+}
+
+// ─────────────────────────────────────────────
+// Content Revisions
+// ─────────────────────────────────────────────
+
+model ContentRevision {
+  id          String      @id @default(cuid())
+  contentType ContentType
+  contentId   String
+  data        Json
+  changedBy   String?
+  createdAt   DateTime    @default(now())
+
+  // Optional FK to each content type (only one populated per row)
+  courseId       String?
+  templateId     String?
+  videoId        String?
+  learningPathId String?
+
+  course       Course?       @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  template     Template?     @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  video        Video?        @relation(fields: [videoId], references: [id], onDelete: SetNull)
+  learningPath LearningPath? @relation(fields: [learningPathId], references: [id], onDelete: SetNull)
+
+  @@index([contentType, contentId])
+  @@map("content_revisions")
+}
+
+// ─────────────────────────────────────────────
+// Learner Tracking (for learning paths)
+// ─────────────────────────────────────────────
+
+model Learner {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  firstName String
+  lastName  String
+  createdAt DateTime @default(now())
+
+  progress LearnerProgress[]
+
+  @@map("learners")
+}
+
+model LearnerProgress {
+  id                 String   @id @default(cuid())
+  learnerId          String
+  learningPathId     String
+  learningPathItemId String
+  completedAt        DateTime @default(now())
+
+  learner          Learner          @relation(fields: [learnerId], references: [id], onDelete: Cascade)
+  learningPath     LearningPath     @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
+  learningPathItem LearningPathItem @relation(fields: [learningPathItemId], references: [id], onDelete: Cascade)
+
+  @@unique([learnerId, learningPathItemId])
+  @@map("learner_progress")
+}
