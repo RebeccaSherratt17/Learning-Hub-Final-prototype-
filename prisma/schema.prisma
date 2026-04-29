@@ -244,11 +244,12 @@ model LearningPath {
 // ─────────────────────────────────────────────
 
 model LearningPathItem {
-  id             String      @id @default(cuid())
+  id             String       @id @default(cuid())
   learningPathId String
-  contentType    ContentType
-  contentId      String
+  contentType    ContentType? // nullable — null for milestones
+  contentId      String?      // nullable — null for milestones
   order          Int
+  milestoneTitle String?      // when set, this item is a milestone heading
 
   learningPath LearningPath      @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
   progress     LearnerProgress[]

@@ -1,17 +1,12 @@
 'use client'
 
 import Image from 'next/image'
-import type { Image as SanityImage } from 'sanity'
-import { urlForImage } from '@/sanity/lib/image'
 
 interface Partner {
   _id: string
   name: string | null
-  logo: {
-    asset?: { _ref: string; _type: 'reference' } | null
-    alt?: string | null
-    [key: string]: unknown
-  } | null
+  logoUrl: string | null
+  logoAlt: string | null
   url: string | null
 }
 
@@ -21,16 +16,12 @@ interface PartnerLogoScrollerProps {
 }
 
 function PartnerLogo({ partner }: { partner: Partner }) {
-  if (!partner.logo?.asset) return null
-
-  const src = urlForImage(partner.logo as SanityImage)
-    .height(80)
-    .url()
+  if (!partner.logoUrl) return null
 
   const img = (
     <Image
-      src={src}
-      alt={partner.logo.alt ?? partner.name ?? 'Partner logo'}
+      src={partner.logoUrl}
+      alt={partner.logoAlt ?? partner.name ?? 'Partner logo'}
       width={160}
       height={80}
       className="h-12 w-auto object-contain opacity-70 grayscale transition hover:opacity-100 hover:grayscale-0"

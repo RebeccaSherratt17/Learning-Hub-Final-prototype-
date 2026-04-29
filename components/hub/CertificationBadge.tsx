@@ -1,30 +1,24 @@
 import Image from 'next/image'
-import type { Image as SanityImage } from 'sanity'
-import { urlForImage } from '@/sanity/lib/image'
 
 interface CertificationBadgeProps {
   title: string | null
-  image: {
-    asset?: { _ref: string; _type: 'reference' } | null
-    alt?: string | null
-    [key: string]: unknown
-  } | null
+  imageUrl: string | null
+  imageAlt: string | null
   url: string | null
 }
 
 export function CertificationBadge({
   title,
-  image,
+  imageUrl,
+  imageAlt,
   url,
 }: CertificationBadgeProps) {
-  if (!image?.asset) return null
-
-  const src = urlForImage(image as SanityImage).width(200).url()
+  if (!imageUrl) return null
 
   const img = (
     <Image
-      src={src}
-      alt={image.alt ?? title ?? 'Certification badge'}
+      src={imageUrl}
+      alt={imageAlt ?? title ?? 'Certification badge'}
       width={200}
       height={200}
       className="h-auto w-full"

@@ -5,11 +5,8 @@ const ETL_URL = 'https://www.diligent.com/solutions/board-education'
 interface Badge {
   _id: string
   title: string | null
-  image: {
-    asset?: { _ref: string; _type: 'reference' } | null
-    alt?: string | null
-    [key: string]: unknown
-  } | null
+  imageUrl: string | null
+  imageAlt: string | null
   url: string | null
 }
 
@@ -51,7 +48,8 @@ export function CertificationsSection({
               <CertificationBadge
                 key={badge._id}
                 title={badge.title}
-                image={badge.image}
+                imageUrl={badge.imageUrl}
+                imageAlt={badge.imageAlt}
                 url={badge.url}
               />
             ))}

@@ -86,7 +86,7 @@ export function sortItems(
           new Date(a.publishedAt ?? 0).getTime(),
       )
     case 'popular':
-      return sorted // already sorted by viewCount in GROQ; for client sort, keep original order
+      return sorted.sort((a, b) => (b.viewCount ?? 0) - (a.viewCount ?? 0))
     case 'az':
       return sorted.sort((a, b) =>
         (a.title ?? '').localeCompare(b.title ?? ''),

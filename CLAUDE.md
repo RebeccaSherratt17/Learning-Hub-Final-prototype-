@@ -53,6 +53,7 @@ Build database models (Prisma schema) and frontend templates for four content ty
 - When a learner starts a learning path, capture their name and email (if not already captured via a gate form for that session) and associate all subsequent item completions in that path with their identity
 - Item completion should be inferred per content type: for courses, completion comes from the SCORM Cloud postback; for templates, completion is recorded on successful download; for videos, completion is recorded when the Vidyard player signals the video has ended
 - Fields: title, slug, description, ordered list of content item references, subject tags, persona tags, region tags, access tier, estimated completion time, related items, Credly badge template ID (optional — only populate for paths that should award a badge), status (draft/scheduled/published/archived), scheduled publish date, SEO meta title, SEO meta description, Open Graph image
+- Milestones: Learning paths support optional milestone labels that admins can insert between content items in the ordered list. Milestones are simple subheadings (e.g. "Additional resources", "Advanced topics") that help categorise and separate content items within a path. They are not content items themselves — they are purely organisational labels that appear inline in the learning path item list at whatever position the admin places them. Admins can add, edit, reorder and delete milestones in the same interface as content items. On the public hub, milestones render as visual subheadings between the content item rows in the learning path.
 
 ---
 
@@ -818,3 +819,4 @@ GA4_API_SECRET=
 **Start with steps 1–5 and confirm the database schema looks right before building any UI.**
 
 **Important note on reusing existing work**: The Next.js frontend components, brand design system (Tailwind tokens, fonts, colours), page structure and routing built in the previous prototype should be reused wherever possible. The main items being replaced are the Sanity-specific code (schemas, GROQ queries, Studio, `next-sanity`, `@sanity/image-url`) — these are replaced by Prisma models, PostgreSQL queries, the custom admin dashboard and Vercel Blob. Everything else carries forward.
+
