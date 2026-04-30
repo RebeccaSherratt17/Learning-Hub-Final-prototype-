@@ -5,7 +5,6 @@ import { HeroSection } from '@/components/hub/HeroSection'
 import { PopularFeaturedSection } from '@/components/hub/PopularFeaturedSection'
 import { PartnerLogoScroller } from '@/components/hub/PartnerLogoScroller'
 import { ResourceLibrary } from '@/components/hub/ResourceLibrary'
-import { QuestionsSection } from '@/components/hub/QuestionsSection'
 import { CertificationsSection } from '@/components/hub/CertificationsSection'
 import { FooterCTASection } from '@/components/hub/FooterCTASection'
 import {
@@ -267,6 +266,8 @@ export default async function HubHomePage() {
         heading={settings?.heroHeading ?? null}
         subheading={settings?.heroSubheading ?? null}
         overview={settings?.heroOverview ?? null}
+        ctaText={settings?.heroCTAText ?? null}
+        ctaUrl={settings?.heroCTAUrl ?? null}
       />
 
       {/* Section 2: Popular & Featured Content */}
@@ -286,6 +287,7 @@ export default async function HubHomePage() {
       <Suspense fallback={null}>
         <ResourceLibrary
           heading={settings?.librarySectionHeading ?? null}
+          body={settings?.librarySectionBody ?? null}
           items={allItems}
           personas={mappedPersonas}
           regions={mappedRegions}
@@ -293,13 +295,7 @@ export default async function HubHomePage() {
         />
       </Suspense>
 
-      {/* Section 5: Got Questions? */}
-      <QuestionsSection
-        heading={settings?.questionsSectionHeading ?? null}
-        body={settings?.questionsSectionBody ?? null}
-      />
-
-      {/* Section 6: Professionally-Accredited Certifications */}
+      {/* Section 5: Professionally-Accredited Certifications */}
       <CertificationsSection
         heading={settings?.certificationsSectionHeading ?? null}
         body={settings?.certificationsSectionBody ?? null}

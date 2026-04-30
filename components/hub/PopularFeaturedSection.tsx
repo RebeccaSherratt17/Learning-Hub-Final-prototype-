@@ -15,7 +15,7 @@ export function PopularFeaturedSection({
   if (popularItems.length === 0 && newestItems.length === 0) return null
 
   return (
-    <section className="bg-diligent-gray-1 py-16">
+    <section className="border-b border-diligent-gray-2 bg-diligent-gray-1 py-16">
       <div className="mx-auto max-w-[var(--max-content-width)] px-6">
         <h2 className="mb-8 text-heading-1 font-bold text-diligent-gray-5">
           {heading ?? 'Jump in: Popular and featured content'}

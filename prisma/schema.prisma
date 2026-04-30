@@ -412,6 +412,8 @@ model HubSettings {
   heroHeading    String? @db.Text
   heroSubheading String? @db.Text
   heroOverview   String? @db.Text
+  heroCTAText    String?
+  heroCTAUrl     String?
 
   // Section 2: Popular & Featured
   popularSectionHeading String?
@@ -421,12 +423,9 @@ model HubSettings {
 
   // Section 4: Resource Library
   librarySectionHeading String?
+  librarySectionBody    String? @db.Text
 
-  // Section 5: Got Questions?
-  questionsSectionHeading String?
-  questionsSectionBody    String? @db.Text
-
-  // Section 6: Certifications
+  // Section 5: Certifications
   certificationsSectionHeading String?
   certificationsSectionBody    String? @db.Text
 

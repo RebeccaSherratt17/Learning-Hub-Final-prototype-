@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import RichTextEditor from '@/components/admin/RichTextEditor'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -11,11 +12,12 @@ interface HubSettingsFormProps {
     heroHeading: string | null
     heroSubheading: string | null
     heroOverview: string | null
+    heroCTAText: string | null
+    heroCTAUrl: string | null
     popularSectionHeading: string | null
     partnersSectionHeading: string | null
     librarySectionHeading: string | null
-    questionsSectionHeading: string | null
-    questionsSectionBody: string | null
+    librarySectionBody: string | null
     certificationsSectionHeading: string | null
     certificationsSectionBody: string | null
     footerHeading: string | null
@@ -29,11 +31,12 @@ type SettingsData = {
   heroHeading: string
   heroSubheading: string
   heroOverview: string
+  heroCTAText: string
+  heroCTAUrl: string
   popularSectionHeading: string
   partnersSectionHeading: string
   librarySectionHeading: string
-  questionsSectionHeading: string
-  questionsSectionBody: string
+  librarySectionBody: string
   certificationsSectionHeading: string
   certificationsSectionBody: string
   footerHeading: string
@@ -51,11 +54,12 @@ function toFormData(settings: HubSettingsFormProps['initialSettings']): Settings
     heroHeading: settings.heroHeading ?? '',
     heroSubheading: settings.heroSubheading ?? '',
     heroOverview: settings.heroOverview ?? '',
+    heroCTAText: settings.heroCTAText ?? '',
+    heroCTAUrl: settings.heroCTAUrl ?? '',
     popularSectionHeading: settings.popularSectionHeading ?? '',
     partnersSectionHeading: settings.partnersSectionHeading ?? '',
     librarySectionHeading: settings.librarySectionHeading ?? '',
-    questionsSectionHeading: settings.questionsSectionHeading ?? '',
-    questionsSectionBody: settings.questionsSectionBody ?? '',
+    librarySectionBody: settings.librarySectionBody ?? '',
     certificationsSectionHeading: settings.certificationsSectionHeading ?? '',
     certificationsSectionBody: settings.certificationsSectionBody ?? '',
     footerHeading: settings.footerHeading ?? '',
@@ -202,7 +206,7 @@ export default function HubSettingsForm({ initialSettings }: HubSettingsFormProp
       <SectionCard heading="Section 1: Hero">
         <div>
           <FieldLabel htmlFor="heroHeading">Heading</FieldLabel>
-          <TextInput
+          <RichTextEditor
             id="heroHeading"
             value={formData.heroHeading}
             onChange={(v) => updateField('heroHeading', v)}
@@ -210,21 +214,41 @@ export default function HubSettingsForm({ initialSettings }: HubSettingsFormProp
         </div>
         <div>
           <FieldLabel htmlFor="heroSubheading">Subheading</FieldLabel>
-          <TextArea
+          <RichTextEditor
             id="heroSubheading"
             value={formData.heroSubheading}
             onChange={(v) => updateField('heroSubheading', v)}
-            rows={3}
           />
         </div>
         <div>
           <FieldLabel htmlFor="heroOverview">Overview text</FieldLabel>
-          <TextArea
+          <RichTextEditor
             id="heroOverview"
             value={formData.heroOverview}
             onChange={(v) => updateField('heroOverview', v)}
-            rows={5}
           />
+        </div>
+        <div>
+          <FieldLabel htmlFor="heroCTAText">CTA button label</FieldLabel>
+          <TextInput
+            id="heroCTAText"
+            value={formData.heroCTAText}
+            onChange={(v) => updateField('heroCTAText', v)}
+          />
+          <p className="mt-1 text-xs text-diligent-gray-3">
+            Leave empty to hide the button
+          </p>
+        </div>
+        <div>
+          <FieldLabel htmlFor="heroCTAUrl">CTA button link</FieldLabel>
+          <TextInput
+            id="heroCTAUrl"
+            value={formData.heroCTAUrl}
+            onChange={(v) => updateField('heroCTAUrl', v)}
+          />
+          <p className="mt-1 text-xs text-diligent-gray-3">
+            Use #resource-library to scroll to the resource library, or a full URL
+          </p>
         </div>
       </SectionCard>
 
@@ -262,30 +286,17 @@ export default function HubSettingsForm({ initialSettings }: HubSettingsFormProp
             onChange={(v) => updateField('librarySectionHeading', v)}
           />
         </div>
-      </SectionCard>
-
-      {/* Section 5: Got Questions? */}
-      <SectionCard heading="Section 5: Got questions?">
         <div>
-          <FieldLabel htmlFor="questionsSectionHeading">Section heading</FieldLabel>
-          <TextInput
-            id="questionsSectionHeading"
-            value={formData.questionsSectionHeading}
-            onChange={(v) => updateField('questionsSectionHeading', v)}
-          />
-        </div>
-        <div>
-          <FieldLabel htmlFor="questionsSectionBody">Body text</FieldLabel>
-          <TextArea
-            id="questionsSectionBody"
-            value={formData.questionsSectionBody}
-            onChange={(v) => updateField('questionsSectionBody', v)}
-            rows={3}
+          <FieldLabel htmlFor="librarySectionBody">Body text</FieldLabel>
+          <RichTextEditor
+            id="librarySectionBody"
+            value={formData.librarySectionBody}
+            onChange={(v) => updateField('librarySectionBody', v)}
           />
         </div>
       </SectionCard>
 
-      {/* Section 6: Certifications */}
+      {/* Section 5: Certifications */}
       <SectionCard heading="Section 6: Certifications">
         <div>
           <FieldLabel htmlFor="certificationsSectionHeading">Section heading</FieldLabel>
@@ -297,11 +308,10 @@ export default function HubSettingsForm({ initialSettings }: HubSettingsFormProp
         </div>
         <div>
           <FieldLabel htmlFor="certificationsSectionBody">Body text</FieldLabel>
-          <TextArea
+          <RichTextEditor
             id="certificationsSectionBody"
             value={formData.certificationsSectionBody}
             onChange={(v) => updateField('certificationsSectionBody', v)}
-            rows={4}
           />
         </div>
       </SectionCard>
@@ -318,11 +328,10 @@ export default function HubSettingsForm({ initialSettings }: HubSettingsFormProp
         </div>
         <div>
           <FieldLabel htmlFor="footerBody">Body text</FieldLabel>
-          <TextArea
+          <RichTextEditor
             id="footerBody"
             value={formData.footerBody}
             onChange={(v) => updateField('footerBody', v)}
-            rows={3}
           />
         </div>
         <div>

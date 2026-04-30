@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { ContentCard } from '@/components/hub/ContentCard'
 import { SearchBar } from '@/components/hub/SearchBar'
@@ -8,10 +8,19 @@ import { SortDropdown, type SortOption } from '@/components/hub/SortDropdown'
 import { FilterBar, type FilterState } from '@/components/hub/FilterBar'
 import { FilterDrawer } from '@/components/hub/FilterDrawer'
 import { Pagination } from '@/components/hub/Pagination'
+import { SafeHtml } from '@/components/hub/SafeHtml'
 import { Icon } from '@/components/ui/Icon'
 import type { ContentItem } from '@/types/content'
 
 const ITEMS_PER_PAGE = 15
+
+// Map URL type params (e.g. COURSE, LEARNING_PATH) to internal ContentType keys
+const typeParamMap: Record<string, string> = {
+  COURSE: 'course',
+  TEMPLATE: 'template',
+  VIDEO: 'video',
+  LEARNING_PATH: 'learningPath',
+}
 
 interface TaxonomyItem {
   _id: string
@@ -24,6 +33,7 @@ interface SubjectItem extends TaxonomyItem {
 
 interface ResourceLibraryProps {
   heading: string | null
+  body: string | null
   items: ContentItem[]
   personas: TaxonomyItem[]
   regions: TaxonomyItem[]
@@ -96,6 +106,7 @@ export function sortItems(
 
 export function ResourceLibrary({
   heading,
+  body,
   items,
   personas,
   regions,
@@ -111,7 +122,9 @@ export function ResourceLibrary({
     (searchParams.get('sort') as SortOption) || 'newest',
   )
   const [filters, setFilters] = useState<FilterState>(() => ({
-    types: searchParams.getAll('type'),
+    types: searchParams
+      .getAll('type')
+      .map((t) => typeParamMap[t] ?? t),
     personas: searchParams.getAll('persona'),
     regions: searchParams.getAll('region'),
     subjects: searchParams.getAll('subject'),
@@ -120,6 +133,22 @@ export function ResourceLibrary({
     Number(searchParams.get('page')) || 1,
   )
   const [drawerOpen, setDrawerOpen] = useState(false)
+
+  // React to external URL changes (e.g. signpost links updating ?type=)
+  useEffect(() => {
+    const urlTypes = searchParams
+      .getAll('type')
+      .map((t) => typeParamMap[t] ?? t)
+    const currentTypes = filters.types
+    const changed =
+      urlTypes.length !== currentTypes.length ||
+      urlTypes.some((t, i) => t !== currentTypes[i])
+    if (changed) {
+      setFilters((prev) => ({ ...prev, types: urlTypes }))
+      setPage(1)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   // Sync state to URL
   const syncUrl = useCallback(
@@ -144,7 +173,7 @@ export function ResourceLibrary({
       if (p > 1) params.set('page', String(p))
 
       const qs = params.toString()
-      router.replace(`${pathname}${qs ? `?${qs}` : ''}#library`, {
+      router.replace(`${pathname}${qs ? `?${qs}` : ''}#resource-library`, {
         scroll: false,
       })
     },
@@ -200,11 +229,17 @@ export function ResourceLibrary({
   )
 
   return (
-    <section id="library" className="py-16">
+    <section id="resource-library" className="border-b border-diligent-gray-2 py-16">
       <div className="mx-auto max-w-[var(--max-content-width)] px-6">
-        <h2 className="mb-8 text-heading-1 font-bold text-diligent-gray-5">
+        <h2 className="mb-4 text-heading-1 font-bold text-diligent-gray-5">
           {heading ?? 'Full resource library'}
         </h2>
+        {body && (
+          <SafeHtml
+            html={body}
+            className="mb-8 text-base text-diligent-gray-4 prose"
+          />
+        )}
 
         {/* Controls row */}
         <div className="mb-6 flex flex-wrap items-center gap-4">

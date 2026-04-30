@@ -134,6 +134,7 @@ The hub homepage is structured as a series of distinct sections, in the followin
 - **Overview text**: Our Learning Hub brings together practical tools and expert insights to help business leaders strengthen their governance, risk, and compliance practices. Here, you'll find a curated collection of ready-to-use templates, professionally crafted courses and videos drawn from our premium eLearning platform, the Education & Templates Library.
 
   Whether you're building foundational frameworks or refining board operations, these resources are designed to save time and improve effectiveness.
+- **CTA button**: A Diligent Red button displayed below the overview text. Button label (`heroCTAText`) and link destination (`heroCTAUrl`) are editable via Hub Settings. Default: "Explore Resource Library" linking to `#resource-library`. If the label is empty, the button is not rendered.
 - **Content type signpost links** (displayed as four short highlighted items below the overview text, each linking to the relevant filtered view of the content library):
   - Courses → Master essential GRC topics through targeted short courses.
   - Templates → Access professionally crafted and ready-to-use templates that accelerate your governance initiatives.
@@ -166,6 +167,7 @@ The hub homepage is structured as a series of distinct sections, in the followin
 ### Section 4: Full Resource Library
 
 - **Section heading**: Full resource library
+- **Body text**: Explore educational courses, ready-to-use templates, and videos to develop your expertise and enhance board effectiveness across key governance, risk, and compliance topics.
 - The complete filterable content library grid, with the following filters:
   - **Search bar**: Keyword search on content item title
   - **Content type**: Template, Course, Video, Learning Path
@@ -187,15 +189,7 @@ The hub homepage is structured as a series of distinct sections, in the followin
 
 ---
 
-### Section 5: Got Questions?
-
-- **Section heading**: Got questions?
-- **Body text**: We're here to help! If you have any questions about our educational resources, email certifications@diligent.com
-- The email address should be a clickable mailto link
-
----
-
-### Section 6: Professionally-Accredited Certifications
+### Section 5: Professionally-Accredited Certifications
 
 - **Section heading**: Professionally-accredited certifications
 - **Body text**: Empower your business to achieve governance excellency. With Diligent One Platform, you can unlock unlimited access to Diligent's Education & Templates Library, featuring 600+ educational courses, templates and videos, alongside six professionally-accredited certifications.
@@ -210,7 +204,7 @@ The hub homepage is structured as a series of distinct sections, in the followin
 
 ---
 
-### Section 7: Footer CTA
+### Section 6: Footer CTA
 
 - **Section heading**: Upskill your board today
 - **Body text**: Empower directors and executives with best practice education, templates and certifications — so every meeting is prepared, compliant and impactful.
@@ -223,6 +217,7 @@ The hub homepage is structured as a series of distinct sections, in the followin
 - The "Education & Templates Library" text in Sections 1 and 6 should link to https://www.diligent.com/solutions/board-education
 - One URL in the certifications section (Board Leadership certification) is TBC — build the badge component to gracefully handle a null/empty URL (e.g. display the badge without a link until the URL is added in the admin dashboard)
 - All section headings, body copy and CTA text must be editable via the Hub Settings page in the admin dashboard (`/admin/settings`) — the team should not need a developer to update homepage copy
+- The following five Hub Settings fields support rich text (HTML) editing via Tiptap in the admin dashboard, with heading (H2, H3), bold, italic, lists, hyperlink, and text colour support: `heroSubheading`, `heroOverview`, `librarySectionBody`, `certificationsSectionBody`, `footerBody`. On the public hub these fields are rendered as sanitised HTML via DOMPurify
 - The popular content widget pulls from a `viewCount` field stored in the PostgreSQL database, incremented on each content item page load — this is simpler than a GA4 dependency and gives immediate results
 
 ---

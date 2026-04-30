@@ -174,6 +174,8 @@ async function main() {
         'Explore educational courses, ready-to-use templates, and videos to develop your expertise and enhance board effectiveness across key governance, risk, and compliance topics.',
       heroOverview:
         'Our Learning Hub brings together practical tools and expert insights to help business leaders strengthen their governance, risk, and compliance practices. Here, you\u2019ll find a curated collection of ready-to-use templates, professionally crafted courses and videos drawn from our premium eLearning platform, the Education & Templates Library.\n\nWhether you\u2019re building foundational frameworks or refining board operations, these resources are designed to save time and improve effectiveness.',
+      heroCTAText: 'Explore Resource Library',
+      heroCTAUrl: '#resource-library',
 
       // Section 2: Popular & Featured
       popularSectionHeading: 'Jump in: Popular and featured content',
@@ -183,13 +185,10 @@ async function main() {
 
       // Section 4: Resource Library
       librarySectionHeading: 'Full resource library',
+      librarySectionBody:
+        'Explore educational courses, ready-to-use templates, and videos to develop your expertise and enhance board effectiveness across key governance, risk, and compliance topics.',
 
-      // Section 5: Got Questions?
-      questionsSectionHeading: 'Got questions?',
-      questionsSectionBody:
-        'We\u2019re here to help! If you have any questions about our educational resources, email certifications@diligent.com',
-
-      // Section 6: Certifications
+      // Section 5: Certifications
       certificationsSectionHeading: 'Professionally-accredited certifications',
       certificationsSectionBody:
         'Empower your business to achieve governance excellency. With Diligent One Platform, you can unlock unlimited access to Diligent\u2019s Education & Templates Library, featuring 600+ educational courses, templates and videos, alongside six professionally-accredited certifications.',

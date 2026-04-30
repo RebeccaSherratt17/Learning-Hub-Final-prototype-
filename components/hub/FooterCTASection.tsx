@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/Button'
+import { SafeHtml } from '@/components/hub/SafeHtml'
 
 interface FooterCTASectionProps {
   heading: string | null
@@ -19,7 +20,12 @@ export function FooterCTASection({
         <h2 className="text-heading-1 font-bold text-white">
           {heading ?? 'Upskill your board today'}
         </h2>
-        {body && <p className="mx-auto mt-4 max-w-2xl text-diligent-gray-3">{body}</p>}
+        {body && (
+          <SafeHtml
+            html={body}
+            className="mx-auto mt-4 max-w-2xl text-diligent-gray-3 prose prose-invert"
+          />
+        )}
         {ctaUrl && (
           <div className="mt-8">
             <Button href={ctaUrl}>

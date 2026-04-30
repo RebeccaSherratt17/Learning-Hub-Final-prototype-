@@ -54,7 +54,7 @@ export function PartnerLogoScroller({
   const allLogos = [...partners, ...partners]
 
   return (
-    <section className="py-16">
+    <section className="border-b border-diligent-gray-2 py-16">
       <div className="mx-auto max-w-[var(--max-content-width)] px-6">
         <h2 className="mb-8 text-center text-heading-1 font-bold text-diligent-gray-5">
           {heading ?? 'Our educational partners'}
