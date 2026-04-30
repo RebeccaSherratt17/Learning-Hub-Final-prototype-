@@ -19,6 +19,20 @@ interface FilterSidebarProps {
   personas: TaxonomyItem[]
   regions: TaxonomyItem[]
   subjects: SubjectItem[]
+  filterCounts: Record<string, number>
+}
+
+function toSentenceCase(str: string): string {
+  if (!str) return str
+  return str
+    .split(' ')
+    .map((word, i) => {
+      if (word.length >= 2 && word === word.toUpperCase() && /^[A-Z]+$/.test(word)) return word
+      return i === 0
+        ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+        : word.toLowerCase()
+    })
+    .join(' ')
 }
 
 function toggleValue(arr: string[], value: string): string[] {
@@ -31,10 +45,12 @@ function CheckboxOption({
   label,
   checked,
   onChange,
+  count,
 }: {
   label: string
   checked: boolean
   onChange: () => void
+  count?: number
 }) {
   return (
     <label className="flex cursor-pointer items-center gap-2.5 py-1 text-[13px] text-diligent-gray-4 hover:text-diligent-gray-5">
@@ -45,6 +61,9 @@ function CheckboxOption({
         className="h-3.5 w-3.5 accent-diligent-red"
       />
       <span>{label}</span>
+      {count !== undefined && (
+        <span className="ml-auto font-mono text-xs text-diligent-gray-3">{count}</span>
+      )}
     </label>
   )
 }
@@ -103,23 +122,31 @@ export function FilterSidebar({
   personas,
   regions,
   subjects,
+  filterCounts,
 }: FilterSidebarProps) {
   const personaOptions = personas.map((p) => ({
     value: p._id,
-    label: p.title ?? '',
+    label: toSentenceCase(p.title ?? ''),
   }))
 
-  const regionOptions = regions.map((r) => ({
-    value: r._id,
-    label: r.title ?? '',
-  }))
+  const regionOrder = ['Global', 'USA', 'EU', 'UK', 'APAC', 'Canada']
+  const regionOptions = regions
+    .map((r) => ({
+      value: r._id,
+      label: r.title ?? '',
+    }))
+    .sort((a, b) => {
+      const ai = regionOrder.indexOf(a.label)
+      const bi = regionOrder.indexOf(b.label)
+      return (ai === -1 ? regionOrder.length : ai) - (bi === -1 ? regionOrder.length : bi)
+    })
 
   const groupedSubjects = Object.entries(subjectGroupLabels).map(
     ([groupValue, groupLabel]) => ({
       groupLabel,
       items: subjects
         .filter((s) => s.group === groupValue)
-        .map((s) => ({ value: s._id, label: s.title ?? '' })),
+        .map((s) => ({ value: s._id, label: toSentenceCase(s.title ?? '') })),
     }),
   )
 
@@ -169,6 +196,7 @@ export function FilterSidebar({
                           subjects: toggleValue(filters.subjects, opt.value),
                         })
                       }
+                      count={filterCounts[opt.value] ?? 0}
                     />
                   ))}
                 </SubjectSubgroup>
@@ -185,6 +213,7 @@ export function FilterSidebar({
               onChange={() =>
                 onFilterChange({ ...filters, regions: toggleValue(filters.regions, opt.value) })
               }
+              count={filterCounts[opt.value] ?? 0}
             />
           ))}
         </AccordionGroup>
@@ -201,6 +230,7 @@ export function FilterSidebar({
                   personas: toggleValue(filters.personas, opt.value),
                 })
               }
+              count={filterCounts[opt.value] ?? 0}
             />
           ))}
         </AccordionGroup>

@@ -22,6 +22,7 @@ interface FilterDrawerProps {
   personas: TaxonomyItem[]
   regions: TaxonomyItem[]
   subjects: SubjectItem[]
+  filterCounts: Record<string, number>
 }
 
 export function FilterDrawer({
@@ -32,6 +33,7 @@ export function FilterDrawer({
   personas,
   regions,
   subjects,
+  filterCounts,
 }: FilterDrawerProps) {
   const drawerRef = useRef<HTMLDivElement>(null)
 
@@ -89,6 +91,7 @@ export function FilterDrawer({
             personas={personas}
             regions={regions}
             subjects={subjects}
+            filterCounts={filterCounts}
           />
         </div>
       </div>

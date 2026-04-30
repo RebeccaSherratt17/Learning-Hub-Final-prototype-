@@ -25,7 +25,11 @@
       "Bash(npm install:*)",
       "Bash(timeout 20 npm run dev)",
       "Bash(ls \"app/\\(hub\\)\")",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git worktree:*)",
+      "Bash(npx next:*)",
+      "Bash(git checkout:*)"
     ]
   }
 }

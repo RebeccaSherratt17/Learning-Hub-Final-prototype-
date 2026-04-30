@@ -259,6 +259,24 @@ export default async function HubHomePage() {
     group: s.group?.slug ?? null,
   }))
 
+  // Compute filter counts from published items
+  const filterCounts: Record<string, number> = {}
+  for (const item of allItems) {
+    const itemWithTax = item as ContentItem & {
+      personas?: { _id: string }[]
+      regions?: { _id: string }[]
+    }
+    itemWithTax.personas?.forEach((p) => {
+      filterCounts[p._id] = (filterCounts[p._id] ?? 0) + 1
+    })
+    itemWithTax.regions?.forEach((r) => {
+      filterCounts[r._id] = (filterCounts[r._id] ?? 0) + 1
+    })
+    item.subjects?.forEach((s) => {
+      filterCounts[s._id] = (filterCounts[s._id] ?? 0) + 1
+    })
+  }
+
   return (
     <>
       {/* Section 1: Hero */}
@@ -292,6 +310,7 @@ export default async function HubHomePage() {
           personas={mappedPersonas}
           regions={mappedRegions}
           subjects={mappedSubjects}
+          filterCounts={filterCounts}
         />
       </Suspense>
 

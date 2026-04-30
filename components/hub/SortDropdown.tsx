@@ -1,11 +1,13 @@
 'use client'
 
+import { Icon } from '@/components/ui/Icon'
+
 export type SortOption = 'newest' | 'popular' | 'az'
 
 const sortLabels: Record<SortOption, string> = {
-  newest: 'Newest',
-  popular: 'Most popular',
-  az: 'A\u2013Z',
+  newest: 'Sort: Newest',
+  popular: 'Sort: Most popular',
+  az: 'Sort: A\u2013Z',
 }
 
 interface SortDropdownProps {
@@ -15,18 +17,17 @@ interface SortDropdownProps {
 
 export function SortDropdown({ value, onChange }: SortDropdownProps) {
   return (
-    <div className="flex items-center gap-2">
-      <label
-        htmlFor="sort-select"
-        className="whitespace-nowrap text-sm text-diligent-gray-4"
-      >
-        Sort by
-      </label>
+    <div className="relative inline-flex items-center">
+      <Icon
+        name="sort"
+        className="pointer-events-none absolute left-3 text-[20px] text-diligent-gray-4"
+      />
       <select
         id="sort-select"
         value={value}
         onChange={(e) => onChange(e.target.value as SortOption)}
-        className="rounded-sm border border-diligent-gray-2 bg-white px-3 py-2 text-sm text-diligent-gray-5 outline-none focus-visible:border-link"
+        aria-label="Sort by"
+        className="h-11 cursor-pointer appearance-none rounded-md border border-diligent-gray-2 bg-white py-3 pl-10 pr-9 text-sm font-medium text-diligent-gray-5 outline-none hover:border-diligent-gray-3 focus-visible:border-link"
       >
         {(Object.keys(sortLabels) as SortOption[]).map((key) => (
           <option key={key} value={key}>
@@ -34,6 +35,10 @@ export function SortDropdown({ value, onChange }: SortDropdownProps) {
           </option>
         ))}
       </select>
+      <Icon
+        name="expand_more"
+        className="pointer-events-none absolute right-2 text-[18px] text-diligent-gray-4"
+      />
     </div>
   )
 }

@@ -21,14 +21,14 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
   )
 
   return (
-    <div className="relative w-full max-w-md">
+    <div className="relative w-full">
       <Icon
         name="search"
         className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-diligent-gray-3"
       />
       <input
         type="search"
-        placeholder="Search by title..."
+        placeholder="Search courses, templates, videos..."
         defaultValue={value}
         onChange={handleChange}
         className="w-full rounded-sm border border-diligent-gray-2 bg-white py-2.5 pl-10 pr-4 text-sm text-diligent-gray-5 outline-none placeholder:text-diligent-gray-3 focus-visible:border-link focus-visible:ring-0"

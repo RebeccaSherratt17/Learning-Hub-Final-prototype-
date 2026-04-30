@@ -40,6 +40,7 @@ interface ResourceLibraryProps {
   personas: TaxonomyItem[]
   regions: TaxonomyItem[]
   subjects: SubjectItem[]
+  filterCounts: Record<string, number>
 }
 
 /** Filter items by search term and multi-select filters. Exported for testing. */
@@ -113,6 +114,7 @@ export function ResourceLibrary({
   personas,
   regions,
   subjects,
+  filterCounts,
 }: ResourceLibraryProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -266,7 +268,9 @@ export function ResourceLibrary({
 
         {/* Controls row */}
         <div className="mb-8 flex flex-wrap items-center gap-4">
-          <SearchBar value={search} onChange={handleSearchChange} />
+          <div className="min-w-0 flex-1">
+            <SearchBar value={search} onChange={handleSearchChange} />
+          </div>
           <ContentTypeDropdown
             value={filters.types.length === 1 ? filters.types[0] : ''}
             onChange={handleContentTypeChange}
@@ -292,6 +296,7 @@ export function ResourceLibrary({
               personas={personas}
               regions={regions}
               subjects={subjects}
+              filterCounts={filterCounts}
             />
           </aside>
 
@@ -360,6 +365,7 @@ export function ResourceLibrary({
         personas={personas}
         regions={regions}
         subjects={subjects}
+        filterCounts={filterCounts}
       />
     </section>
   )
