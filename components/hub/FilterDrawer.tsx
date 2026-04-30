@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from 'react'
 import { Icon } from '@/components/ui/Icon'
-import { FilterBar, type FilterState } from '@/components/hub/FilterBar'
+import { type FilterState } from '@/components/hub/FilterBar'
+import { FilterSidebar } from '@/components/hub/FilterSidebar'
 
 interface TaxonomyItem {
   _id: string
@@ -82,7 +83,7 @@ export function FilterDrawer({
           </button>
         </div>
         <div className="flex-1 overflow-y-auto px-6 py-4">
-          <FilterBar
+          <FilterSidebar
             filters={filters}
             onFilterChange={onFilterChange}
             personas={personas}

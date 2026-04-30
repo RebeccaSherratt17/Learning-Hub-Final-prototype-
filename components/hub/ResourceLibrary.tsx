@@ -5,8 +5,10 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { ContentCard } from '@/components/hub/ContentCard'
 import { SearchBar } from '@/components/hub/SearchBar'
 import { SortDropdown, type SortOption } from '@/components/hub/SortDropdown'
-import { FilterBar, type FilterState } from '@/components/hub/FilterBar'
+import { type FilterState } from '@/components/hub/FilterBar'
+import { FilterSidebar } from '@/components/hub/FilterSidebar'
 import { FilterDrawer } from '@/components/hub/FilterDrawer'
+import { ContentTypeDropdown } from '@/components/hub/ContentTypeDropdown'
 import { Pagination } from '@/components/hub/Pagination'
 import { SafeHtml } from '@/components/hub/SafeHtml'
 import { Icon } from '@/components/ui/Icon'
@@ -150,6 +152,16 @@ export function ResourceLibrary({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
 
+  // React to external URL changes for sort param (e.g. "See all" links)
+  useEffect(() => {
+    const urlSort = (searchParams.get('sort') as SortOption) || 'newest'
+    if (urlSort !== sort) {
+      setSort(urlSort)
+      setPage(1)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
+
   // Sync state to URL
   const syncUrl = useCallback(
     (newState: {
@@ -207,6 +219,17 @@ export function ResourceLibrary({
     [syncUrl],
   )
 
+  const handleContentTypeChange = useCallback(
+    (value: string) => {
+      const newTypes = value ? [value] : []
+      const newFilters = { ...filters, types: newTypes }
+      setFilters(newFilters)
+      setPage(1)
+      syncUrl({ filters: newFilters, page: 1 })
+    },
+    [filters, syncUrl],
+  )
+
   const handlePageChange = useCallback(
     (newPage: number) => {
       setPage(newPage)
@@ -242,24 +265,28 @@ export function ResourceLibrary({
         )}
 
         {/* Controls row */}
-        <div className="mb-6 flex flex-wrap items-center gap-4">
+        <div className="mb-8 flex flex-wrap items-center gap-4">
           <SearchBar value={search} onChange={handleSearchChange} />
+          <ContentTypeDropdown
+            value={filters.types.length === 1 ? filters.types[0] : ''}
+            onChange={handleContentTypeChange}
+          />
           <SortDropdown value={sort} onChange={handleSortChange} />
           {/* Mobile filter toggle */}
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}
-            className="flex items-center gap-1.5 rounded-sm border border-diligent-gray-2 px-3 py-2 text-sm text-diligent-gray-4 hover:border-diligent-gray-3 md:hidden"
+            className="flex items-center gap-1.5 rounded-sm border border-diligent-gray-2 px-3 py-2 text-sm text-diligent-gray-4 hover:border-diligent-gray-3 lg:hidden"
           >
             <Icon name="filter_list" className="text-[18px]" />
             Filters
           </button>
         </div>
 
-        <div className="flex gap-8">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[280px_1fr]">
           {/* Desktop sidebar filters */}
-          <aside className="hidden w-60 flex-shrink-0 md:block">
-            <FilterBar
+          <aside className="hidden lg:block">
+            <FilterSidebar
               filters={filters}
               onFilterChange={handleFilterChange}
               personas={personas}
@@ -269,7 +296,7 @@ export function ResourceLibrary({
           </aside>
 
           {/* Content grid */}
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0">
             {paginatedItems.length === 0 ? (
               <div className="py-12 text-center">
                 <p className="text-diligent-gray-4">
