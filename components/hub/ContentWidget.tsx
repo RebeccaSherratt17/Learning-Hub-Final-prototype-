@@ -91,7 +91,7 @@ export function ContentWidget({ title, items, seeAllHref = '#resource-library' }
                     alt={item.thumbnailAlt ?? item.title ?? ''}
                     fill
                     sizes="140px"
-                    className="object-contain"
+                    className={item._type === 'learningPath' ? 'object-contain' : 'object-cover'}
                   />
                 ) : (
                   <FallbackThumbnail alt={item.title ?? 'Diligent Learning Hub'} />

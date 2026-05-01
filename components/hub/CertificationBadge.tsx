@@ -31,12 +31,12 @@ export function CertificationBadge({
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="block no-underline transition hover:opacity-80 hover:no-underline"
+        className="block no-underline transition-transform duration-200 hover:-translate-y-1 hover:no-underline"
       >
         {img}
       </a>
     )
   }
 
-  return <div>{img}</div>
+  return <div className="transition-transform duration-200 hover:-translate-y-1">{img}</div>
 }

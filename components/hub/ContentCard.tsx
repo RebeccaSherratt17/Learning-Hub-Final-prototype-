@@ -41,7 +41,7 @@ export function ContentCard({ item, className }: ContentCardProps) {
   return (
     <article
       className={cn(
-        'group flex flex-col overflow-hidden rounded-md border border-diligent-gray-2 bg-white transition hover:border-diligent-gray-3',
+        'group flex flex-col overflow-hidden rounded-md border border-diligent-gray-2 bg-white transition-all duration-200 hover:-translate-y-1 hover:border-diligent-gray-3 hover:shadow-md',
         className,
       )}
     >
@@ -53,7 +53,7 @@ export function ContentCard({ item, className }: ContentCardProps) {
               alt={item.thumbnailAlt ?? item.title ?? ''}
               fill
               sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-              className="object-contain"
+              className={item._type === 'learningPath' ? 'object-contain' : 'object-cover'}
             />
           ) : (
             <FallbackThumbnail alt={item.title ?? 'Diligent Learning Hub'} />
