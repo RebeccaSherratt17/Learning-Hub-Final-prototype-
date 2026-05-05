@@ -24,10 +24,10 @@ export function HeroSection({ heading, subheading, overview, ctaText, ctaUrl }: 
               <SafeHtml
                 html={heading}
                 as="h1"
-                className="text-display-1 font-bold text-diligent-gray-5 prose"
+                className="text-display-1 font-semibold text-diligent-gray-5 prose"
               />
             ) : (
-              <h1 className="text-display-1 font-bold text-diligent-gray-5">
+              <h1 className="text-display-1 font-semibold text-diligent-gray-5">
                 Diligent Learning Hub
               </h1>
             )}
@@ -46,7 +46,7 @@ export function HeroSection({ heading, subheading, overview, ctaText, ctaUrl }: 
             {ctaText && (
               <a
                 href={ctaUrl ?? '#resource-library'}
-                className="mt-8 inline-block rounded bg-diligent-red px-6 py-3 text-sm font-medium text-white hover:bg-diligent-red-2"
+                className="mt-8 inline-block rounded bg-diligent-red px-[22px] py-[14px] text-[15px] font-medium text-white hover:bg-diligent-red-2"
               >
                 {ctaText}
               </a>

@@ -26,7 +26,7 @@ export function CertificationsSection({
         <div className="flex flex-col gap-10 lg:flex-row lg:items-center lg:gap-16">
           {/* Left column: heading + body */}
           <div className="lg:w-2/5">
-            <h2 className="text-heading-1 font-bold text-diligent-gray-5">
+            <h2 className="text-heading-1 font-semibold text-diligent-gray-5">
               {heading ?? 'Professionally-accredited certifications'}
             </h2>
             {body && (

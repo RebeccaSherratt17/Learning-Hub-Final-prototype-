@@ -39,9 +39,9 @@ const config: Config = {
         ],
       },
       fontSize: {
-        'display-1': ['clamp(2.5rem, 4vw + 1rem, 4rem)', { lineHeight: '1.1', letterSpacing: '-0.01em' }],
+        'display-1': ['clamp(2.5rem, 4vw + 1rem, 4rem)', { lineHeight: '1.05', letterSpacing: '-0.03em' }],
         'display-2': ['clamp(2rem, 3vw + 0.5rem, 3rem)', { lineHeight: '1.15' }],
-        'heading-1': ['clamp(1.5rem, 2vw + 0.5rem, 2.25rem)', { lineHeight: '1.2' }],
+        'heading-1': ['clamp(1.75rem, 3vw + 0.5rem, 3rem)', { lineHeight: '1.05', letterSpacing: '-0.03em' }],
         'heading-2': ['1.5rem', { lineHeight: '1.3' }],
         'heading-3': ['1.25rem', { lineHeight: '1.35' }],
       },

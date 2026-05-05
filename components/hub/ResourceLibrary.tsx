@@ -256,7 +256,7 @@ export function ResourceLibrary({
   return (
     <section id="resource-library" className="border-b border-diligent-gray-2 py-16">
       <div className="mx-auto max-w-[var(--max-content-width)] px-6">
-        <h2 className="mb-4 text-heading-1 font-bold text-diligent-gray-5">
+        <h2 className="mb-4 text-heading-1 font-semibold text-diligent-gray-5">
           {heading ?? 'Full resource library'}
         </h2>
         {body && (
