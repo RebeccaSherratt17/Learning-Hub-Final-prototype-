@@ -85,6 +85,7 @@ export async function POST(request: Request) {
       status,
       seoTitle,
       seoDescription,
+      sku,
       personaIds,
       regionIds,
       subjectIds,
@@ -104,10 +105,11 @@ export async function POST(request: Request) {
       status?: string
       seoTitle?: string
       seoDescription?: string
+      sku?: string
       personaIds?: string[]
       regionIds?: string[]
       subjectIds?: string[]
-      items?: { contentType?: string; contentId?: string; milestoneTitle?: string }[]
+      items?: { contentType?: string; contentId?: string; milestoneTitle?: string; isElective?: boolean }[]
     }
 
     if (!title || title.trim().length === 0) {
@@ -136,6 +138,7 @@ export async function POST(request: Request) {
           status: (status as ContentStatus) || 'DRAFT',
           seoTitle: seoTitle?.trim() || null,
           seoDescription: seoDescription?.trim() || null,
+          sku: sku?.trim() || null,
         },
       })
 
@@ -175,6 +178,7 @@ export async function POST(request: Request) {
               : (item.contentType as 'COURSE' | 'TEMPLATE' | 'VIDEO' | 'LEARNING_PATH'),
             contentId: item.milestoneTitle ? null : (item.contentId ?? null),
             milestoneTitle: item.milestoneTitle ?? null,
+            isElective: item.isElective ?? false,
             order: index,
           })),
         })

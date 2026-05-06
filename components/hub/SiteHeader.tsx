@@ -59,14 +59,6 @@ export function SiteHeader() {
             </li>
           </ul>
         </nav>
-
-        {/* Admin link — right */}
-        <Link
-          href="/admin"
-          className="ml-auto text-sm font-medium text-diligent-gray-4 no-underline hover:text-diligent-gray-5 hover:no-underline"
-        >
-          Admin
-        </Link>
       </div>
     </header>
   )

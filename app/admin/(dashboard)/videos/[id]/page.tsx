@@ -4,6 +4,8 @@ import { prisma } from '@/lib/db'
 import VideoForm from '@/components/admin/VideoForm'
 import RevisionHistory from '@/components/admin/RevisionHistory'
 
+export const dynamic = 'force-dynamic'
+
 export default async function EditVideoPage({
   params,
 }: {
@@ -57,6 +59,8 @@ export default async function EditVideoPage({
     status: video.status,
     seoTitle: video.seoTitle,
     seoDescription: video.seoDescription,
+    sku: video.sku,
+    credlyBadgeId: video.credlyBadgeId,
     personaIds: video.personas.map((vp) => vp.persona.id),
     regionIds: video.regions.map((vr) => vr.region.id),
     subjectIds: video.subjects.map((vs) => vs.subject.id),

@@ -38,7 +38,7 @@ a {
 
 a:hover,
 a:focus-visible {
-  text-decoration: underline;
+  opacity: 0.8;
 }
 
 /* Override Tailwind prose link styles to match Diligent brand */
@@ -50,13 +50,31 @@ a:focus-visible {
 
 .prose a:hover,
 .prose a:focus-visible {
-  text-decoration: underline;
+  opacity: 0.8;
 }
 
 /* Visible focus for keyboard users */
 :focus-visible {
   outline: 2px solid var(--color-link);
   outline-offset: 2px;
+}
+
+/* Partner logo scroller edge fade masks */
+.partner-scroller-mask {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
 }
 
 /* Partner logo scroller marquee */

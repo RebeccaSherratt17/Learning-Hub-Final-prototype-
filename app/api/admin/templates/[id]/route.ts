@@ -62,6 +62,8 @@ export async function PUT(
       status,
       seoTitle,
       seoDescription,
+      sku,
+      credlyBadgeId,
       personaIds,
       regionIds,
       subjectIds,
@@ -81,6 +83,8 @@ export async function PUT(
       status?: string
       seoTitle?: string
       seoDescription?: string
+      sku?: string
+      credlyBadgeId?: string
       personaIds?: string[]
       regionIds?: string[]
       subjectIds?: string[]
@@ -126,6 +130,8 @@ export async function PUT(
           status: (status as ContentStatus) || 'DRAFT',
           seoTitle: seoTitle?.trim() || null,
           seoDescription: seoDescription?.trim() || null,
+          sku: sku?.trim() || null,
+          credlyBadgeId: credlyBadgeId?.trim() || null,
         },
       })
 

@@ -3,10 +3,12 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import LearningPathForm from '@/components/admin/LearningPathForm'
 import RevisionHistory from '@/components/admin/RevisionHistory'
+
+export const dynamic = 'force-dynamic'
 import type { ContentType } from '@/lib/generated/prisma'
 
 async function resolveItemTitles(
-  items: { id: string; contentType: ContentType | null; contentId: string | null; order: number; milestoneTitle: string | null }[]
+  items: { id: string; contentType: ContentType | null; contentId: string | null; order: number; milestoneTitle: string | null; isElective: boolean }[]
 ) {
   // Separate content items from milestones
   const contentItems = items.filter((item) => item.milestoneTitle === null && item.contentType !== null)
@@ -61,6 +63,7 @@ async function resolveItemTitles(
     contentType: item.contentType as string | null,
     contentId: item.contentId,
     milestoneTitle: item.milestoneTitle,
+    isElective: item.isElective,
     title: item.milestoneTitle ?? (item.contentId ? titleMap.get(item.contentId) ?? '(Deleted content)' : '(Unknown)'),
   }))
 }
@@ -110,6 +113,7 @@ export default async function EditLearningPathPage({
     status: learningPath.status,
     seoTitle: learningPath.seoTitle,
     seoDescription: learningPath.seoDescription,
+    sku: learningPath.sku,
     personaIds: learningPath.personas.map((lp) => lp.persona.id),
     regionIds: learningPath.regions.map((lr) => lr.region.id),
     subjectIds: learningPath.subjects.map((ls) => ls.subject.id),

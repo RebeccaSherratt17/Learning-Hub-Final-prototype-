@@ -19,13 +19,15 @@ function PartnerLogo({ partner }: { partner: Partner }) {
   if (!partner.logoUrl) return null
 
   const img = (
-    <Image
-      src={partner.logoUrl}
-      alt={partner.logoAlt ?? partner.name ?? 'Partner logo'}
-      width={160}
-      height={80}
-      className="h-12 w-auto object-contain opacity-70 grayscale transition hover:opacity-100 hover:grayscale-0"
-    />
+    <div className="flex h-16 w-[140px] items-center justify-center">
+      <Image
+        src={partner.logoUrl}
+        alt={partner.logoAlt ?? partner.name ?? 'Partner logo'}
+        width={160}
+        height={80}
+        className="h-full w-full object-contain"
+      />
+    </div>
   )
 
   if (partner.url) {
@@ -60,9 +62,9 @@ export function PartnerLogoScroller({
           {heading ?? 'Our educational partners'}
         </h2>
       </div>
-      <div className="group relative overflow-hidden">
+      <div className="group relative overflow-hidden partner-scroller-mask">
         <div
-          className="flex items-center gap-12 motion-safe:animate-[marquee_30s_linear_infinite] motion-safe:group-hover:[animation-play-state:paused]"
+          className="flex items-center gap-12 motion-safe:animate-[marquee_45s_linear_infinite] motion-safe:group-hover:[animation-play-state:paused]"
           style={{ width: 'max-content' }}
         >
           {allLogos.map((partner, i) => (

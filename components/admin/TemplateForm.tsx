@@ -33,6 +33,8 @@ interface TemplateFormProps {
     status: 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED'
     seoTitle: string | null
     seoDescription: string | null
+    sku: string | null
+    credlyBadgeId: string | null
     personaIds: string[]
     regionIds: string[]
     subjectIds: string[]
@@ -78,6 +80,8 @@ export default function TemplateForm({
   const [status, setStatus] = useState(template?.status ?? 'DRAFT')
   const [seoTitle, setSeoTitle] = useState(template?.seoTitle ?? '')
   const [seoDescription, setSeoDescription] = useState(template?.seoDescription ?? '')
+  const [sku, setSku] = useState(template?.sku ?? '')
+  const [credlyBadgeId, setCredlyBadgeId] = useState(template?.credlyBadgeId ?? '')
   const [selectedPersonaIds, setSelectedPersonaIds] = useState<string[]>(template?.personaIds ?? [])
   const [selectedRegionIds, setSelectedRegionIds] = useState<string[]>(template?.regionIds ?? [])
   const [selectedSubjectIds, setSelectedSubjectIds] = useState<string[]>(template?.subjectIds ?? [])
@@ -127,6 +131,8 @@ export default function TemplateForm({
       status,
       seoTitle: seoTitle || null,
       seoDescription: seoDescription || null,
+      sku: sku || null,
+      credlyBadgeId: credlyBadgeId || null,
       personaIds: selectedPersonaIds,
       regionIds: selectedRegionIds,
       subjectIds: selectedSubjectIds,
@@ -150,6 +156,7 @@ export default function TemplateForm({
 
       if (isEdit) {
         setMessage({ type: 'success', text: 'Template saved successfully' })
+        router.refresh()
       } else {
         const created = await res.json()
         router.push(`/admin/templates/${created.id}`)
@@ -212,6 +219,19 @@ export default function TemplateForm({
               className="flex-1 border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
             />
           </div>
+        </div>
+
+        <div>
+          <label htmlFor="sku" className="block text-sm font-medium text-diligent-gray-5 mb-1">
+            SKU
+          </label>
+          <input
+            id="sku"
+            type="text"
+            value={sku}
+            onChange={(e) => setSku(e.target.value)}
+            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
+          />
         </div>
 
         <div>
@@ -386,6 +406,27 @@ export default function TemplateForm({
             />
           </div>
         )}
+      </div>
+
+      {/* Credly Badge */}
+      <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-diligent-gray-5">Credly badge</h2>
+
+        <div>
+          <label htmlFor="credlyBadgeId" className="block text-sm font-medium text-diligent-gray-5 mb-1">
+            Credly badge template ID
+          </label>
+          <input
+            id="credlyBadgeId"
+            type="text"
+            value={credlyBadgeId}
+            onChange={(e) => setCredlyBadgeId(e.target.value)}
+            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red md:w-1/2"
+          />
+          <p className="mt-1 text-xs text-diligent-gray-3">
+            Optional. If set, learners who complete this template will receive a Credly badge. Enter the badge template ID from the Credly dashboard.
+          </p>
+        </div>
       </div>
 
       {/* SEO */}

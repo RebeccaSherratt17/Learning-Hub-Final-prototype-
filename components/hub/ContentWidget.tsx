@@ -84,7 +84,7 @@ export function ContentWidget({ title, items, seeAllHref = '#resource-library' }
               }`}
             >
               {/* Thumbnail */}
-              <div className="relative w-[140px] bg-diligent-gray-1" style={{ aspectRatio: '16 / 10' }}>
+              <div className="relative w-[140px] bg-white" style={{ aspectRatio: '16 / 10' }}>
                 {thumbUrl ? (
                   <Image
                     src={thumbUrl}

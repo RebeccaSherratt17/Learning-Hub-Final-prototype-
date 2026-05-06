@@ -6,7 +6,6 @@ import {
   type ContentItem,
   type ContentType,
   contentTypeLabels,
-  accessTierLabels,
 } from '@/types/content'
 import { cn } from '@/lib/cn'
 
@@ -19,14 +18,6 @@ const routePrefix: Record<ContentType, string> = {
 
 function badgeVariantForType(t: ContentType): BadgeVariant {
   return t
-}
-
-function badgeVariantForTier(
-  tier: ContentItem['accessTier'],
-): BadgeVariant {
-  if (tier === 'gated') return 'gated'
-  if (tier === 'premium') return 'premium'
-  return 'free'
 }
 
 export interface ContentCardProps {
@@ -46,7 +37,7 @@ export function ContentCard({ item, className }: ContentCardProps) {
       )}
     >
       <Link href={href} className="block no-underline hover:no-underline">
-        <div className="relative aspect-[16/9] w-full bg-diligent-gray-1">
+        <div className="relative aspect-[16/9] w-full bg-white">
           {thumbUrl ? (
             <Image
               src={thumbUrl}
@@ -59,25 +50,15 @@ export function ContentCard({ item, className }: ContentCardProps) {
             <FallbackThumbnail alt={item.title ?? 'Diligent Learning Hub'} />
           )}
         </div>
-        <div className="flex flex-1 flex-col gap-3 p-5">
+        <div className="flex min-h-[120px] flex-1 flex-col gap-3 p-5">
           <div className="flex items-center gap-2">
             <Badge variant={badgeVariantForType(item._type)}>
               {contentTypeLabels[item._type]}
             </Badge>
-            {item.accessTier && (
-              <Badge variant={badgeVariantForTier(item.accessTier)}>
-                {accessTierLabels[item.accessTier as keyof typeof accessTierLabels]}
-              </Badge>
-            )}
           </div>
           <h3 className="text-heading-3 font-semibold text-diligent-gray-5">
             {item.title}
           </h3>
-          {item.description && (
-            <p className="line-clamp-3 text-sm text-diligent-gray-4">
-              {item.description}
-            </p>
-          )}
         </div>
       </Link>
     </article>

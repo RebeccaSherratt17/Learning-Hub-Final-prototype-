@@ -1,5 +1,7 @@
 'use client'
 
+import { useState } from 'react'
+
 interface TaxonomySelectProps {
   personas: { id: string; name: string }[]
   regions: { id: string; name: string }[]
@@ -12,13 +14,50 @@ interface TaxonomySelectProps {
   onSubjectsChange: (ids: string[]) => void
 }
 
-function CheckboxGrid({
+function AccordionSection({
   label,
+  selectedCount,
+  isOpen,
+  onToggle,
+  children,
+}: {
+  label: string
+  selectedCount: number
+  isOpen: boolean
+  onToggle: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-full items-center justify-between py-2 text-sm font-semibold text-diligent-gray-5 hover:text-diligent-gray-4"
+      >
+        <span>
+          {label}
+          {selectedCount > 0 && (
+            <span className="ml-2 text-xs font-normal text-diligent-gray-4">
+              ({selectedCount} selected)
+            </span>
+          )}
+        </span>
+        <span
+          className={`material-symbols-sharp text-[20px] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+        >
+          expand_more
+        </span>
+      </button>
+      {isOpen && <div className="pt-2 pb-1">{children}</div>}
+    </div>
+  )
+}
+
+function CheckboxGrid({
   items,
   selectedIds,
   onChange,
 }: {
-  label: string
   items: { id: string; name: string }[]
   selectedIds: string[]
   onChange: (ids: string[]) => void
@@ -32,8 +71,7 @@ function CheckboxGrid({
   }
 
   return (
-    <div>
-      <h4 className="mb-2 text-sm font-semibold text-diligent-gray-5">{label}</h4>
+    <>
       <div className="grid grid-cols-2 gap-2 lg:grid-cols-3">
         {items.map((item) => (
           <label
@@ -53,7 +91,7 @@ function CheckboxGrid({
       {items.length === 0 && (
         <p className="text-xs text-diligent-gray-3">No items available.</p>
       )}
-    </div>
+    </>
   )
 }
 
@@ -68,6 +106,12 @@ export default function TaxonomySelect({
   onRegionsChange,
   onSubjectsChange,
 }: TaxonomySelectProps) {
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({})
+
+  function toggleSection(key: string) {
+    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }))
+  }
+
   // Group subjects by their group
   const subjectsByGroup = new Map<string, { groupName: string; subjects: { id: string; name: string }[] }>()
   for (const subject of subjects) {
@@ -83,23 +127,39 @@ export default function TaxonomySelect({
   }
 
   return (
-    <div className="space-y-6">
-      <CheckboxGrid
+    <div className="divide-y divide-diligent-gray-2">
+      <AccordionSection
         label="Personas"
-        items={personas}
-        selectedIds={selectedPersonaIds}
-        onChange={onPersonasChange}
-      />
+        selectedCount={selectedPersonaIds.length}
+        isOpen={!!openSections.personas}
+        onToggle={() => toggleSection('personas')}
+      >
+        <CheckboxGrid
+          items={personas}
+          selectedIds={selectedPersonaIds}
+          onChange={onPersonasChange}
+        />
+      </AccordionSection>
 
-      <CheckboxGrid
+      <AccordionSection
         label="Regions"
-        items={regions}
-        selectedIds={selectedRegionIds}
-        onChange={onRegionsChange}
-      />
+        selectedCount={selectedRegionIds.length}
+        isOpen={!!openSections.regions}
+        onToggle={() => toggleSection('regions')}
+      >
+        <CheckboxGrid
+          items={regions}
+          selectedIds={selectedRegionIds}
+          onChange={onRegionsChange}
+        />
+      </AccordionSection>
 
-      <div>
-        <h4 className="mb-3 text-sm font-semibold text-diligent-gray-5">Subjects</h4>
+      <AccordionSection
+        label="Subjects"
+        selectedCount={selectedSubjectIds.length}
+        isOpen={!!openSections.subjects}
+        onToggle={() => toggleSection('subjects')}
+      >
         <div className="space-y-4">
           {Array.from(subjectsByGroup.entries()).map(([groupId, group]) => (
             <div key={groupId}>
@@ -134,7 +194,7 @@ export default function TaxonomySelect({
             <p className="text-xs text-diligent-gray-3">No subjects available.</p>
           )}
         </div>
-      </div>
+      </AccordionSection>
     </div>
   )
 }

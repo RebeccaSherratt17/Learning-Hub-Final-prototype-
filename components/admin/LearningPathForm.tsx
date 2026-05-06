@@ -21,6 +21,7 @@ interface PathItem {
   contentId: string | null
   title: string
   milestoneTitle: string | null // non-null means this is a milestone
+  isElective: boolean
 }
 
 interface SearchResult {
@@ -47,10 +48,11 @@ interface LearningPathFormProps {
     status: 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED'
     seoTitle: string | null
     seoDescription: string | null
+    sku: string | null
     personaIds: string[]
     regionIds: string[]
     subjectIds: string[]
-    items: { id: string; contentType: string | null; contentId: string | null; title: string; milestoneTitle: string | null }[]
+    items: { id: string; contentType: string | null; contentId: string | null; title: string; milestoneTitle: string | null; isElective: boolean }[]
   }
   personas: { id: string; name: string }[]
   regions: { id: string; name: string }[]
@@ -90,6 +92,7 @@ export default function LearningPathForm({
   const [status, setStatus] = useState(learningPath?.status ?? 'DRAFT')
   const [seoTitle, setSeoTitle] = useState(learningPath?.seoTitle ?? '')
   const [seoDescription, setSeoDescription] = useState(learningPath?.seoDescription ?? '')
+  const [sku, setSku] = useState(learningPath?.sku ?? '')
   const [selectedPersonaIds, setSelectedPersonaIds] = useState<string[]>(learningPath?.personaIds ?? [])
   const [selectedRegionIds, setSelectedRegionIds] = useState<string[]>(learningPath?.regionIds ?? [])
   const [selectedSubjectIds, setSelectedSubjectIds] = useState<string[]>(learningPath?.subjectIds ?? [])
@@ -101,6 +104,7 @@ export default function LearningPathForm({
       contentId: i.contentId,
       title: i.title,
       milestoneTitle: i.milestoneTitle,
+      isElective: i.isElective ?? false,
     })) ?? []
   )
 
@@ -178,6 +182,7 @@ export default function LearningPathForm({
       contentId: result.contentId,
       title: result.title,
       milestoneTitle: null,
+      isElective: false,
     }])
     setItemSearchQuery('')
     setItemSearchResults([])
@@ -190,6 +195,7 @@ export default function LearningPathForm({
       contentId: null,
       title: 'New milestone',
       milestoneTitle: 'New milestone',
+      isElective: false,
     }])
   }
 
@@ -237,14 +243,15 @@ export default function LearningPathForm({
       status,
       seoTitle: seoTitle || null,
       seoDescription: seoDescription || null,
+      sku: sku || null,
       personaIds: selectedPersonaIds,
       regionIds: selectedRegionIds,
       subjectIds: selectedSubjectIds,
       items: items.map((item) => {
         if (item.milestoneTitle !== null) {
-          return { milestoneTitle: item.milestoneTitle }
+          return { milestoneTitle: item.milestoneTitle, isElective: item.isElective }
         }
-        return { contentType: item.contentType, contentId: item.contentId }
+        return { contentType: item.contentType, contentId: item.contentId, isElective: item.isElective }
       }),
     }
 
@@ -266,6 +273,7 @@ export default function LearningPathForm({
 
       if (isEdit) {
         setMessage({ type: 'success', text: 'Learning path saved successfully' })
+        router.refresh()
       } else {
         const created = await res.json()
         router.push(`/admin/learning-paths/${created.id}`)
@@ -328,6 +336,19 @@ export default function LearningPathForm({
               className="flex-1 border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
             />
           </div>
+        </div>
+
+        <div>
+          <label htmlFor="sku" className="block text-sm font-medium text-diligent-gray-5 mb-1">
+            SKU
+          </label>
+          <input
+            id="sku"
+            type="text"
+            value={sku}
+            onChange={(e) => setSku(e.target.value)}
+            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
+          />
         </div>
 
         <div>
@@ -419,6 +440,24 @@ export default function LearningPathForm({
                     <span className="flex-1 text-sm text-diligent-gray-5 truncate">{item.title}</span>
                   </>
                 )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setItems((prev) =>
+                      prev.map((it, i) =>
+                        i === index ? { ...it, isElective: !it.isElective } : it
+                      )
+                    )
+                  }}
+                  className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium transition ${
+                    item.isElective
+                      ? 'bg-diligent-gray-2 text-diligent-gray-4'
+                      : 'bg-green-100 text-green-700'
+                  }`}
+                  title={item.isElective ? 'Click to make mandatory' : 'Click to make elective'}
+                >
+                  {item.isElective ? 'Elective' : 'Mandatory'}
+                </button>
                 <button
                   type="button"
                   onClick={() => removeItem(index)}

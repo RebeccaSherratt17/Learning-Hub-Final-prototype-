@@ -64,6 +64,8 @@ export async function PUT(
       restrictedNote,
       seoTitle,
       seoDescription,
+      sku,
+      credlyBadgeId,
       personaIds,
       regionIds,
       subjectIds,
@@ -85,6 +87,8 @@ export async function PUT(
       restrictedNote?: string
       seoTitle?: string
       seoDescription?: string
+      sku?: string
+      credlyBadgeId?: string
       personaIds?: string[]
       regionIds?: string[]
       subjectIds?: string[]
@@ -132,6 +136,8 @@ export async function PUT(
           restrictedNote: restrictedNote?.trim() || null,
           seoTitle: seoTitle?.trim() || null,
           seoDescription: seoDescription?.trim() || null,
+          sku: sku?.trim() || null,
+          credlyBadgeId: credlyBadgeId?.trim() || null,
         },
       })
 

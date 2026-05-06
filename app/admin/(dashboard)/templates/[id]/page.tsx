@@ -4,6 +4,8 @@ import { prisma } from '@/lib/db'
 import TemplateForm from '@/components/admin/TemplateForm'
 import RevisionHistory from '@/components/admin/RevisionHistory'
 
+export const dynamic = 'force-dynamic'
+
 export default async function EditTemplatePage({
   params,
 }: {
@@ -58,6 +60,8 @@ export default async function EditTemplatePage({
     status: template.status,
     seoTitle: template.seoTitle,
     seoDescription: template.seoDescription,
+    sku: template.sku,
+    credlyBadgeId: template.credlyBadgeId,
     personaIds: template.personas.map((tp) => tp.persona.id),
     regionIds: template.regions.map((tr) => tr.region.id),
     subjectIds: template.subjects.map((ts) => ts.subject.id),

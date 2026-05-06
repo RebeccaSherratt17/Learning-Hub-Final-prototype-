@@ -6,7 +6,7 @@ import { createRevision } from '@/lib/revisions'
 import type { ContentStatus, ContentType } from '@/lib/generated/prisma'
 
 async function resolveItemTitles(
-  items: { id: string; contentType: ContentType | null; contentId: string | null; order: number; milestoneTitle: string | null }[]
+  items: { id: string; contentType: ContentType | null; contentId: string | null; order: number; milestoneTitle: string | null; isElective: boolean }[]
 ) {
   // Separate content items from milestones
   const contentItems = items.filter((item) => item.milestoneTitle === null && item.contentType !== null)
@@ -62,6 +62,7 @@ async function resolveItemTitles(
     contentId: item.contentId,
     order: item.order,
     milestoneTitle: item.milestoneTitle,
+    isElective: item.isElective,
     title: item.milestoneTitle ?? (item.contentId ? titleMap.get(item.contentId) ?? '(Deleted content)' : '(Unknown)'),
   }))
 }
@@ -128,6 +129,7 @@ export async function PUT(
       status,
       seoTitle,
       seoDescription,
+      sku,
       personaIds,
       regionIds,
       subjectIds,
@@ -147,10 +149,11 @@ export async function PUT(
       status?: string
       seoTitle?: string
       seoDescription?: string
+      sku?: string
       personaIds?: string[]
       regionIds?: string[]
       subjectIds?: string[]
-      items?: { contentType?: string; contentId?: string; milestoneTitle?: string }[]
+      items?: { contentType?: string; contentId?: string; milestoneTitle?: string; isElective?: boolean }[]
     }
 
     if (!title || title.trim().length === 0) {
@@ -195,6 +198,7 @@ export async function PUT(
           status: (status as ContentStatus) || 'DRAFT',
           seoTitle: seoTitle?.trim() || null,
           seoDescription: seoDescription?.trim() || null,
+          sku: sku?.trim() || null,
         },
       })
 
@@ -244,6 +248,7 @@ export async function PUT(
               : (item.contentType as 'COURSE' | 'TEMPLATE' | 'VIDEO' | 'LEARNING_PATH'),
             contentId: item.milestoneTitle ? null : (item.contentId ?? null),
             milestoneTitle: item.milestoneTitle ?? null,
+            isElective: item.isElective ?? false,
             order: index,
           })),
         })

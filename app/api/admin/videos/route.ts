@@ -84,6 +84,8 @@ export async function POST(request: Request) {
       status,
       seoTitle,
       seoDescription,
+      sku,
+      credlyBadgeId,
       personaIds,
       regionIds,
       subjectIds,
@@ -102,6 +104,8 @@ export async function POST(request: Request) {
       status?: string
       seoTitle?: string
       seoDescription?: string
+      sku?: string
+      credlyBadgeId?: string
       personaIds?: string[]
       regionIds?: string[]
       subjectIds?: string[]
@@ -133,6 +137,8 @@ export async function POST(request: Request) {
           status: (status as ContentStatus) || 'DRAFT',
           seoTitle: seoTitle?.trim() || null,
           seoDescription: seoDescription?.trim() || null,
+          sku: sku?.trim() || null,
+          credlyBadgeId: credlyBadgeId?.trim() || null,
         },
       })
 

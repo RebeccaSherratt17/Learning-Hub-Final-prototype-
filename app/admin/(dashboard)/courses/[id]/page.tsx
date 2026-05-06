@@ -4,6 +4,8 @@ import { prisma } from '@/lib/db'
 import CourseForm from '@/components/admin/CourseForm'
 import RevisionHistory from '@/components/admin/RevisionHistory'
 
+export const dynamic = 'force-dynamic'
+
 export default async function EditCoursePage({
   params,
 }: {
@@ -61,6 +63,8 @@ export default async function EditCoursePage({
     restrictedNote: course.restrictedNote,
     seoTitle: course.seoTitle,
     seoDescription: course.seoDescription,
+    sku: course.sku,
+    credlyBadgeId: course.credlyBadgeId,
     personaIds: course.personas.map((cp) => cp.persona.id),
     regionIds: course.regions.map((cr) => cr.region.id),
     subjectIds: course.subjects.map((cs) => cs.subject.id),

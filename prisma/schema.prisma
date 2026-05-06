@@ -128,6 +128,8 @@ model Course {
   restrictedNote     String?
   seoTitle           String?
   seoDescription     String?       @db.Text
+  sku                String?
+  credlyBadgeId      String?
   viewCount          Int           @default(0)
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
@@ -161,6 +163,8 @@ model Template {
   status             ContentStatus @default(DRAFT)
   seoTitle           String?
   seoDescription     String?       @db.Text
+  sku                String?
+  credlyBadgeId      String?
   viewCount          Int           @default(0)
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
@@ -193,6 +197,8 @@ model Video {
   status             ContentStatus @default(DRAFT)
   seoTitle           String?
   seoDescription     String?       @db.Text
+  sku                String?
+  credlyBadgeId      String?
   viewCount          Int           @default(0)
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
@@ -225,6 +231,7 @@ model LearningPath {
   status                  ContentStatus @default(DRAFT)
   seoTitle                String?
   seoDescription          String?       @db.Text
+  sku                     String?
   viewCount               Int           @default(0)
   createdAt               DateTime      @default(now())
   updatedAt               DateTime      @updatedAt
@@ -250,6 +257,7 @@ model LearningPathItem {
   contentId      String?      // nullable — null for milestones
   order          Int
   milestoneTitle String?      // when set, this item is a milestone heading
+  isElective     Boolean      @default(false)
 
   learningPath LearningPath      @relation(fields: [learningPathId], references: [id], onDelete: Cascade)
   progress     LearnerProgress[]
