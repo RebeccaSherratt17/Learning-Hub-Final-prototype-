@@ -86,6 +86,7 @@ export async function PUT(
       personaIds?: string[]
       regionIds?: string[]
       subjectIds?: string[]
+      relatedItems?: { type: string; id: string }[]
     }
 
     if (!title || title.trim().length === 0) {
@@ -97,6 +98,8 @@ export async function PUT(
     if (!slug || slug.trim().length === 0) {
       return NextResponse.json({ error: 'Slug is required' }, { status: 400 })
     }
+
+    const { relatedItems } = body as { relatedItems?: { type: string; id: string }[] }
 
     const video = await prisma.$transaction(async (tx) => {
       // Snapshot current state for revision history
@@ -162,6 +165,22 @@ export async function PUT(
           data: subjectIds.map((subjectId) => ({
             videoId: updated.id,
             subjectId,
+          })),
+        })
+      }
+
+      // Re-sync related items
+      await tx.relatedItem.deleteMany({
+        where: { sourceType: 'VIDEO', sourceId: params.id },
+      })
+
+      if (relatedItems?.length) {
+        await tx.relatedItem.createMany({
+          data: relatedItems.slice(0, 3).map((item) => ({
+            sourceType: 'VIDEO' as const,
+            sourceId: updated.id,
+            targetType: item.type as 'COURSE' | 'TEMPLATE' | 'VIDEO' | 'LEARNING_PATH',
+            targetId: item.id,
           })),
         })
       }

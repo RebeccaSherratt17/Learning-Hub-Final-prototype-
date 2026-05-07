@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
+import { getRelatedItems } from '@/lib/related-items'
 import CourseForm from '@/components/admin/CourseForm'
 import RevisionHistory from '@/components/admin/RevisionHistory'
 
@@ -42,6 +43,8 @@ export default async function EditCoursePage({
     id: item.learningPath.id,
     title: item.learningPath.title,
   }))
+
+  const relatedItems = await getRelatedItems('COURSE', course.id)
 
   const courseData = {
     id: course.id,
@@ -89,6 +92,7 @@ export default async function EditCoursePage({
         regions={regions}
         subjects={subjects}
         learningPaths={learningPaths}
+        relatedItems={relatedItems}
       />
 
       <RevisionHistory contentType="COURSE" contentId={course.id} />

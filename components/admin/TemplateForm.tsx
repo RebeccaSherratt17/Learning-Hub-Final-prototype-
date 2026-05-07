@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import FileUpload from './FileUpload'
 import ImageUpload from './ImageUpload'
 import TaxonomySelect from './TaxonomySelect'
+import RelatedItemsPicker from './RelatedItemsPicker'
+import type { RelatedItem } from './RelatedItemsPicker'
 
 function generateSlug(name: string): string {
   return name
@@ -43,6 +45,7 @@ interface TemplateFormProps {
   regions: { id: string; name: string }[]
   subjects: { id: string; name: string; group: { id: string; name: string } }[]
   learningPaths?: { id: string; title: string }[]
+  relatedItems?: RelatedItem[]
 }
 
 function toDateTimeLocal(isoString: string | null): string {
@@ -59,6 +62,7 @@ export default function TemplateForm({
   regions,
   subjects,
   learningPaths,
+  relatedItems: initialRelatedItems,
 }: TemplateFormProps) {
   const router = useRouter()
   const isEdit = !!template
@@ -85,6 +89,7 @@ export default function TemplateForm({
   const [selectedPersonaIds, setSelectedPersonaIds] = useState<string[]>(template?.personaIds ?? [])
   const [selectedRegionIds, setSelectedRegionIds] = useState<string[]>(template?.regionIds ?? [])
   const [selectedSubjectIds, setSelectedSubjectIds] = useState<string[]>(template?.subjectIds ?? [])
+  const [relatedItems, setRelatedItems] = useState<RelatedItem[]>(initialRelatedItems ?? [])
 
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
@@ -136,6 +141,7 @@ export default function TemplateForm({
       personaIds: selectedPersonaIds,
       regionIds: selectedRegionIds,
       subjectIds: selectedSubjectIds,
+      relatedItems: relatedItems.map((item) => ({ type: item.type, id: item.id })),
     }
 
     try {
@@ -464,6 +470,20 @@ export default function TemplateForm({
             {seoDescription.length} characters. Recommended: 150-160 characters.
           </p>
         </div>
+      </div>
+
+      {/* Related Items */}
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <h2 className="text-lg font-semibold text-diligent-gray-5 mb-1">Related items</h2>
+        <p className="text-sm text-diligent-gray-3 mb-4">
+          Select up to 3 related content items to display on the public page.
+        </p>
+        <RelatedItemsPicker
+          value={relatedItems}
+          onChange={setRelatedItems}
+          excludeType="TEMPLATE"
+          excludeId={template?.id}
+        />
       </div>
 
       {/* Content relationships (edit mode only) */}

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
+import { getRelatedItems } from '@/lib/related-items'
 import VideoForm from '@/components/admin/VideoForm'
 import RevisionHistory from '@/components/admin/RevisionHistory'
 
@@ -42,6 +43,8 @@ export default async function EditVideoPage({
     id: item.learningPath.id,
     title: item.learningPath.title,
   }))
+
+  const relatedItems = await getRelatedItems('VIDEO', video.id)
 
   const videoData = {
     id: video.id,
@@ -85,6 +88,7 @@ export default async function EditVideoPage({
         regions={regions}
         subjects={subjects}
         learningPaths={learningPaths}
+        relatedItems={relatedItems}
       />
 
       <RevisionHistory contentType="VIDEO" contentId={video.id} />

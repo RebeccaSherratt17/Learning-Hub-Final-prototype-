@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
+import { getRelatedItems } from '@/lib/related-items'
 import TemplateForm from '@/components/admin/TemplateForm'
 import RevisionHistory from '@/components/admin/RevisionHistory'
 
@@ -42,6 +43,8 @@ export default async function EditTemplatePage({
     id: item.learningPath.id,
     title: item.learningPath.title,
   }))
+
+  const relatedItems = await getRelatedItems('TEMPLATE', template.id)
 
   const templateData = {
     id: template.id,
@@ -86,6 +89,7 @@ export default async function EditTemplatePage({
         regions={regions}
         subjects={subjects}
         learningPaths={learningPaths}
+        relatedItems={relatedItems}
       />
 
       <RevisionHistory contentType="TEMPLATE" contentId={template.id} />

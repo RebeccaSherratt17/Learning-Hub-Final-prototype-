@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import ImageUpload from './ImageUpload'
 import TaxonomySelect from './TaxonomySelect'
+import RelatedItemsPicker from './RelatedItemsPicker'
+import type { RelatedItem } from './RelatedItemsPicker'
 
 function generateSlug(name: string): string {
   return name
@@ -41,6 +43,7 @@ interface VideoFormProps {
   regions: { id: string; name: string }[]
   subjects: { id: string; name: string; group: { id: string; name: string } }[]
   learningPaths?: { id: string; title: string }[]
+  relatedItems?: RelatedItem[]
 }
 
 function toDateTimeLocal(isoString: string | null): string {
@@ -57,6 +60,7 @@ export default function VideoForm({
   regions,
   subjects,
   learningPaths,
+  relatedItems: initialRelatedItems,
 }: VideoFormProps) {
   const router = useRouter()
   const isEdit = !!video
@@ -82,6 +86,7 @@ export default function VideoForm({
   const [selectedPersonaIds, setSelectedPersonaIds] = useState<string[]>(video?.personaIds ?? [])
   const [selectedRegionIds, setSelectedRegionIds] = useState<string[]>(video?.regionIds ?? [])
   const [selectedSubjectIds, setSelectedSubjectIds] = useState<string[]>(video?.subjectIds ?? [])
+  const [relatedItems, setRelatedItems] = useState<RelatedItem[]>(initialRelatedItems ?? [])
 
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
@@ -132,6 +137,7 @@ export default function VideoForm({
       personaIds: selectedPersonaIds,
       regionIds: selectedRegionIds,
       subjectIds: selectedSubjectIds,
+      relatedItems: relatedItems.map((item) => ({ type: item.type, id: item.id })),
     }
 
     try {
@@ -465,6 +471,20 @@ export default function VideoForm({
             {seoDescription.length} characters. Recommended: 150-160 characters.
           </p>
         </div>
+      </div>
+
+      {/* Related Items */}
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <h2 className="text-lg font-semibold text-diligent-gray-5 mb-1">Related items</h2>
+        <p className="text-sm text-diligent-gray-3 mb-4">
+          Select up to 3 related content items to display on the public page.
+        </p>
+        <RelatedItemsPicker
+          value={relatedItems}
+          onChange={setRelatedItems}
+          excludeType="VIDEO"
+          excludeId={video?.id}
+        />
       </div>
 
       {/* Content relationships (edit mode only) */}

@@ -110,6 +110,7 @@ export async function POST(request: Request) {
       regionIds?: string[]
       subjectIds?: string[]
       items?: { contentType?: string; contentId?: string; milestoneTitle?: string; isElective?: boolean }[]
+      relatedItems?: { type: string; id: string }[]
     }
 
     if (!title || title.trim().length === 0) {
@@ -120,6 +121,8 @@ export async function POST(request: Request) {
     }
 
     const finalSlug = slug?.trim() || generateSlug(title)
+
+    const { relatedItems } = body as { relatedItems?: { type: string; id: string }[] }
 
     const learningPath = await prisma.$transaction(async (tx) => {
       const created = await tx.learningPath.create({
@@ -180,6 +183,17 @@ export async function POST(request: Request) {
             milestoneTitle: item.milestoneTitle ?? null,
             isElective: item.isElective ?? false,
             order: index,
+          })),
+        })
+      }
+
+      if (relatedItems?.length) {
+        await tx.relatedItem.createMany({
+          data: relatedItems.slice(0, 3).map((item) => ({
+            sourceType: 'LEARNING_PATH' as const,
+            sourceId: created.id,
+            targetType: item.type as 'COURSE' | 'TEMPLATE' | 'VIDEO' | 'LEARNING_PATH',
+            targetId: item.id,
           })),
         })
       }

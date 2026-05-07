@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
+import { getRelatedItems } from '@/lib/related-items'
 import LearningPathForm from '@/components/admin/LearningPathForm'
 import RevisionHistory from '@/components/admin/RevisionHistory'
 
@@ -96,6 +97,7 @@ export default async function EditLearningPathPage({
   }
 
   const itemsWithTitles = await resolveItemTitles(learningPath.items)
+  const relatedItems = await getRelatedItems('LEARNING_PATH', learningPath.id)
 
   const learningPathData = {
     id: learningPath.id,
@@ -138,6 +140,7 @@ export default async function EditLearningPathPage({
         personas={personas}
         regions={regions}
         subjects={subjects}
+        relatedItems={relatedItems}
       />
 
       <RevisionHistory contentType="LEARNING_PATH" contentId={learningPath.id} />

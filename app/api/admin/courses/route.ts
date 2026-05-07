@@ -115,6 +115,7 @@ export async function POST(request: Request) {
       personaIds?: string[]
       regionIds?: string[]
       subjectIds?: string[]
+      relatedItems?: { type: string; id: string }[]
     }
 
     if (!title || title.trim().length === 0) {
@@ -125,6 +126,8 @@ export async function POST(request: Request) {
     }
 
     const finalSlug = slug?.trim() || generateSlug(title)
+
+    const { relatedItems } = body as { relatedItems?: { type: string; id: string }[] }
 
     const course = await prisma.$transaction(async (tx) => {
       const created = await tx.course.create({
@@ -174,6 +177,17 @@ export async function POST(request: Request) {
           data: subjectIds.map((subjectId) => ({
             courseId: created.id,
             subjectId,
+          })),
+        })
+      }
+
+      if (relatedItems?.length) {
+        await tx.relatedItem.createMany({
+          data: relatedItems.slice(0, 3).map((item) => ({
+            sourceType: 'COURSE' as const,
+            sourceId: created.id,
+            targetType: item.type as 'COURSE' | 'TEMPLATE' | 'VIDEO' | 'LEARNING_PATH',
+            targetId: item.id,
           })),
         })
       }

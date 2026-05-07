@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import ImageUpload from './ImageUpload'
 import TaxonomySelect from './TaxonomySelect'
 import ContentTypeBadge from './ContentTypeBadge'
+import RelatedItemsPicker from './RelatedItemsPicker'
+import type { RelatedItem } from './RelatedItemsPicker'
 import type { ContentType } from '@/lib/generated/prisma'
 
 function generateSlug(name: string): string {
@@ -57,6 +59,7 @@ interface LearningPathFormProps {
   personas: { id: string; name: string }[]
   regions: { id: string; name: string }[]
   subjects: { id: string; name: string; group: { id: string; name: string } }[]
+  relatedItems?: RelatedItem[]
 }
 
 function toDateTimeLocal(isoString: string | null): string {
@@ -72,6 +75,7 @@ export default function LearningPathForm({
   personas,
   regions,
   subjects,
+  relatedItems: initialRelatedItems,
 }: LearningPathFormProps) {
   const router = useRouter()
   const isEdit = !!learningPath
@@ -96,6 +100,7 @@ export default function LearningPathForm({
   const [selectedPersonaIds, setSelectedPersonaIds] = useState<string[]>(learningPath?.personaIds ?? [])
   const [selectedRegionIds, setSelectedRegionIds] = useState<string[]>(learningPath?.regionIds ?? [])
   const [selectedSubjectIds, setSelectedSubjectIds] = useState<string[]>(learningPath?.subjectIds ?? [])
+  const [relatedItems, setRelatedItems] = useState<RelatedItem[]>(initialRelatedItems ?? [])
 
   // Items state
   const [items, setItems] = useState<PathItem[]>(
@@ -253,6 +258,7 @@ export default function LearningPathForm({
         }
         return { contentType: item.contentType, contentId: item.contentId, isElective: item.isElective }
       }),
+      relatedItems: relatedItems.map((item) => ({ type: item.type, id: item.id })),
     }
 
     try {
@@ -751,6 +757,20 @@ export default function LearningPathForm({
             {seoDescription.length} characters. Recommended: 150-160 characters.
           </p>
         </div>
+      </div>
+
+      {/* Related Items */}
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <h2 className="text-lg font-semibold text-diligent-gray-5 mb-1">Related items</h2>
+        <p className="text-sm text-diligent-gray-3 mb-4">
+          Select up to 3 related content items to display on the public page.
+        </p>
+        <RelatedItemsPicker
+          value={relatedItems}
+          onChange={setRelatedItems}
+          excludeType="LEARNING_PATH"
+          excludeId={learningPath?.id}
+        />
       </div>
 
       {/* Submit */}
