@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
@@ -34,6 +35,7 @@ export async function PUT(
       data,
     })
 
+    revalidatePath('/')
     return NextResponse.json(partner)
   } catch (error) {
     console.error('Failed to update partner:', error)
@@ -78,6 +80,7 @@ export async function DELETE(
       console.error('Failed to delete logo from blob storage:', blobError)
     }
 
+    revalidatePath('/')
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Failed to delete partner:', error)

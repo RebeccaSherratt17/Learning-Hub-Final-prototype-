@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
@@ -202,6 +203,7 @@ export async function POST(request: Request) {
       })
     })
 
+    revalidatePath('/')
     return NextResponse.json(course, { status: 201 })
   } catch (error) {
     if (
