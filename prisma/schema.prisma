@@ -510,6 +510,41 @@ model Feedback {
 }
 
 // ─────────────────────────────────────────────
+// Gate Form Submissions (stored locally; Marketo integration later)
+// ─────────────────────────────────────────────
+
+model GateSubmission {
+  id           String      @id @default(cuid())
+  firstName    String
+  lastName     String
+  email        String
+  organization String
+  jobTitle     String
+  contentType  ContentType
+  contentId    String
+  createdAt    DateTime    @default(now())
+
+  @@index([email])
+  @@index([createdAt])
+  @@map("gate_submissions")
+}
+
+// ─────────────────────────────────────────────
+// Preview Tokens (short-lived tokens for admin content preview)
+// ─────────────────────────────────────────────
+
+model PreviewToken {
+  id          String      @id @default(cuid())
+  token       String      @unique
+  contentType ContentType
+  contentId   String
+  expiresAt   DateTime
+  createdAt   DateTime    @default(now())
+
+  @@map("preview_tokens")
+}
+
+// ─────────────────────────────────────────────
 // Analytics Events (custom hub events)
 // ─────────────────────────────────────────────
 

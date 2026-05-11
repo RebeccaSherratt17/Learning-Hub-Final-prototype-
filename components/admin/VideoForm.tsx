@@ -507,6 +507,20 @@ export default function VideoForm({
         </div>
       )}
 
+      {/* Bottom message */}
+      {message && (
+        <div
+          className={`rounded px-4 py-3 text-sm font-medium ${
+            message.type === 'success'
+              ? 'bg-green-50 text-green-800 border border-green-200'
+              : 'bg-red-50 text-diligent-red border border-red-200'
+          }`}
+          role="alert"
+        >
+          {message.text}
+        </div>
+      )}
+
       {/* Submit */}
       <div className="flex items-center justify-end gap-4">
         <button
