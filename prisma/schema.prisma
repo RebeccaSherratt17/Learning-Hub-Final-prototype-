@@ -154,6 +154,8 @@ model Template {
   fileUrl            String?
   fileName           String?
   fileType           String?
+  fileSize           String?
+  pageCount          Int?
   thumbnailUrl       String?
   thumbnailAlt       String?
   ogImageUrl         String?

@@ -77,6 +77,8 @@ export async function POST(request: Request) {
       fileUrl,
       fileName,
       fileType,
+      fileSize,
+      pageCount,
       thumbnailUrl,
       thumbnailAlt,
       ogImageUrl,
@@ -98,6 +100,8 @@ export async function POST(request: Request) {
       fileUrl?: string
       fileName?: string
       fileType?: string
+      fileSize?: string
+      pageCount?: number
       thumbnailUrl?: string
       thumbnailAlt?: string
       ogImageUrl?: string
@@ -135,6 +139,8 @@ export async function POST(request: Request) {
           fileUrl: fileUrl || null,
           fileName: fileName?.trim() || null,
           fileType: fileType?.trim() || null,
+          fileSize: fileSize?.trim() || null,
+          pageCount: pageCount ?? null,
           thumbnailUrl: thumbnailUrl || null,
           thumbnailAlt: thumbnailAlt || null,
           ogImageUrl: ogImageUrl || null,

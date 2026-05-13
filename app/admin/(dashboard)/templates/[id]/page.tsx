@@ -54,6 +54,8 @@ export default async function EditTemplatePage({
     fileUrl: template.fileUrl,
     fileName: template.fileName,
     fileType: template.fileType,
+    fileSize: template.fileSize,
+    pageCount: template.pageCount,
     thumbnailUrl: template.thumbnailUrl,
     thumbnailAlt: template.thumbnailAlt,
     ogImageUrl: template.ogImageUrl,

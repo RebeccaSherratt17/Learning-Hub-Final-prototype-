@@ -154,6 +154,25 @@ export function ResourceLibrary({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
 
+  // React to external URL changes for taxonomy filters (e.g. tag links from content pages)
+  useEffect(() => {
+    const urlPersonas = searchParams.getAll('persona')
+    const urlRegions = searchParams.getAll('region')
+    const urlSubjects = searchParams.getAll('subject')
+    const changed =
+      urlPersonas.length !== filters.personas.length ||
+      urlPersonas.some((v, i) => v !== filters.personas[i]) ||
+      urlRegions.length !== filters.regions.length ||
+      urlRegions.some((v, i) => v !== filters.regions[i]) ||
+      urlSubjects.length !== filters.subjects.length ||
+      urlSubjects.some((v, i) => v !== filters.subjects[i])
+    if (changed) {
+      setFilters((prev) => ({ ...prev, personas: urlPersonas, regions: urlRegions, subjects: urlSubjects }))
+      setPage(1)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
+
   // React to external URL changes for sort param (e.g. "See all" links)
   useEffect(() => {
     const urlSort = (searchParams.get('sort') as SortOption) || 'newest'

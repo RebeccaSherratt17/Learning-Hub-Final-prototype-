@@ -15,7 +15,7 @@ export async function RelatedItems({ sourceType, sourceId }: RelatedItemsProps) 
   return (
     <section className="mt-16">
       <h2 className="text-heading-2 font-semibold text-diligent-gray-5 mb-6">
-        Related content
+        Related resources
       </h2>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item) => (

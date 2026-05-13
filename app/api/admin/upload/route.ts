@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { uploadToBlob, deleteFromBlob } from '@/lib/blob'
+import { PDFDocument } from 'pdf-lib'
+import JSZip from 'jszip'
 
 const ALLOWED_FOLDERS = [
   'thumbnails',
@@ -33,6 +35,36 @@ const DOCUMENT_MAX_SIZE = 50 * 1024 * 1024 // 50MB
 
 function isAllowedFolder(folder: string): folder is AllowedFolder {
   return ALLOWED_FOLDERS.includes(folder as AllowedFolder)
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+async function extractPageCount(buffer: ArrayBuffer, mimeType: string): Promise<number | null> {
+  try {
+    if (mimeType === 'application/pdf') {
+      const pdf = await PDFDocument.load(buffer, { ignoreEncryption: true })
+      return pdf.getPageCount()
+    }
+
+    if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+      const zip = await JSZip.loadAsync(buffer)
+      const appXml = await zip.file('docProps/app.xml')?.async('text')
+      if (appXml) {
+        const match = appXml.match(/<Pages>(\d+)<\/Pages>/)
+        if (match) return parseInt(match[1], 10)
+      }
+      return null
+    }
+
+    // XLSX — page count not applicable
+    return null
+  } catch {
+    return null
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -89,6 +121,17 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    // Read file buffer for metadata extraction (documents only)
+    let fileSize: string | null = null
+    let pageCount: number | null = null
+
+    fileSize = formatFileSize(file.size)
+
+    if (isDocument) {
+      const buffer = await file.arrayBuffer()
+      pageCount = await extractPageCount(buffer, file.type)
+    }
+
     const { url, size } = await uploadToBlob(file, folder)
 
     const asset = await prisma.mediaAsset.create({
@@ -107,6 +150,8 @@ export async function POST(request: NextRequest) {
       mimeType: asset.mimeType,
       size: asset.size,
       assetId: asset.id,
+      fileSize,
+      pageCount,
     })
   } catch (error) {
     const message =

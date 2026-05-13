@@ -12,9 +12,9 @@ import { Breadcrumb } from '@/components/hub/Breadcrumb'
 import { PreviewBanner } from '@/components/hub/PreviewBanner'
 import { RelatedItems } from '@/components/hub/RelatedItems'
 import GateForm from '@/components/hub/GateForm'
-import { Badge } from '@/components/ui/Badge'
 import { SafeHtml } from '@/components/hub/SafeHtml'
 import { FallbackThumbnail } from '@/components/hub/FallbackThumbnail'
+import { TemplateShareButtons } from '@/components/hub/TemplateShareButtons'
 
 const TEMPLATE_INCLUDES = {
   subjects: {
@@ -30,16 +30,34 @@ const TEMPLATE_INCLUDES = {
   },
 } as const
 
-const accessTierVariant: Record<string, 'free' | 'gated' | 'premium'> = {
-  FREE: 'free',
-  GATED: 'gated',
-  PREMIUM: 'premium',
+const mimeToInfo: Record<string, { label: string; shortLabel: string; extension: string }> = {
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': {
+    label: 'Microsoft Word',
+    shortLabel: 'DOCX',
+    extension: 'docx',
+  },
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {
+    label: 'Microsoft Excel',
+    shortLabel: 'XLSX',
+    extension: 'xlsx',
+  },
+  'application/pdf': { label: 'PDF Document', shortLabel: 'PDF', extension: 'pdf' },
+  'application/msword': { label: 'Microsoft Word', shortLabel: 'DOC', extension: 'doc' },
+  'application/vnd.ms-excel': { label: 'Microsoft Excel', shortLabel: 'XLS', extension: 'xls' },
 }
 
-const accessTierLabel: Record<string, string> = {
-  FREE: 'Free',
-  GATED: 'Gated',
-  PREMIUM: 'Premium',
+const accessTierDisplay: Record<string, string> = {
+  FREE: 'Free download',
+  GATED: 'Gated download',
+  PREMIUM: 'Premium content',
+}
+
+function splitTitleForAccent(title: string): { main: string; accent: string } {
+  const words = title.trim().split(/\s+/)
+  if (words.length <= 1) return { main: '', accent: title }
+  const accent = words.slice(-1).join(' ')
+  const main = words.slice(0, -1).join(' ')
+  return { main, accent }
 }
 
 interface PageProps {
@@ -114,12 +132,12 @@ export default async function TemplatePage({ params, searchParams }: PageProps) 
   // Check gate session
   const gated = await hasGateSession()
 
-  // Collect taxonomy tags
-  const tags = [
-    ...template.subjects.map((s) => s.subject.name),
-    ...template.personas.map((p) => p.persona.name),
-    ...template.regions.map((r) => r.region.name),
-  ]
+  // Derived data
+  const fileInfo = template.fileType ? mimeToInfo[template.fileType] : null
+  const { main: titleMain, accent: titleAccent } = splitTitleForAccent(template.title)
+  const updatedMonthYear = new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric' }).format(
+    template.publishedAt ?? template.updatedAt,
+  )
 
   // JSON-LD structured data
   const jsonLd = {
@@ -134,7 +152,7 @@ export default async function TemplatePage({ params, searchParams }: PageProps) 
     <>
       {isPreview && <PreviewBanner />}
 
-      <div className="mx-auto max-w-[var(--max-content-width)] px-6 py-12">
+      <div className="mx-auto max-w-[var(--max-content-width)] px-6 py-12 lg:py-16">
         <Breadcrumb
           items={[
             { label: 'Home', href: '/' },
@@ -143,101 +161,175 @@ export default async function TemplatePage({ params, searchParams }: PageProps) 
           ]}
         />
 
-        {/* Header: thumbnail + title/meta */}
-        <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-[280px_1fr]">
-          {/* Thumbnail */}
-          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-lg sm:w-[280px]">
-            {template.thumbnailUrl ? (
-              <Image
-                src={template.thumbnailUrl}
-                alt={template.thumbnailAlt || template.title}
-                fill
-                className="object-cover"
-                sizes="280px"
-                priority
-              />
-            ) : (
-              <FallbackThumbnail alt={template.title} />
-            )}
-          </div>
-
-          {/* Title and metadata */}
-          <div className="flex flex-col justify-center">
-            {/* Badges */}
-            <div className="flex items-center gap-2">
-              <Badge variant="template">Template</Badge>
-              <Badge variant={accessTierVariant[template.accessTier]}>
-                {accessTierLabel[template.accessTier]}
-              </Badge>
-              {template.fileType && (
-                <span className="text-xs font-medium uppercase text-diligent-gray-4">
-                  {template.fileType}
-                </span>
-              )}
+        {/* Two-column layout */}
+        <div className="mt-10 grid grid-cols-1 gap-12 lg:grid-cols-[55%_45%]">
+          {/* ── Left column ── */}
+          <div>
+            {/* Metadata row */}
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-widest text-diligent-gray-4">
+              <span className="inline-block h-2.5 w-2.5 rounded-sm bg-diligent-red" aria-hidden="true" />
+              <span>Template</span>
+              <span className="text-diligent-gray-3" aria-hidden="true">|</span>
+              <span>{accessTierDisplay[template.accessTier] ?? template.accessTier}</span>
             </div>
 
             {/* Title */}
-            <h1 className="mt-3 text-heading-1 font-bold text-diligent-gray-5">{template.title}</h1>
+            <h1 className="mt-5 text-[2.25rem] font-bold leading-[1.15] text-diligent-gray-5 sm:text-[2.75rem] lg:text-[3.25rem]">
+              {titleMain && <>{titleMain}{' '}</>}
+              <span className="text-diligent-red">{titleAccent}</span>
+            </h1>
 
-            {/* Subtitle */}
-            <p className="mt-1 text-base text-diligent-gray-4">Never start from scratch</p>
-          </div>
-        </div>
+            {/* Description */}
+            {template.description && (
+              <div className="mt-5 text-base leading-relaxed text-diligent-gray-5">
+                <SafeHtml html={template.description} />
+              </div>
+            )}
 
-        {/* Description */}
-        {template.description && (
-          <div className="mt-4 text-base leading-relaxed text-diligent-gray-4">
-            <SafeHtml html={template.description} />
-          </div>
-        )}
+            {/* Legal disclaimer */}
+            <p className="mt-5 border-t border-diligent-gray-2 pt-4 text-[13px] italic leading-relaxed text-diligent-gray-4">
+              This template is provided in good faith with the intention of furthering the understanding of the subject matter and should not be considered as a substitute for legal advice. The reader is advised to seek legal, financial and other professional advice based on the circumstances of their own situation.
+            </p>
 
-        {/* Taxonomy tags */}
-        {tags.length > 0 && (
-          <div className="mt-6 flex flex-wrap gap-2">
-            {tags.map((name) => (
-              <span
-                key={name}
-                className="rounded-full bg-diligent-gray-1 px-3 py-1 text-xs text-diligent-gray-4"
-              >
-                {name}
-              </span>
-            ))}
-          </div>
-        )}
-
-        {/* Download / Gate section */}
-        <div className="mt-8">
-          {template.accessTier === 'FREE' || gated ? (
-            <a
-              href={template.fileUrl ?? '#'}
-              download
-              className="inline-flex items-center gap-2 rounded bg-diligent-red px-6 py-3 text-sm font-medium text-white hover:bg-diligent-red-2"
-            >
-              <span className="material-symbols-sharp text-[20px]">download</span>
-              Download template
-            </a>
-          ) : template.accessTier === 'GATED' ? (
-            <GateForm
-              contentType="TEMPLATE"
-              contentId={template.id}
-              downloadUrl={template.fileUrl ?? undefined}
-              fromLearningPath={resolvedSearchParams.from as string | undefined}
-            />
-          ) : (
-            <div className="rounded-lg border border-diligent-gray-2 bg-diligent-gray-1 p-6 sm:p-8">
-              <h2 className="text-lg font-bold text-diligent-gray-5">Premium content</h2>
-              <p className="mt-2 text-sm text-diligent-gray-4">
-                This template requires a Diligent One Platform subscription. Get unlimited access to
-                our full Education &amp; Templates Library.
-              </p>
-              <a
-                href="#"
-                className="mt-4 inline-flex items-center rounded bg-diligent-red px-6 py-3 text-sm font-medium text-white hover:bg-diligent-red-2"
-              >
-                Request a demo
-              </a>
+            {/* Download / Gate section */}
+            <div className="mt-8">
+              {template.accessTier === 'FREE' || gated ? (
+                <div className="flex flex-wrap items-center gap-4">
+                  <a
+                    href={template.fileUrl ?? '#'}
+                    download
+                    className="inline-flex items-center gap-2 rounded-lg bg-diligent-red px-8 py-3.5 text-sm font-medium text-white transition-colors hover:bg-diligent-red-2"
+                  >
+                    <span className="material-symbols-sharp text-[20px]">download</span>
+                    Download template
+                  </a>
+                </div>
+              ) : template.accessTier === 'GATED' ? (
+                <div>
+                  <div className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-diligent-gray-4">
+                    <span className="material-symbols-sharp text-[16px]">lock</span>
+                    <span>Form required · 30 seconds</span>
+                  </div>
+                  <GateForm
+                    contentType="TEMPLATE"
+                    contentId={template.id}
+                    downloadUrl={template.fileUrl ?? undefined}
+                    fromLearningPath={resolvedSearchParams.from as string | undefined}
+                  />
+                </div>
+              ) : (
+                <div className="rounded-lg border border-diligent-gray-2 bg-diligent-gray-1 p-6 sm:p-8">
+                  <h2 className="text-lg font-bold text-diligent-gray-5">Premium content</h2>
+                  <p className="mt-2 text-sm text-diligent-gray-4">
+                    This template requires a Diligent One Platform subscription. Get unlimited access
+                    to our full Education &amp; Templates Library.
+                  </p>
+                  <a
+                    href="#"
+                    className="mt-4 inline-flex items-center rounded-lg bg-diligent-red px-8 py-3.5 text-sm font-medium text-white transition-colors hover:bg-diligent-red-2"
+                  >
+                    Request a demo
+                  </a>
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Divider */}
+            <hr className="mt-10 border-diligent-gray-2" />
+
+            {/* File metadata row */}
+            <div className="mt-5 flex flex-wrap items-center gap-2 text-sm text-diligent-gray-4">
+              {fileInfo && <span>{fileInfo.shortLabel}</span>}
+              {template.pageCount && (
+                <>
+                  <span aria-hidden="true">|</span>
+                  <span>{template.pageCount} {template.pageCount === 1 ? 'page' : 'pages'}</span>
+                </>
+              )}
+              {template.fileSize && (
+                <>
+                  <span aria-hidden="true">|</span>
+                  <span>{template.fileSize}</span>
+                </>
+              )}
+              <span aria-hidden="true">|</span>
+              <span>Updated {updatedMonthYear}</span>
+            </div>
+
+            {/* Taxonomy tags */}
+            {(template.subjects.length > 0 || template.personas.length > 0 || template.regions.length > 0) && (
+              <div className="mt-5 flex flex-wrap gap-2">
+                {template.subjects.map((s) => (
+                  <a
+                    key={`subject-${s.subject.id}`}
+                    href={`/?subject=${s.subject.id}#resource-library`}
+                    className="rounded border border-diligent-gray-2 px-2.5 py-1 text-xs text-diligent-gray-4 transition-colors hover:border-diligent-gray-3 hover:text-diligent-gray-5"
+                  >
+                    {s.subject.name}
+                  </a>
+                ))}
+                {template.regions.map((r) => (
+                  <a
+                    key={`region-${r.region.id}`}
+                    href={`/?region=${r.region.id}#resource-library`}
+                    className="rounded border border-diligent-gray-2 px-2.5 py-1 text-xs text-diligent-gray-4 transition-colors hover:border-diligent-gray-3 hover:text-diligent-gray-5"
+                  >
+                    {r.region.name}
+                  </a>
+                ))}
+                {template.personas.map((p) => (
+                  <a
+                    key={`persona-${p.persona.id}`}
+                    href={`/?persona=${p.persona.id}#resource-library`}
+                    className="rounded border border-diligent-gray-2 px-2.5 py-1 text-xs text-diligent-gray-4 transition-colors hover:border-diligent-gray-3 hover:text-diligent-gray-5"
+                  >
+                    {p.persona.name}
+                  </a>
+                ))}
+              </div>
+            )}
+
+            {/* Share row */}
+            <div className="mt-5 flex items-center gap-3">
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-diligent-gray-4">
+                Share
+              </span>
+              <TemplateShareButtons title={template.title} slug={template.slug} />
+            </div>
+          </div>
+
+          {/* ── Right column: document preview ── */}
+          <div className="flex items-start justify-center lg:justify-end">
+            <div className="relative w-full max-w-[420px]">
+              {/* Document card */}
+              <div className="relative overflow-hidden rounded-xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+                {/* Thumbnail preview */}
+                <div className="relative aspect-[3/4] w-full bg-diligent-gray-1">
+                  {template.thumbnailUrl ? (
+                    <Image
+                      src={template.thumbnailUrl}
+                      alt={template.thumbnailAlt || template.title}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 1024px) 100vw, 420px"
+                      priority
+                    />
+                  ) : (
+                    <FallbackThumbnail alt={template.title} />
+                  )}
+                </div>
+
+                {/* Red accent bar */}
+                <div
+                  className="absolute bottom-0 right-0 h-16 w-16"
+                  aria-hidden="true"
+                >
+                  <div className="absolute bottom-0 right-0 h-full w-full bg-diligent-red" style={{ clipPath: 'polygon(100% 0, 0% 100%, 100% 100%)' }} />
+                </div>
+              </div>
+
+            </div>
+          </div>
         </div>
 
         {/* Related items */}

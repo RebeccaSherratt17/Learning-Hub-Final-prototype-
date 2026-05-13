@@ -26,6 +26,8 @@ interface TemplateFormProps {
     fileUrl: string | null
     fileName: string | null
     fileType: string | null
+    fileSize: string | null
+    pageCount: number | null
     thumbnailUrl: string | null
     thumbnailAlt: string | null
     ogImageUrl: string | null
@@ -75,6 +77,8 @@ export default function TemplateForm({
   const [fileUrl, setFileUrl] = useState(template?.fileUrl ?? '')
   const [fileName, setFileName] = useState(template?.fileName ?? '')
   const [fileType, setFileType] = useState(template?.fileType ?? '')
+  const [fileSize, setFileSize] = useState(template?.fileSize ?? '')
+  const [pageCount, setPageCount] = useState<number | null>(template?.pageCount ?? null)
   const [thumbnailUrl, setThumbnailUrl] = useState(template?.thumbnailUrl ?? '')
   const [thumbnailAlt, setThumbnailAlt] = useState(template?.thumbnailAlt ?? '')
   const [ogImageUrl, setOgImageUrl] = useState(template?.ogImageUrl ?? '')
@@ -127,6 +131,8 @@ export default function TemplateForm({
       fileUrl: fileUrl || null,
       fileName: fileName || null,
       fileType: fileType || null,
+      fileSize: fileSize || null,
+      pageCount: pageCount ?? null,
       thumbnailUrl: thumbnailUrl || null,
       thumbnailAlt: thumbnailAlt || null,
       ogImageUrl: ogImageUrl || null,
@@ -265,7 +271,7 @@ export default function TemplateForm({
           maxSizeMB={50}
           currentUrl={fileUrl || null}
           currentFileName={fileName || null}
-          onUpload={(url, name) => {
+          onUpload={(url, name, _assetId, meta) => {
             setFileUrl(url)
             setFileName(name)
             // Infer file type from extension
@@ -274,15 +280,21 @@ export default function TemplateForm({
             else if (ext === 'docx') setFileType('application/vnd.openxmlformats-officedocument.wordprocessingml.document')
             else if (ext === 'xlsx') setFileType('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
             else setFileType('')
+            // Auto-populate file metadata
+            if (meta?.fileSize) setFileSize(meta.fileSize)
+            setPageCount(meta?.pageCount ?? null)
           }}
           onRemove={() => {
             setFileUrl('')
             setFileName('')
             setFileType('')
+            setFileSize('')
+            setPageCount(null)
           }}
           label="Upload file"
           hint="Accepted formats: PDF, Word (.docx), Excel (.xlsx). Max 50MB."
         />
+
       </div>
 
       {/* Media */}

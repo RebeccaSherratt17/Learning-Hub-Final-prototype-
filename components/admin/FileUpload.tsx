@@ -8,7 +8,7 @@ interface FileUploadProps {
   maxSizeMB?: number
   currentUrl?: string | null
   currentFileName?: string | null
-  onUpload: (url: string, fileName: string, assetId: string) => void
+  onUpload: (url: string, fileName: string, assetId: string, meta?: { fileSize?: string | null; pageCount?: number | null }) => void
   onRemove?: () => void
   label?: string
   hint?: string
@@ -64,7 +64,7 @@ export default function FileUpload({
         const data = await res.json()
         setFileName(data.fileName)
         setFileUrl(data.url)
-        onUpload(data.url, data.fileName, data.assetId)
+        onUpload(data.url, data.fileName, data.assetId, { fileSize: data.fileSize ?? null, pageCount: data.pageCount ?? null })
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Upload failed')
       } finally {
