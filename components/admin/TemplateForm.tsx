@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import FileUpload from './FileUpload'
 import ImageUpload from './ImageUpload'
+import RichTextEditor from './RichTextEditor'
 import TaxonomySelect from './TaxonomySelect'
 import RelatedItemsPicker from './RelatedItemsPicker'
 import type { RelatedItem } from './RelatedItemsPicker'
@@ -247,17 +248,10 @@ export default function TemplateForm({
         </div>
 
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-diligent-gray-5 mb-1">
+          <label className="block text-sm font-medium text-diligent-gray-5 mb-1">
             Description <span className="text-diligent-red">*</span>
           </label>
-          <textarea
-            id="description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={5}
-            required
-            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
-          />
+          <RichTextEditor id="description" value={description} onChange={setDescription} />
         </div>
       </div>
 

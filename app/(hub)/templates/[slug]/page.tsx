@@ -13,7 +13,6 @@ import { PreviewBanner } from '@/components/hub/PreviewBanner'
 import { RelatedItems } from '@/components/hub/RelatedItems'
 import GateForm from '@/components/hub/GateForm'
 import { SafeHtml } from '@/components/hub/SafeHtml'
-import { FallbackThumbnail } from '@/components/hub/FallbackThumbnail'
 import { TemplateShareButtons } from '@/components/hub/TemplateShareButtons'
 
 const TEMPLATE_INCLUDES = {
@@ -305,18 +304,14 @@ export default async function TemplatePage({ params, searchParams }: PageProps) 
               <div className="relative overflow-hidden rounded-xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
                 {/* Thumbnail preview */}
                 <div className="relative aspect-[3/4] w-full bg-diligent-gray-1">
-                  {template.thumbnailUrl ? (
-                    <Image
-                      src={template.thumbnailUrl}
-                      alt={template.thumbnailAlt || template.title}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 1024px) 100vw, 420px"
-                      priority
-                    />
-                  ) : (
-                    <FallbackThumbnail alt={template.title} />
-                  )}
+                  <Image
+                    src="/template-placeholder.png.png"
+                    alt="Template document"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 420px"
+                    priority
+                  />
                 </div>
 
                 {/* Red accent bar */}
@@ -335,6 +330,38 @@ export default async function TemplatePage({ params, searchParams }: PageProps) 
         {/* Related items */}
         <RelatedItems sourceType="TEMPLATE" sourceId={template.id} />
       </div>
+
+      {/* CTA banner */}
+      <section className="relative mt-16 overflow-hidden bg-diligent-gray-5">
+        <div className="mx-auto flex max-w-[var(--max-content-width)] flex-col gap-8 px-6 py-14 lg:flex-row lg:items-center lg:py-16">
+          {/* Text column */}
+          <div className="flex-1">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-diligent-gray-3">
+              Diligent&apos;s Education &amp; Templates Library
+            </p>
+            <h2 className="mt-3 text-[1.75rem] font-bold leading-tight text-white sm:text-[2rem] lg:text-[2.25rem]">
+              From blank page to board-ready, faster.
+            </h2>
+            <p className="mt-4 max-w-xl text-base leading-relaxed text-white/85">
+              Join the world&apos;s leading boards and access our full library of ready-to-use templates, expert courses and professionally-accredited certifications.
+            </p>
+          </div>
+
+          {/* CTA column */}
+          <div className="shrink-0">
+            <a
+              href="/#footer-cta"
+              className="inline-flex items-center gap-2 rounded-lg bg-diligent-red px-8 py-3.5 text-sm font-medium text-white transition-colors hover:bg-diligent-red-2"
+            >
+              Request a demo
+              <span className="text-[18px]" aria-hidden="true">&rarr;</span>
+            </a>
+          </div>
+        </div>
+
+        {/* Red accent bar on far right edge */}
+        <div className="absolute right-0 top-0 hidden h-full w-3 bg-diligent-red lg:block" aria-hidden="true" />
+      </section>
 
       {/* JSON-LD structured data */}
       <script

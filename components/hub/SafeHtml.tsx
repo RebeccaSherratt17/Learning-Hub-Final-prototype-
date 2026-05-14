@@ -11,5 +11,6 @@ interface SafeHtmlProps {
 
 export function SafeHtml({ html, className, as: Tag = 'div' }: SafeHtmlProps) {
   const clean = useMemo(() => DOMPurify.sanitize(html), [html])
-  return <Tag className={className} dangerouslySetInnerHTML={{ __html: clean }} />
+  const classes = className ? `rich-text ${className}` : 'rich-text'
+  return <Tag className={classes} dangerouslySetInnerHTML={{ __html: clean }} />
 }

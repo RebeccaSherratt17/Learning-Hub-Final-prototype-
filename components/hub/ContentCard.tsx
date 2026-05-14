@@ -23,9 +23,24 @@ function badgeVariantForType(t: ContentType): BadgeVariant {
 export interface ContentCardProps {
   item: ContentItem
   className?: string
+  showDescription?: boolean
 }
 
-export function ContentCard({ item, className }: ContentCardProps) {
+/** Strip HTML tags and truncate to ~120 characters at a sentence or word boundary. */
+function truncateDescription(raw: string | null | undefined): string | null {
+  if (!raw) return null
+  const plain = raw.replace(/<[^>]*>/g, '').trim()
+  if (!plain) return null
+  if (plain.length <= 120) return plain
+  // Try to cut at the end of a sentence within 120 chars
+  const sentenceEnd = plain.slice(0, 120).lastIndexOf('.')
+  if (sentenceEnd > 40) return plain.slice(0, sentenceEnd + 1)
+  // Fall back to word boundary
+  const wordEnd = plain.slice(0, 120).lastIndexOf(' ')
+  return (wordEnd > 0 ? plain.slice(0, wordEnd) : plain.slice(0, 120)) + '…'
+}
+
+export function ContentCard({ item, className, showDescription }: ContentCardProps) {
   const href = `${routePrefix[item._type]}/${item.slug ?? ''}`
   const thumbUrl = item.thumbnailUrl ?? null
 
@@ -59,6 +74,11 @@ export function ContentCard({ item, className }: ContentCardProps) {
           <h3 className="text-heading-3 font-semibold text-diligent-gray-5">
             {item.title}
           </h3>
+          {showDescription && truncateDescription(item.description) && (
+            <p className="text-sm text-diligent-gray-4 leading-relaxed">
+              {truncateDescription(item.description)}
+            </p>
+          )}
         </div>
       </Link>
     </article>

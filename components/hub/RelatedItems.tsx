@@ -19,7 +19,7 @@ export async function RelatedItems({ sourceType, sourceId }: RelatedItemsProps) 
       </h2>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item) => (
-          <ContentCard key={item._id} item={item} />
+          <ContentCard key={item._id} item={item} showDescription />
         ))}
       </div>
     </section>

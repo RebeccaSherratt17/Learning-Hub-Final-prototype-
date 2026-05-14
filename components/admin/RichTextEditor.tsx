@@ -2,6 +2,9 @@
 
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
+import { BulletList } from '@tiptap/extension-bullet-list'
+import { OrderedList } from '@tiptap/extension-ordered-list'
+import { ListItem } from '@tiptap/extension-list-item'
 import Link from '@tiptap/extension-link'
 import { TextStyle } from '@tiptap/extension-text-style'
 import { Color } from '@tiptap/extension-color'
@@ -326,7 +329,14 @@ export default function RichTextEditor({ id, value, onChange }: RichTextEditorPr
     extensions: [
       StarterKit.configure({
         heading: { levels: [2, 3] },
+        link: false,
+        bulletList: false,
+        orderedList: false,
+        listItem: false,
       }),
+      BulletList,
+      OrderedList,
+      ListItem,
       Link.configure({
         openOnClick: false,
         HTMLAttributes: { rel: 'noopener noreferrer', target: '_blank' },

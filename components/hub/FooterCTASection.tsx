@@ -13,7 +13,7 @@ export function FooterCTASection({
   body,
 }: FooterCTASectionProps) {
   return (
-    <section className="bg-diligent-gray-5 py-16">
+    <section id="footer-cta" className="bg-diligent-gray-5 py-16">
       <div className="mx-auto grid max-w-[var(--max-content-width)] grid-cols-1 items-start gap-12 px-6 lg:grid-cols-2">
         {/* Left column — heading and body text */}
         <div>
