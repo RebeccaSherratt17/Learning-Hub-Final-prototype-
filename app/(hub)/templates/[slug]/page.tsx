@@ -1,6 +1,5 @@
 export const dynamic = 'force-dynamic'
 
-import Image from 'next/image'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
@@ -11,9 +10,11 @@ import { hasGateSession } from '@/lib/gate-session'
 import { Breadcrumb } from '@/components/hub/Breadcrumb'
 import { PreviewBanner } from '@/components/hub/PreviewBanner'
 import { RelatedItems } from '@/components/hub/RelatedItems'
-import GateForm from '@/components/hub/GateForm'
 import { SafeHtml } from '@/components/hub/SafeHtml'
 import { TemplateShareButtons } from '@/components/hub/TemplateShareButtons'
+import { GateProvider } from '@/components/hub/GateContext'
+import { TemplateDownloadSection } from '@/components/hub/TemplateDownloadSection'
+import { TemplateRightColumn } from '@/components/hub/TemplateRightColumn'
 
 const TEMPLATE_INCLUDES = {
   subjects: {
@@ -161,6 +162,7 @@ export default async function TemplatePage({ params, searchParams }: PageProps) 
         />
 
         {/* Two-column layout */}
+        <GateProvider initialGated={template.accessTier === 'FREE' || gated}>
         <div className="mt-10 grid grid-cols-1 gap-12 lg:grid-cols-[55%_45%]">
           {/* ── Left column ── */}
           <div>
@@ -192,45 +194,10 @@ export default async function TemplatePage({ params, searchParams }: PageProps) 
 
             {/* Download / Gate section */}
             <div className="mt-8">
-              {template.accessTier === 'FREE' || gated ? (
-                <div className="flex flex-wrap items-center gap-4">
-                  <a
-                    href={template.fileUrl ?? '#'}
-                    download
-                    className="inline-flex items-center gap-2 rounded-lg bg-diligent-red px-8 py-3.5 text-sm font-medium text-white transition-colors hover:bg-diligent-red-2"
-                  >
-                    <span className="material-symbols-sharp text-[20px]">download</span>
-                    Download template
-                  </a>
-                </div>
-              ) : template.accessTier === 'GATED' ? (
-                <div>
-                  <div className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-diligent-gray-4">
-                    <span className="material-symbols-sharp text-[16px]">lock</span>
-                    <span>Form required · 30 seconds</span>
-                  </div>
-                  <GateForm
-                    contentType="TEMPLATE"
-                    contentId={template.id}
-                    downloadUrl={template.fileUrl ?? undefined}
-                    fromLearningPath={resolvedSearchParams.from as string | undefined}
-                  />
-                </div>
-              ) : (
-                <div className="rounded-lg border border-diligent-gray-2 bg-diligent-gray-1 p-6 sm:p-8">
-                  <h2 className="text-lg font-bold text-diligent-gray-5">Premium content</h2>
-                  <p className="mt-2 text-sm text-diligent-gray-4">
-                    This template requires a Diligent One Platform subscription. Get unlimited access
-                    to our full Education &amp; Templates Library.
-                  </p>
-                  <a
-                    href="#"
-                    className="mt-4 inline-flex items-center rounded-lg bg-diligent-red px-8 py-3.5 text-sm font-medium text-white transition-colors hover:bg-diligent-red-2"
-                  >
-                    Request a demo
-                  </a>
-                </div>
-              )}
+              <TemplateDownloadSection
+                accessTier={template.accessTier}
+                fileUrl={template.fileUrl ?? undefined}
+              />
             </div>
 
             {/* Divider */}
@@ -297,35 +264,15 @@ export default async function TemplatePage({ params, searchParams }: PageProps) 
             </div>
           </div>
 
-          {/* ── Right column: document preview ── */}
-          <div className="flex items-start justify-center lg:justify-end">
-            <div className="relative w-full max-w-[420px]">
-              {/* Document card */}
-              <div className="relative overflow-hidden rounded-xl bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
-                {/* Thumbnail preview */}
-                <div className="relative aspect-[3/4] w-full bg-diligent-gray-1">
-                  <Image
-                    src="/template-placeholder.png.png"
-                    alt="Template document"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1024px) 100vw, 420px"
-                    priority
-                  />
-                </div>
-
-                {/* Red accent bar */}
-                <div
-                  className="absolute bottom-0 right-0 h-16 w-16"
-                  aria-hidden="true"
-                >
-                  <div className="absolute bottom-0 right-0 h-full w-full bg-diligent-red" style={{ clipPath: 'polygon(100% 0, 0% 100%, 100% 100%)' }} />
-                </div>
-              </div>
-
-            </div>
-          </div>
+          {/* ── Right column: gate form or document preview ── */}
+          <TemplateRightColumn
+            accessTier={template.accessTier}
+            contentId={template.id}
+            downloadUrl={template.fileUrl ?? undefined}
+            fromLearningPath={resolvedSearchParams.from as string | undefined}
+          />
         </div>
+        </GateProvider>
 
         {/* Related items */}
         <RelatedItems sourceType="TEMPLATE" sourceId={template.id} />
