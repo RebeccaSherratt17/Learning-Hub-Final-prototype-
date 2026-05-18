@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/db'
 import TemplateForm from '@/components/admin/TemplateForm'
+import PreviewButton from '@/components/admin/PreviewButton'
 
 export default async function NewTemplatePage() {
   const [personas, regions, subjects] = await Promise.all([
@@ -29,6 +30,7 @@ export default async function NewTemplatePage() {
         personas={personas}
         regions={regions}
         subjects={subjects}
+        previewButton={<PreviewButton contentType="TEMPLATE" />}
       />
     </div>
   )

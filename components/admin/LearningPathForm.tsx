@@ -61,6 +61,7 @@ interface LearningPathFormProps {
   regions: { id: string; name: string }[]
   subjects: { id: string; name: string; group: { id: string; name: string } }[]
   relatedItems?: RelatedItem[]
+  previewButton?: React.ReactNode
 }
 
 function toDateTimeLocal(isoString: string | null): string {
@@ -77,6 +78,7 @@ export default function LearningPathForm({
   regions,
   subjects,
   relatedItems: initialRelatedItems,
+  previewButton,
 }: LearningPathFormProps) {
   const router = useRouter()
   const isEdit = !!learningPath
@@ -640,6 +642,43 @@ export default function LearningPathForm({
         />
       </div>
 
+      {/* SEO */}
+      <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-diligent-gray-5">SEO</h2>
+
+        <div>
+          <label htmlFor="seoTitle" className="block text-sm font-medium text-diligent-gray-5 mb-1">
+            Meta title
+          </label>
+          <input
+            id="seoTitle"
+            type="text"
+            value={seoTitle}
+            onChange={(e) => setSeoTitle(e.target.value)}
+            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
+          />
+          <p className="mt-1 text-xs text-diligent-gray-3">
+            {seoTitle.length} characters. Recommended: 50-60 characters.
+          </p>
+        </div>
+
+        <div>
+          <label htmlFor="seoDescription" className="block text-sm font-medium text-diligent-gray-5 mb-1">
+            Meta description
+          </label>
+          <textarea
+            id="seoDescription"
+            value={seoDescription}
+            onChange={(e) => setSeoDescription(e.target.value)}
+            rows={3}
+            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
+          />
+          <p className="mt-1 text-xs text-diligent-gray-3">
+            {seoDescription.length} characters. Recommended: 150-160 characters.
+          </p>
+        </div>
+      </div>
+
       {/* Access */}
       <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
         <h2 className="text-lg font-semibold text-diligent-gray-5">Access</h2>
@@ -662,6 +701,20 @@ export default function LearningPathForm({
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Related Items */}
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <h2 className="text-lg font-semibold text-diligent-gray-5 mb-1">Related items</h2>
+        <p className="text-sm text-diligent-gray-3 mb-4">
+          Select up to 3 related content items to display on the public page.
+        </p>
+        <RelatedItemsPicker
+          value={relatedItems}
+          onChange={setRelatedItems}
+          excludeType="LEARNING_PATH"
+          excludeId={learningPath?.id}
+        />
       </div>
 
       {/* Publishing */}
@@ -716,57 +769,6 @@ export default function LearningPathForm({
         )}
       </div>
 
-      {/* SEO */}
-      <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-diligent-gray-5">SEO</h2>
-
-        <div>
-          <label htmlFor="seoTitle" className="block text-sm font-medium text-diligent-gray-5 mb-1">
-            Meta title
-          </label>
-          <input
-            id="seoTitle"
-            type="text"
-            value={seoTitle}
-            onChange={(e) => setSeoTitle(e.target.value)}
-            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
-          />
-          <p className="mt-1 text-xs text-diligent-gray-3">
-            {seoTitle.length} characters. Recommended: 50-60 characters.
-          </p>
-        </div>
-
-        <div>
-          <label htmlFor="seoDescription" className="block text-sm font-medium text-diligent-gray-5 mb-1">
-            Meta description
-          </label>
-          <textarea
-            id="seoDescription"
-            value={seoDescription}
-            onChange={(e) => setSeoDescription(e.target.value)}
-            rows={3}
-            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
-          />
-          <p className="mt-1 text-xs text-diligent-gray-3">
-            {seoDescription.length} characters. Recommended: 150-160 characters.
-          </p>
-        </div>
-      </div>
-
-      {/* Related Items */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-lg font-semibold text-diligent-gray-5 mb-1">Related items</h2>
-        <p className="text-sm text-diligent-gray-3 mb-4">
-          Select up to 3 related content items to display on the public page.
-        </p>
-        <RelatedItemsPicker
-          value={relatedItems}
-          onChange={setRelatedItems}
-          excludeType="LEARNING_PATH"
-          excludeId={learningPath?.id}
-        />
-      </div>
-
       {/* Bottom message */}
       {message && (
         <div
@@ -782,7 +784,8 @@ export default function LearningPathForm({
       )}
 
       {/* Submit */}
-      <div className="flex items-center justify-end gap-4">
+      <div className="flex items-center justify-end gap-3">
+        {previewButton}
         <button
           type="submit"
           disabled={saving}

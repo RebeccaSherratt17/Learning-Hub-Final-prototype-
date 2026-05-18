@@ -49,6 +49,7 @@ interface TemplateFormProps {
   subjects: { id: string; name: string; group: { id: string; name: string } }[]
   learningPaths?: { id: string; title: string }[]
   relatedItems?: RelatedItem[]
+  previewButton?: React.ReactNode
 }
 
 function toDateTimeLocal(isoString: string | null): string {
@@ -66,6 +67,7 @@ export default function TemplateForm({
   subjects,
   learningPaths,
   relatedItems: initialRelatedItems,
+  previewButton,
 }: TemplateFormProps) {
   const router = useRouter()
   const isEdit = !!template
@@ -291,6 +293,27 @@ export default function TemplateForm({
 
       </div>
 
+      {/* Credly Badge */}
+      <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-diligent-gray-5">Credly badge</h2>
+
+        <div>
+          <label htmlFor="credlyBadgeId" className="block text-sm font-medium text-diligent-gray-5 mb-1">
+            Credly badge template ID
+          </label>
+          <input
+            id="credlyBadgeId"
+            type="text"
+            value={credlyBadgeId}
+            onChange={(e) => setCredlyBadgeId(e.target.value)}
+            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red md:w-1/2"
+          />
+          <p className="mt-1 text-xs text-diligent-gray-3">
+            Optional. If set, learners who complete this template will receive a Credly badge. Enter the badge template ID from the Credly dashboard.
+          </p>
+        </div>
+      </div>
+
       {/* Media */}
       <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
         <h2 className="text-lg font-semibold text-diligent-gray-5">Media</h2>
@@ -344,6 +367,43 @@ export default function TemplateForm({
         />
       </div>
 
+      {/* SEO */}
+      <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-diligent-gray-5">SEO</h2>
+
+        <div>
+          <label htmlFor="seoTitle" className="block text-sm font-medium text-diligent-gray-5 mb-1">
+            Meta title
+          </label>
+          <input
+            id="seoTitle"
+            type="text"
+            value={seoTitle}
+            onChange={(e) => setSeoTitle(e.target.value)}
+            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
+          />
+          <p className="mt-1 text-xs text-diligent-gray-3">
+            {seoTitle.length} characters. Recommended: 50-60 characters.
+          </p>
+        </div>
+
+        <div>
+          <label htmlFor="seoDescription" className="block text-sm font-medium text-diligent-gray-5 mb-1">
+            Meta description
+          </label>
+          <textarea
+            id="seoDescription"
+            value={seoDescription}
+            onChange={(e) => setSeoDescription(e.target.value)}
+            rows={3}
+            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
+          />
+          <p className="mt-1 text-xs text-diligent-gray-3">
+            {seoDescription.length} characters. Recommended: 150-160 characters.
+          </p>
+        </div>
+      </div>
+
       {/* Access */}
       <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
         <h2 className="text-lg font-semibold text-diligent-gray-5">Access</h2>
@@ -367,6 +427,40 @@ export default function TemplateForm({
           </div>
         </div>
       </div>
+
+      {/* Related Items */}
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <h2 className="text-lg font-semibold text-diligent-gray-5 mb-1">Related items</h2>
+        <p className="text-sm text-diligent-gray-3 mb-4">
+          Select up to 3 related content items to display on the public page.
+        </p>
+        <RelatedItemsPicker
+          value={relatedItems}
+          onChange={setRelatedItems}
+          excludeType="TEMPLATE"
+          excludeId={template?.id}
+        />
+      </div>
+
+      {/* Content relationships (edit mode only) */}
+      {isEdit && learningPaths && learningPaths.length > 0 && (
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <h2 className="text-lg font-semibold text-diligent-gray-5 mb-4">Content relationships</h2>
+          <p className="text-sm text-diligent-gray-4 mb-2">This template appears in:</p>
+          <ul className="space-y-1">
+            {learningPaths.map((lp) => (
+              <li key={lp.id}>
+                <a
+                  href={`/admin/learning-paths/${lp.id}`}
+                  className="text-sm text-link hover:underline"
+                >
+                  {lp.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Publishing */}
       <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
@@ -420,98 +514,6 @@ export default function TemplateForm({
         )}
       </div>
 
-      {/* Credly Badge */}
-      <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-diligent-gray-5">Credly badge</h2>
-
-        <div>
-          <label htmlFor="credlyBadgeId" className="block text-sm font-medium text-diligent-gray-5 mb-1">
-            Credly badge template ID
-          </label>
-          <input
-            id="credlyBadgeId"
-            type="text"
-            value={credlyBadgeId}
-            onChange={(e) => setCredlyBadgeId(e.target.value)}
-            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red md:w-1/2"
-          />
-          <p className="mt-1 text-xs text-diligent-gray-3">
-            Optional. If set, learners who complete this template will receive a Credly badge. Enter the badge template ID from the Credly dashboard.
-          </p>
-        </div>
-      </div>
-
-      {/* SEO */}
-      <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-diligent-gray-5">SEO</h2>
-
-        <div>
-          <label htmlFor="seoTitle" className="block text-sm font-medium text-diligent-gray-5 mb-1">
-            Meta title
-          </label>
-          <input
-            id="seoTitle"
-            type="text"
-            value={seoTitle}
-            onChange={(e) => setSeoTitle(e.target.value)}
-            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
-          />
-          <p className="mt-1 text-xs text-diligent-gray-3">
-            {seoTitle.length} characters. Recommended: 50-60 characters.
-          </p>
-        </div>
-
-        <div>
-          <label htmlFor="seoDescription" className="block text-sm font-medium text-diligent-gray-5 mb-1">
-            Meta description
-          </label>
-          <textarea
-            id="seoDescription"
-            value={seoDescription}
-            onChange={(e) => setSeoDescription(e.target.value)}
-            rows={3}
-            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
-          />
-          <p className="mt-1 text-xs text-diligent-gray-3">
-            {seoDescription.length} characters. Recommended: 150-160 characters.
-          </p>
-        </div>
-      </div>
-
-      {/* Related Items */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-lg font-semibold text-diligent-gray-5 mb-1">Related items</h2>
-        <p className="text-sm text-diligent-gray-3 mb-4">
-          Select up to 3 related content items to display on the public page.
-        </p>
-        <RelatedItemsPicker
-          value={relatedItems}
-          onChange={setRelatedItems}
-          excludeType="TEMPLATE"
-          excludeId={template?.id}
-        />
-      </div>
-
-      {/* Content relationships (edit mode only) */}
-      {isEdit && learningPaths && learningPaths.length > 0 && (
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-lg font-semibold text-diligent-gray-5 mb-4">Content relationships</h2>
-          <p className="text-sm text-diligent-gray-4 mb-2">This template appears in:</p>
-          <ul className="space-y-1">
-            {learningPaths.map((lp) => (
-              <li key={lp.id}>
-                <a
-                  href={`/admin/learning-paths/${lp.id}`}
-                  className="text-sm text-link hover:underline"
-                >
-                  {lp.title}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
       {/* Bottom message */}
       {message && (
         <div
@@ -527,7 +529,8 @@ export default function TemplateForm({
       )}
 
       {/* Submit */}
-      <div className="flex items-center justify-end gap-4">
+      <div className="flex items-center justify-end gap-3">
+        {previewButton}
         <button
           type="submit"
           disabled={saving}

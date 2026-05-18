@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/db'
 import VideoForm from '@/components/admin/VideoForm'
+import PreviewButton from '@/components/admin/PreviewButton'
 
 export default async function NewVideoPage() {
   const [personas, regions, subjects] = await Promise.all([
@@ -29,6 +30,7 @@ export default async function NewVideoPage() {
         personas={personas}
         regions={regions}
         subjects={subjects}
+        previewButton={<PreviewButton contentType="VIDEO" />}
       />
     </div>
   )

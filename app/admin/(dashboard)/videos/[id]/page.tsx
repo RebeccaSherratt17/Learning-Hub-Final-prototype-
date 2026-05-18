@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import { getRelatedItems } from '@/lib/related-items'
 import VideoForm from '@/components/admin/VideoForm'
+import PreviewButton from '@/components/admin/PreviewButton'
 import RevisionHistory from '@/components/admin/RevisionHistory'
 
 export const dynamic = 'force-dynamic'
@@ -89,6 +90,7 @@ export default async function EditVideoPage({
         subjects={subjects}
         learningPaths={learningPaths}
         relatedItems={relatedItems}
+        previewButton={<PreviewButton contentType="VIDEO" contentId={video.id} />}
       />
 
       <RevisionHistory contentType="VIDEO" contentId={video.id} />

@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { prisma } from '@/lib/db'
 import CourseForm from '@/components/admin/CourseForm'
+import PreviewButton from '@/components/admin/PreviewButton'
 
 export default async function NewCoursePage() {
   const [personas, regions, subjects] = await Promise.all([
@@ -29,6 +30,7 @@ export default async function NewCoursePage() {
         personas={personas}
         regions={regions}
         subjects={subjects}
+        previewButton={<PreviewButton contentType="COURSE" />}
       />
     </div>
   )

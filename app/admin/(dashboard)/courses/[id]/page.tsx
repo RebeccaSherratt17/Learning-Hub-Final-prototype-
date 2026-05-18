@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import { getRelatedItems } from '@/lib/related-items'
 import CourseForm from '@/components/admin/CourseForm'
+import PreviewButton from '@/components/admin/PreviewButton'
 import RevisionHistory from '@/components/admin/RevisionHistory'
 
 export const dynamic = 'force-dynamic'
@@ -93,6 +94,7 @@ export default async function EditCoursePage({
         subjects={subjects}
         learningPaths={learningPaths}
         relatedItems={relatedItems}
+        previewButton={<PreviewButton contentType="COURSE" contentId={course.id} />}
       />
 
       <RevisionHistory contentType="COURSE" contentId={course.id} />

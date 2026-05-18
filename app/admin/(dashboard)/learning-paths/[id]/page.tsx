@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import { getRelatedItems } from '@/lib/related-items'
 import LearningPathForm from '@/components/admin/LearningPathForm'
+import PreviewButton from '@/components/admin/PreviewButton'
 import RevisionHistory from '@/components/admin/RevisionHistory'
 
 export const dynamic = 'force-dynamic'
@@ -141,6 +142,7 @@ export default async function EditLearningPathPage({
         regions={regions}
         subjects={subjects}
         relatedItems={relatedItems}
+        previewButton={<PreviewButton contentType="LEARNING_PATH" contentId={learningPath.id} />}
       />
 
       <RevisionHistory contentType="LEARNING_PATH" contentId={learningPath.id} />
