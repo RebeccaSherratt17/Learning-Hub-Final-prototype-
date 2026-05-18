@@ -26,6 +26,7 @@
     "@tiptap/starter-kit": "^3.22.5",
     "@types/dompurify": "^3.0.5",
     "@vercel/blob": "^2.3.3",
+    "@vidyard/embed-code": "^4.3.20",
     "bcryptjs": "^3.0.3",
     "clsx": "^2.1.1",
     "dompurify": "^3.4.1",

@@ -14,7 +14,7 @@ The hub will live as a separate but connected space under www.diligent.com as a 
 - **File storage**: Vercel Blob (for template file uploads and images)
 - **Admin interface**: Custom `/admin` dashboard built in Next.js (replaces any third-party CMS)
 - **Admin authentication**: NextAuth.js (email/password — admins log in at `/admin/login`)
-- **SCORM hosting**: SCORM Cloud (courses uploaded via SCORM Cloud dashboard; embedded in hub via launch URL iframe)
+- **SCORM hosting**: Self-hosted using `scorm-again` (open source npm package — no third-party SCORM platform required). SCORM `.zip` files are uploaded via the admin dashboard, extracted server-side and stored in Vercel Blob. The `scorm-again` library handles the SCORM 1.2 and SCORM 2004 runtime API
 - **Styling**: Tailwind CSS
 - **Language**: TypeScript throughout
 - **Lead management**: Marketo (REST API, server-side proxy)
@@ -30,11 +30,12 @@ The hub will live as a separate but connected space under www.diligent.com as a 
 Build database models (Prisma schema) and frontend templates for four content types:
 
 ### 1. Courses
-- Each course is a single self-contained SCORM file, uploaded to SCORM Cloud via their dashboard (not via the admin dashboard)
-- In the admin dashboard, admins store the course metadata and the SCORM Cloud course ID — the hub uses this ID at launch time to generate an embed link via the SCORM Cloud API
-- The learner never leaves the hub site and never sees SCORM Cloud — the full experience is branded and on-domain (see the SCORM Integration section below for the complete technical flow)
-- SCORM completion data (completion status, score, time spent) is posted back to the hub automatically by SCORM Cloud when a learner finishes — used for analytics reporting only at this stage
-- Fields: title, slug, description, SCORM Cloud course ID, thumbnail image (with alt text), subject tags, persona tags, region tags, access tier (free/gated/premium), author, published date, estimated duration, related items, restricted (boolean), access token (generated in admin dashboard), restricted access note (internal), status (draft/scheduled/published/archived), scheduled publish date, SEO meta title, SEO meta description, Open Graph image
+- Each course is a single self-contained SCORM file (.zip), uploaded directly via the admin dashboard (not via any third-party SCORM platform)
+- On upload, the hub extracts the SCORM package server-side, parses the `imsmanifest.xml` to identify the course entry point and SCORM version, and stores all extracted files in Vercel Blob
+- The `scorm-again` npm library handles the SCORM 1.2 and SCORM 2004 runtime API — it is initialised before the iframe loads so the course content can communicate with it
+- The learner never leaves the hub site — the course opens in a fullscreen overlay iframe on the hub's domain. There are no learner accounts and no registration required. Learners are identified by name and email captured via a simple form before launching the course (no account creation)
+- SCORM completion data (completion status, score, time spent) is captured by `scorm-again` and sent to the hub's `/api/scorm/tracking` endpoint, stored in the hub's own PostgreSQL database — no external SCORM platform is involved
+- Fields: title, slug, description, launch file path (Vercel Blob path to course entry point), SCORM version (1.2 or 2004, auto-detected from manifest), thumbnail image (with alt text), subject tags, persona tags, region tags, access tier (free/gated/premium), author, published date, estimated duration, related items, restricted (boolean), access token (generated in admin dashboard), restricted access note (internal), status (draft/scheduled/published/archived), scheduled publish date, SEO meta title, SEO meta description, Open Graph image
 
 ### 2. Templates
 - Downloadable files: Word (.docx), Excel (.xlsx) and PDF formats
@@ -51,7 +52,7 @@ Build database models (Prisma schema) and frontend templates for four content ty
 - Example: "ESG Essentials" might link to an ESG course, then an ESG template, then an ESG video — presented as an ordered list on a single focused page
 - Completion tracking is a core requirement, not a nice-to-have: the hub must track which individual learners have started and completed each item in a learning path, tying progress to a named, identified learner (captured via name and email at the point they begin the path) rather than recording anonymous aggregate counts only
 - When a learner starts a learning path, capture their name and email (if not already captured via a gate form for that session) and associate all subsequent item completions in that path with their identity
-- Item completion should be inferred per content type: for courses, completion comes from the SCORM Cloud postback; for templates, completion is recorded on successful download; for videos, completion is recorded when the Vidyard player signals the video has ended
+- Item completion should be inferred per content type: for courses, completion comes from the scorm-again tracking endpoint (`/api/scorm/tracking`); for templates, completion is recorded on successful download; for videos, completion is recorded when the Vidyard player signals the video has ended
 - Fields: title, slug, description, ordered list of content item references, subject tags, persona tags, region tags, access tier, estimated completion time, related items, Credly badge template ID (optional — only populate for paths that should award a badge), status (draft/scheduled/published/archived), scheduled publish date, SEO meta title, SEO meta description, Open Graph image
 - Milestones: Learning paths support optional milestone labels that admins can insert between content items in the ordered list. Milestones are simple subheadings (e.g. "Additional resources", "Advanced topics") that help categorise and separate content items within a path. They are not content items themselves — they are purely organisational labels that appear inline in the learning path item list at whatever position the admin places them. Admins can add, edit, reorder and delete milestones in the same interface as content items. On the public hub, milestones render as visual subheadings between the content item rows in the learning path.
 - Mandatory vs Elective items: Each content item and milestone in a learning path has an `isElective` flag (default: Mandatory). Admins can toggle any item between Mandatory and Elective in the learning path editor. A learning path is considered complete when all Mandatory items are completed — Elective items do not need to be completed for the path to be marked as done or for a Credly badge to be issued.
@@ -284,62 +285,97 @@ Vidyard uses a JavaScript embed rather than a standard iframe. Build a dedicated
 
 ## SCORM Integration
 
-Courses must be delivered via SCORM Cloud's API-embedded approach. The learner never leaves the hub and never sees SCORM Cloud at any point — the entire experience stays on Diligent's domain and branding.
+Courses are delivered using the open source `scorm-again` library — no third-party SCORM platform (e.g. SCORM Cloud) is used. All course files are stored in Vercel Blob and all completion data is stored in the hub's own PostgreSQL database. There are no learner accounts — learners are identified by name and email only.
 
 ### What the learner sees
 1. They browse the hub and find a course they want to take
-2. A form on the course page asks for their name and email (hub design and branding — not a SCORM Cloud page)
+2. A simple name and email form on the course page collects their identity (no account creation — just a name and email)
 3. They click "Start course"
-4. The course opens in a fullscreen overlay or modal iframe — the browser URL remains the hub's URL throughout
-5. On completion, the overlay closes and the hub displays a completion confirmation message
-6. They never see SCORM Cloud at any point
+4. The course opens in a fullscreen overlay iframe — still on the hub's URL throughout
+5. On completion or exit, the overlay closes and the hub displays a completion message
+6. They never see any external SCORM platform at any point
 
 ### What happens behind the scenes
 
-The "Start course" button triggers a server-side API route (not a client-side call — SCORM Cloud credentials must never be exposed to the browser). That route makes two calls to the SCORM Cloud REST API:
+**On course upload (admin):**
+- Admin uploads a SCORM `.zip` package via the admin dashboard
+- The hub extracts the zip server-side with path traversal protection and zip-bomb protection (per-file size cap, total size cap, file count cap)
+- The hub parses `imsmanifest.xml` to identify the course entry point and SCORM version (1.2 or 2004)
+- All extracted course files are uploaded to Vercel Blob under a unique course folder
+- The entry point path and SCORM version are stored in the `Course` database record
 
-**Call 1 — Create a registration**
+**On course launch (learner):**
+- The learner submits their name and email via the form on the course page
+- The hub's `/api/scorm/launch` server-side route:
+  - Creates an `Attempt` record in PostgreSQL (learner name, email, course ID, status: IN_PROGRESS)
+  - Generates a signed HMAC-SHA256 launch token (minimum 32-byte secret stored as `SCORM_TOKEN_SECRET` environment variable)
+  - Returns the token and the Vercel Blob URL for the course entry point
+- The `ScormEmbed` client component initialises `scorm-again` (`window.API` for SCORM 1.2, `window.API_1484_11` for SCORM 2004) **before** setting the iframe `src` — this is critical; if the global is not set before the iframe loads, the course will run in standalone mode with no LMS connection
+- The course iframe loads and communicates with `scorm-again` throughout the session
 
-Send the learner's name, email and the course ID to SCORM Cloud:
+**On completion/tracking:**
+- `scorm-again` batches CMI data and POSTs it to `/api/scorm/tracking/:attemptId`
+- The tracking endpoint verifies the launch token using `timingSafeEqual` (never string comparison), normalises the CMI snapshot (SCORM 1.2 and 2004 have different CMI shapes) and updates the `Attempt` record in PostgreSQL
+- The full raw CMI snapshot is preserved as JSONB in the `Attempt` table for future reporting use
+- When the course is complete, the overlay closes and the hub shows a completion message
 
-```json
-{
-  "courseId": "my_course_id",
-  "registrationId": "my_reg_id",
-  "learner": {
-    "id": "my_learner_id",
-    "firstName": "Jane",
-    "lastName": "Smith"
-  }
+### What needs to be built
+
+1. **Course upload pipeline** — admin `.zip` upload in the admin dashboard, server-side extraction, manifest parsing, Vercel Blob storage
+2. **`/api/scorm/launch` endpoint** — creates Attempt record, generates launch token, returns course entry point URL; triggered at click time, not page load
+3. **`ScormEmbed` client component** — initialises scorm-again before iframe loads, manages fullscreen overlay, handles exit and completion events
+4. **`/api/scorm/tracking/:attemptId` endpoint** — verifies token, normalises CMI data, updates Attempt record in PostgreSQL
+5. **Course detail page** — title, description, metadata, name/email form, "Start course" button, ScormEmbed overlay, related items widget
+
+### Database model — Attempt
+
+```prisma
+model Attempt {
+  id               String        @id @default(cuid())
+  courseId         String
+  course           Course        @relation(fields: [courseId], references: [id])
+  learnerEmail     String
+  learnerFirstName String
+  learnerLastName  String?
+  launchToken      String        @unique
+  status           AttemptStatus @default(IN_PROGRESS)
+  score            Float?
+  timeSpentSeconds Int?
+  completedAt      DateTime?
+  rawCmi           Json?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([courseId])
+  @@index([learnerEmail])
+  @@map("attempts")
+}
+
+enum AttemptStatus {
+  IN_PROGRESS
+  COMPLETED
+  PASSED
+  FAILED
 }
 ```
 
-Include a `postbackUrl` pointing to the hub's `/api/scorm/postback` endpoint — SCORM Cloud will POST completion data here when the learner finishes, so the hub receives results without making a separate API call.
+### Security requirements
+- **Path traversal** must be rejected at the manifest parser level (rejects `../` in `href` values) and the package extractor level (validates all file paths before writing to Blob)
+- **Launch tokens** must be verified with `timingSafeEqual`, never string comparison
+- **Zip-bomb protection** must enforce per-file size cap, total extracted size cap and file count cap
+- **`SCORM_TOKEN_SECRET`** must be at least 32 bytes — enforce this at startup
+- **All SCORM API routes are server-side only** — launch tokens and secrets must never be exposed to the browser
 
-Also include a `redirectUrl` pointing back to the course page (or a dedicated completion page) so that when the learner exits the course player, SCORM Cloud returns them to the hub rather than its own interface.
+### Environment variable to add
+```
+SCORM_TOKEN_SECRET=   # Min 32 bytes, used to sign/verify launch tokens
+```
 
-**Call 2 — Get a launch link**
-
-Request a launch URL from SCORM Cloud for the registration just created. SCORM Cloud returns a time-limited URL that opens directly to the course content.
-
-**Critical:** Do not embed the launch URL in the page at load time. Launch URLs are only valid for approximately 15 minutes after generation. Generate the launch URL at the moment the learner clicks "Start course" — not when the page loads — to avoid expiry errors.
-
-Drop the returned URL into the iframe or fullscreen overlay on the page.
-
-### What to build
-
-Four things are needed:
-
-1. **Name/email form on the course page** — collects learner identity before launch; submits to the backend endpoint
-2. **`/api/scorm/launch` endpoint** — server-side route that calls the SCORM Cloud API to create a registration and return a launch URL; triggered at click time, not page load
-3. **`ScormEmbed` client component** — fullscreen overlay or large modal containing an iframe that loads the launch URL returned by the endpoint; should be dismissible and handle exit gracefully
-4. **`/api/scorm/postback` endpoint** — receives the completion POST from SCORM Cloud (completion status, score, time spent) and forwards the data to the analytics layer
-
-### Notes
-- All SCORM Cloud API calls must be made server-side. Credentials must never be sent to the browser
-- The `registrationId` should be a combination of the learner's ID and the course ID to ensure uniqueness and idempotency (avoid creating duplicate registrations for the same learner/course pair)
-- The postback endpoint should verify the request origin before processing (SCORM Cloud supports a shared secret for postback verification)
-
+### Common issues
+- **Course says "no LMS connection"**: `window.API` / `window.API_1484_11` was not set before the iframe loaded — scorm-again must be initialised before the iframe `src` is set
+- **Tracking POST returns 403**: The launch token's claims don't match the URL
+- **Course file 404s**: Check the `Course.launchFile` value — some authoring tools put the launch file in subdirectories (e.g. `scormcontent/index.html`)
+- **Course update handling**: When a course `.zip` is re-uploaded, overwrite the existing Blob files under the same course folder path and update `Course.launchFile` if the entry point changed. Existing Attempt records are preserved
 ---
 
 ## Credly Badge Integration
@@ -440,9 +476,9 @@ Implement event tracking ready for Google Analytics 4 (GA4). Track:
 - Gate form submissions
 - Course page opens (tracked on page load for each course content item)
 - Gate form abandonment on course pages (tracked when the name/email form is displayed but not submitted — i.e. the form renders but no successful Marketo submission follows within the session)
-- Course enrollment events (when an identified learner clicks "Start course" and a SCORM Cloud registration is successfully created — capture learner name, email and course ID)
-- Course completion events (received from SCORM Cloud via postback)
-- Learning path item completion events (per content type: SCORM postback for courses, download confirmation for templates, Vidyard end event for videos) — all tied to the identified learner's name and email
+- Course enrollment events (when an identified learner submits their name and email and clicks "Start course" — an Attempt record is created in PostgreSQL; capture learner name, email and course ID)
+- Course completion events (received from the scorm-again tracking endpoint `/api/scorm/tracking` and stored in the Attempt table in PostgreSQL)
+- Learning path item completion events (per content type: scorm-again tracking for courses, download confirmation for templates, Vidyard end event for videos) — all tied to the identified learner's name and email
 - Learning path fully completed events (all items in the path checked off by an identified learner)
 - Learning path partial completion rate (track the number of items completed per learner per path, so the reporting dashboard can surface what percentage of learners complete some but not all items — calculated from the gap between item completion events and full path completion events)
 
@@ -526,7 +562,7 @@ Every user-facing failure or empty condition must have a designed, intentional r
 
 - **Search returns no results**: Display a friendly message with the search term echoed back (e.g. "No results found for 'cybersecurity'") and suggest clearing filters or browsing all content
 - **Filter combination yields no results**: Display a message explaining no content matches the current filters, with a prompt to adjust or clear filters
-- **SCORM launch fails**: If the SCORM Cloud API call fails or returns an error, display a clear message to the learner explaining the course could not be launched, with a prompt to try again or contact support — do not show a broken iframe or a blank overlay
+- **SCORM launch fails**: If the `/api/scorm/launch` endpoint fails, display a clear message to the learner explaining the course could not be launched, with a prompt to try again or contact support — do not show a broken iframe or a blank overlay
 - **Marketo submission fails**: If the gate form Marketo API call fails, display an error message and allow the learner to retry — do not silently drop the submission or grant access without a successful submission
 - **Token validation fails**: If a restricted course token is missing, invalid or does not match the course, display a clear "this link is not valid" message — do not expose any course content or metadata
 - **Credly badge issuance fails**: Log the error server-side and retry — do not silently drop badge issuance failures; consider a fallback notification to certifications@diligent.com if retries are exhausted
@@ -730,8 +766,8 @@ White space is a core design principle for Diligent. It provides a blank canvas 
 │       ├── token/
 │       │   └── validate/           # Validates restricted course access tokens
 │       ├── scorm/
-│       │   ├── launch/             # Generates SCORM Cloud registration + launch URL
-│       │   └── postback/           # Receives completion data from SCORM Cloud
+│       │   ├── launch/             # Creates Attempt record + generates signed launch token at click time
+│       │   └── tracking/           # Receives CMI data from scorm-again, saves to Attempt table
 │       ├── credly/
 │       │   └── issue/              # Issues Credly badge on learning path completion
 │       ├── revalidate/             # Triggers Next.js ISR cache revalidation
@@ -779,10 +815,8 @@ MARKETO_FORM_ID=
 MARKETO_PROGRAM_NAME=
 MARKETO_LIST_NAME=
 
-# SCORM Cloud
-SCORM_CLOUD_APP_ID=
-SCORM_CLOUD_SECRET_KEY=
-SCORM_CLOUD_BASE_URL=
+# SCORM (scorm-again self-hosted)
+SCORM_TOKEN_SECRET=   # Min 32 bytes, used to sign/verify launch tokens
 
 # Credly
 CREDLY_API_KEY=
@@ -807,7 +841,7 @@ GA4_API_SECRET=
 9. Build the public hub homepage and content library pulling data from PostgreSQL via Prisma
 10. Build content item page templates for all four types
 11. Implement the tiered access/gating system with the Marketo API proxy route
-12. Wire up SCORM Cloud API-embedded delivery
+12. Wire up scorm-again self-hosted SCORM delivery (upload pipeline, launch endpoint, tracking endpoint, ScormEmbed component)
 13. Wire up Credly badge issuance on learning path completion
 14. Wire up analytics event tracking
 15. Polish UI to match Diligent brand guidelines
