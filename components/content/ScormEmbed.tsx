@@ -178,7 +178,7 @@ export default function ScormEmbed({
             title={courseTitle}
             className="h-full w-full border-0"
             allow="autoplay; fullscreen"
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-downloads"
           />
         )}
       </div>

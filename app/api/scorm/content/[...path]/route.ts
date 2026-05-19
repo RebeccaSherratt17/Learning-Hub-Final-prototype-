@@ -35,6 +35,16 @@ const MIME_TYPES: Record<string, string> = {
   '.ttf': 'font/ttf',
   '.eot': 'application/vnd.ms-fontobject',
   '.swf': 'application/x-shockwave-flash',
+  '.pdf': 'application/pdf',
+  '.doc': 'application/msword',
+  '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  '.xls': 'application/vnd.ms-excel',
+  '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  '.ppt': 'application/vnd.ms-powerpoint',
+  '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  '.zip': 'application/zip',
+  '.csv': 'text/csv',
+  '.txt': 'text/plain',
 }
 
 function getMimeType(filePath: string): string {
@@ -90,11 +100,26 @@ export async function GET(
     const body = await response.arrayBuffer()
     const contentType = getMimeType(filePath)
 
+    // HTML, JS, CSS and other assets that render in the iframe need inline
+    // disposition. Downloadable files (PDF, DOCX, XLSX, etc.) need attachment
+    // so the browser triggers a download when a learner clicks a link.
+    const inlineTypes = new Set([
+      'text/html', 'application/javascript', 'text/css', 'application/json',
+      'application/xml', 'application/xml-dtd', 'image/png', 'image/jpeg',
+      'image/gif', 'image/svg+xml', 'image/x-icon', 'image/webp',
+      'audio/mpeg', 'audio/wav', 'audio/ogg', 'video/mp4', 'video/webm',
+      'font/woff', 'font/woff2', 'font/ttf', 'application/vnd.ms-fontobject',
+      'application/x-shockwave-flash',
+    ])
+    const disposition = inlineTypes.has(contentType)
+      ? 'inline'
+      : `attachment; filename="${segments[segments.length - 1]}"`
+
     return new NextResponse(body, {
       status: 200,
       headers: {
         'Content-Type': contentType,
-        'Content-Disposition': 'inline',
+        'Content-Disposition': disposition,
         'Cache-Control': 'public, max-age=3600, immutable',
       },
     })
