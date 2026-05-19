@@ -35,6 +35,13 @@ enum ContentType {
   LEARNING_PATH
 }
 
+enum AttemptStatus {
+  IN_PROGRESS
+  COMPLETED
+  PASSED
+  FAILED
+}
+
 // ─────────────────────────────────────────────
 // Admin Users
 // ─────────────────────────────────────────────
@@ -113,7 +120,8 @@ model Course {
   title              String
   slug               String        @unique
   description        String        @db.Text
-  scormCourseId      String?
+  launchFile         String?       // Vercel Blob path to SCORM entry point
+  scormVersion       String?       // "1.2" or "2004", auto-detected from manifest
   thumbnailUrl       String?
   thumbnailAlt       String?
   ogImageUrl         String?
@@ -639,4 +647,28 @@ model LearnerProgress {
 
   @@unique([learnerId, learningPathItemId])
   @@map("learner_progress")
+}
+
+// ─────────────────────────────────────────────
+// SCORM Attempts (course completion tracking)
+// ─────────────────────────────────────────────
+
+model Attempt {
+  id               String        @id @default(cuid())
+  courseId          String
+  learnerEmail     String
+  learnerFirstName String
+  learnerLastName  String?
+  launchToken      String        @unique
+  status           AttemptStatus @default(IN_PROGRESS)
+  score            Float?
+  timeSpentSeconds Int?
+  completedAt      DateTime?
+  rawCmi           Json?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([courseId])
+  @@index([learnerEmail])
+  @@map("attempts")
 }
