@@ -848,5 +848,12 @@ GA4_API_SECRET=
 
 **Start with steps 1–5 and confirm the database schema looks right before building any UI.**
 
+**CRITICAL — Database Safety Rules:**
+- **NEVER** run `prisma migrate reset` or `prisma migrate reset --force` without explicit approval from the project owner. This command drops all tables and destroys all data. A previous incident (2026-05-19) resulted in complete data loss from the production Supabase database.
+- For development schema changes, use `prisma db push` (applies changes without creating migration files, does not drop data).
+- For creating migration files, use `prisma migrate dev` with caution — if Prisma reports migration drift, **stop and flag the issue** before proceeding. Do not attempt to resolve drift automatically.
+- If a migration drift error occurs, the safe path is: (1) report the drift to the project owner, (2) discuss options before running any commands, (3) never reset or force-apply without approval.
+- These rules apply to subagents and automated scripts as well — no agent should run destructive database commands.
+
 **Important note on reusing existing work**: The Next.js frontend components, brand design system (Tailwind tokens, fonts, colours), page structure and routing built in the previous prototype should be reused wherever possible. The main items being replaced are the Sanity-specific code (schemas, GROQ queries, Studio, `next-sanity`, `@sanity/image-url`) — these are replaced by Prisma models, PostgreSQL queries, the custom admin dashboard and Vercel Blob. Everything else carries forward.
 
