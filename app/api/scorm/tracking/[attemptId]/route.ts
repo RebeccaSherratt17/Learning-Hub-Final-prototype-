@@ -33,33 +33,48 @@ export async function POST(
       return NextResponse.json({ error: 'Invalid launch token' }, { status: 403 })
     }
 
-    // Normalise CMI data — extract completion status and score
-    // SCORM 1.2 uses cmi.core.lesson_status, SCORM 2004 uses cmi.completion_status
-    const lessonStatus =
-      cmi?.['cmi.core.lesson_status'] ??
-      cmi?.['cmi.completion_status'] ??
-      null
+    // Normalise CMI data — scorm-again's renderCMIToJSONObject() returns
+    // a nested object: { cmi: { core: { lesson_status: "completed", ... } } }
+    // not flat dot-notation keys.
+    const cmiData = cmi?.cmi ?? cmi // handle both { cmi: { ... } } and flat
+
+    // SCORM 1.2: cmi.core.lesson_status / cmi.core.score.raw / cmi.core.session_time
+    const lessonStatus = cmiData?.core?.lesson_status ?? null
+    // SCORM 2004: cmi.completion_status / cmi.success_status / cmi.score.raw / cmi.session_time
+    const completionStatus = cmiData?.completion_status ?? null
+    const successStatus = cmiData?.success_status ?? null
 
     const scoreRaw =
-      cmi?.['cmi.core.score.raw'] ??
-      cmi?.['cmi.score.raw'] ??
+      cmiData?.core?.score?.raw ??
+      cmiData?.score?.raw ??
       null
 
     const sessionTime =
-      cmi?.['cmi.core.session_time'] ??
-      cmi?.['cmi.session_time'] ??
+      cmiData?.core?.session_time ??
+      cmiData?.session_time ??
       null
 
     // Map SCORM status to AttemptStatus enum
     let status = attempt.status
+
     if (lessonStatus) {
+      // SCORM 1.2
       const normalized = lessonStatus.toLowerCase()
-      if (normalized === 'completed' || normalized === 'complete') {
+      if (normalized === 'completed' || normalized === 'passed') {
         status = 'COMPLETED'
-      } else if (normalized === 'passed') {
-        status = 'PASSED'
       } else if (normalized === 'failed') {
         status = 'FAILED'
+      }
+    } else if (completionStatus || successStatus) {
+      // SCORM 2004
+      const comp = completionStatus?.toLowerCase()
+      const succ = successStatus?.toLowerCase()
+      if (succ === 'failed') {
+        status = 'FAILED'
+      } else if (comp === 'completed' && succ === 'passed') {
+        status = 'PASSED'
+      } else if (comp === 'completed') {
+        status = 'COMPLETED'
       }
     }
 
