@@ -23,7 +23,8 @@ interface CourseFormProps {
     title: string
     slug: string
     description: string
-    scormCourseId: string | null
+    launchFile: string | null
+    scormVersion: string | null
     thumbnailUrl: string | null
     thumbnailAlt: string | null
     ogImageUrl: string | null
@@ -77,7 +78,10 @@ export default function CourseForm({
   const [slug, setSlug] = useState(course?.slug ?? '')
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(isEdit)
   const [description, setDescription] = useState(course?.description ?? '')
-  const [scormCourseId, setScormCourseId] = useState(course?.scormCourseId ?? '')
+  const [launchFile, setLaunchFile] = useState(course?.launchFile ?? '')
+  const [scormVersion, setScormVersion] = useState(course?.scormVersion ?? '')
+  const [scormUploading, setScormUploading] = useState(false)
+  const [scormMessage, setScormMessage] = useState<string | null>(null)
   const [thumbnailUrl, setThumbnailUrl] = useState(course?.thumbnailUrl ?? '')
   const [thumbnailAlt, setThumbnailAlt] = useState(course?.thumbnailAlt ?? '')
   const [ogImageUrl, setOgImageUrl] = useState(course?.ogImageUrl ?? '')
@@ -171,6 +175,40 @@ export default function CourseForm({
     setTimeout(() => setCopied(false), 2000)
   }
 
+  async function handleScormUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !course) return
+
+    setScormUploading(true)
+    setScormMessage(null)
+
+    try {
+      const formData = new FormData()
+      formData.append('scormZip', file)
+
+      const res = await fetch(`/api/admin/courses/${course.id}/scorm`, {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        setScormMessage(data.error || 'Upload failed')
+        return
+      }
+
+      const data = await res.json()
+      setLaunchFile(data.launchFile)
+      setScormVersion(data.scormVersion)
+      setScormMessage(`Uploaded successfully — ${data.fileCount} files extracted (SCORM ${data.scormVersion})`)
+    } catch {
+      setScormMessage('Network error uploading SCORM package')
+    } finally {
+      setScormUploading(false)
+      e.target.value = ''
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSaving(true)
@@ -180,7 +218,8 @@ export default function CourseForm({
       title,
       slug,
       description,
-      scormCourseId: scormCourseId || null,
+      launchFile: launchFile || null,
+      scormVersion: scormVersion || null,
       thumbnailUrl: thumbnailUrl || null,
       thumbnailAlt: thumbnailAlt || null,
       ogImageUrl: ogImageUrl || null,
@@ -337,25 +376,48 @@ export default function CourseForm({
         </div>
       </div>
 
-      {/* SCORM Integration */}
+      {/* SCORM Package */}
       <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-diligent-gray-5">SCORM integration</h2>
+        <h2 className="text-lg font-semibold text-diligent-gray-5">SCORM package</h2>
 
-        <div>
-          <label htmlFor="scormCourseId" className="block text-sm font-medium text-diligent-gray-5 mb-1">
-            SCORM Cloud course ID
-          </label>
-          <input
-            id="scormCourseId"
-            type="text"
-            value={scormCourseId}
-            onChange={(e) => setScormCourseId(e.target.value)}
-            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
-          />
-          <p className="mt-1 text-xs text-diligent-gray-3">
-            Enter the course ID from SCORM Cloud. This is used to generate launch URLs.
+        {launchFile && (
+          <div className="rounded bg-green-50 border border-green-200 px-4 py-3 text-sm">
+            <p className="font-medium text-green-800">SCORM package uploaded</p>
+            <p className="mt-1 text-green-700">
+              Version: SCORM {scormVersion} &middot; Launch file: <code className="text-xs bg-green-100 px-1 rounded">{launchFile}</code>
+            </p>
+          </div>
+        )}
+
+        {isEdit ? (
+          <div>
+            <label className="block text-sm font-medium text-diligent-gray-5 mb-1">
+              {launchFile ? 'Replace SCORM package' : 'Upload SCORM package'}
+            </label>
+            <input
+              type="file"
+              accept=".zip"
+              onChange={handleScormUpload}
+              disabled={scormUploading}
+              className="block w-full text-sm text-diligent-gray-4 file:mr-4 file:rounded file:border-0 file:bg-diligent-gray-5 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-diligent-gray-4 disabled:opacity-50"
+            />
+            <p className="mt-1 text-xs text-diligent-gray-3">
+              Upload a SCORM 1.2 or 2004 .zip package. The manifest will be parsed automatically.
+            </p>
+            {scormUploading && (
+              <p className="mt-2 text-sm text-diligent-gray-4">Uploading and extracting...</p>
+            )}
+            {scormMessage && (
+              <p className={`mt-2 text-sm ${launchFile ? 'text-green-700' : 'text-diligent-red'}`}>
+                {scormMessage}
+              </p>
+            )}
+          </div>
+        ) : (
+          <p className="text-sm text-diligent-gray-3">
+            Save the course first, then upload a SCORM package.
           </p>
-        </div>
+        )}
       </div>
 
       {/* Credly Badge */}
