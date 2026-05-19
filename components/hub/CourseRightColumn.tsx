@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useGate } from './GateContext'
 import GateForm from './GateForm'
 import dynamic from 'next/dynamic'
@@ -43,10 +43,22 @@ export function CourseRightColumn({
     scormVersion: '1.2' | '2004'
   } | null>(null)
 
-  async function handleLaunch(e: React.FormEvent) {
-    e.preventDefault()
-    if (!firstName.trim() || !email.trim()) return
+  // Restore learner identity from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('hub_scorm_learner')
+      if (stored) {
+        const learner = JSON.parse(stored)
+        if (learner.firstName) setFirstName(learner.firstName)
+        if (learner.email) setEmail(learner.email)
+        if (learner.lastName) setLastName(learner.lastName)
+      }
+    } catch {
+      // Ignore parse errors
+    }
+  }, [])
 
+  const launchCourse = useCallback(async (fn: string, em: string, ln: string) => {
     setLaunching(true)
     setError(null)
 
@@ -56,9 +68,9 @@ export function CourseRightColumn({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           courseId,
-          firstName: firstName.trim(),
-          email: email.trim(),
-          lastName: lastName.trim() || undefined,
+          firstName: fn,
+          email: em,
+          lastName: ln || undefined,
         }),
       })
 
@@ -66,6 +78,15 @@ export function CourseRightColumn({
         const data = await res.json()
         setError(data.error || 'Failed to launch course')
         return
+      }
+
+      // Persist learner identity for future launches
+      try {
+        localStorage.setItem('hub_scorm_learner', JSON.stringify({
+          firstName: fn, email: em, lastName: ln,
+        }))
+      } catch {
+        // localStorage may be unavailable — not critical
       }
 
       const data = await res.json()
@@ -80,6 +101,12 @@ export function CourseRightColumn({
     } finally {
       setLaunching(false)
     }
+  }, [courseId])
+
+  async function handleLaunch(e: React.FormEvent) {
+    e.preventDefault()
+    if (!firstName.trim() || !email.trim()) return
+    await launchCourse(firstName.trim(), email.trim(), lastName.trim())
   }
 
   function handleScormClose() {
@@ -115,16 +142,18 @@ export function CourseRightColumn({
         <p className="mt-2 text-sm text-diligent-gray-4">
           Well done! You have successfully completed this course.
         </p>
+        {error && (
+          <p className="mt-2 text-sm text-diligent-red" role="alert">{error}</p>
+        )}
         <button
           onClick={() => {
             setCompleted(false)
-            setFirstName('')
-            setEmail('')
-            setLastName('')
+            launchCourse(firstName, email, lastName)
           }}
-          className="mt-4 rounded bg-diligent-red px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-diligent-red-2"
+          disabled={launching}
+          className="mt-4 rounded bg-diligent-red px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-diligent-red-2 disabled:opacity-50"
         >
-          Take again
+          {launching ? 'Launching...' : 'Take again'}
         </button>
       </div>
     )
