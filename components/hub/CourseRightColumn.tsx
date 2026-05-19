@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useGate } from './GateContext'
-import GateForm from './GateForm'
 import dynamic from 'next/dynamic'
 
 const ScormEmbed = dynamic(() => import('@/components/content/ScormEmbed'), {
@@ -24,13 +23,13 @@ export function CourseRightColumn({
   courseId,
   courseTitle,
   launchFile,
-  scormVersion,
 }: CourseRightColumnProps) {
-  const { gated } = useGate()
+  const { gated, markGated } = useGate()
 
   const [firstName, setFirstName] = useState('')
-  const [email, setEmail] = useState('')
   const [lastName, setLastName] = useState('')
+  const [email, setEmail] = useState('')
+  const [organization, setOrganization] = useState('')
   const [launching, setLaunching] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [completed, setCompleted] = useState(false)
@@ -50,19 +49,50 @@ export function CourseRightColumn({
       if (stored) {
         const learner = JSON.parse(stored)
         if (learner.firstName) setFirstName(learner.firstName)
-        if (learner.email) setEmail(learner.email)
         if (learner.lastName) setLastName(learner.lastName)
+        if (learner.email) setEmail(learner.email)
+        if (learner.organization) setOrganization(learner.organization)
       }
     } catch {
       // Ignore parse errors
     }
   }, [])
 
-  const launchCourse = useCallback(async (fn: string, em: string, ln: string) => {
+  // Whether the visitor has already passed the gate (30-day cookie)
+  const hasGateSession = gated
+
+  const launchCourse = useCallback(async (fn: string, ln: string, em: string, org: string) => {
     setLaunching(true)
     setError(null)
 
     try {
+      // Submit to gate endpoint (sets 30-day hub_gated_access cookie,
+      // stores lead data, and handles Marketo submission for gated courses)
+      if (!hasGateSession) {
+        const gateRes = await fetch('/api/gate/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            firstName: fn,
+            lastName: ln,
+            email: em,
+            organization: org,
+            jobTitle: '-', // Not collected on course form; placeholder
+            contentType: 'COURSE',
+            contentId: courseId,
+          }),
+        })
+
+        if (!gateRes.ok) {
+          const data = await gateRes.json()
+          setError(data.error || 'Failed to submit details')
+          return
+        }
+
+        markGated()
+      }
+
+      // Launch the SCORM course
       const res = await fetch('/api/scorm/launch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -83,7 +113,7 @@ export function CourseRightColumn({
       // Persist learner identity for future launches
       try {
         localStorage.setItem('hub_scorm_learner', JSON.stringify({
-          firstName: fn, email: em, lastName: ln,
+          firstName: fn, lastName: ln, email: em, organization: org,
         }))
       } catch {
         // localStorage may be unavailable — not critical
@@ -101,12 +131,12 @@ export function CourseRightColumn({
     } finally {
       setLaunching(false)
     }
-  }, [courseId])
+  }, [courseId, hasGateSession, markGated])
 
   async function handleLaunch(e: React.FormEvent) {
     e.preventDefault()
     if (!firstName.trim() || !email.trim()) return
-    await launchCourse(firstName.trim(), email.trim(), lastName.trim())
+    await launchCourse(firstName.trim(), lastName.trim(), email.trim(), organization.trim())
   }
 
   function handleScormClose() {
@@ -148,22 +178,13 @@ export function CourseRightColumn({
         <button
           onClick={() => {
             setCompleted(false)
-            launchCourse(firstName, email, lastName)
+            launchCourse(firstName, lastName, email, organization)
           }}
           disabled={launching}
           className="mt-4 rounded bg-diligent-red px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-diligent-red-2 disabled:opacity-50"
         >
           {launching ? 'Launching...' : 'Take again'}
         </button>
-      </div>
-    )
-  }
-
-  // Gate form for gated courses when not yet gated
-  if (accessTier === 'GATED' && !gated) {
-    return (
-      <div className="rounded-xl border border-diligent-gray-2 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.08)] sm:p-8">
-        <GateForm contentType="COURSE" contentId={courseId} />
       </div>
     )
   }
@@ -200,7 +221,30 @@ export function CourseRightColumn({
     )
   }
 
-  // Learner form + launch button (free or after gate)
+  // Returning visitor with gate session — skip form, show launch button directly
+  if (hasGateSession && firstName && email) {
+    return (
+      <div className="rounded-xl border border-diligent-gray-2 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.08)] sm:p-8 text-center">
+        <span className="material-symbols-sharp text-[48px] text-diligent-red">school</span>
+        <h3 className="mt-3 text-lg font-bold text-diligent-gray-5">Ready to learn</h3>
+        <p className="mt-2 text-sm text-diligent-gray-4">
+          Welcome back, {firstName}. Launch the course to pick up where you left off.
+        </p>
+        {error && (
+          <p className="mt-3 text-sm text-diligent-red" role="alert">{error}</p>
+        )}
+        <button
+          onClick={() => launchCourse(firstName, lastName, email, organization)}
+          disabled={launching}
+          className="mt-4 w-full rounded bg-diligent-red px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-diligent-red-2 disabled:opacity-50"
+        >
+          {launching ? 'Launching...' : 'Start course'}
+        </button>
+      </div>
+    )
+  }
+
+  // First-time form — same fields for Free and Gated courses
   return (
     <div className="rounded-xl border border-diligent-gray-2 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.08)] sm:p-8">
       <h3 className="text-lg font-bold text-diligent-gray-5">Start this course</h3>
@@ -238,7 +282,7 @@ export function CourseRightColumn({
 
         <div>
           <label htmlFor="learner-email" className="block text-sm font-medium text-diligent-gray-5 mb-1">
-            Email <span className="text-diligent-red">*</span>
+            Work email <span className="text-diligent-red">*</span>
           </label>
           <input
             id="learner-email"
@@ -246,6 +290,19 @@ export function CourseRightColumn({
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            className="w-full rounded border border-diligent-gray-2 px-3 py-2.5 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="learner-organization" className="block text-sm font-medium text-diligent-gray-5 mb-1">
+            Organization
+          </label>
+          <input
+            id="learner-organization"
+            type="text"
+            value={organization}
+            onChange={(e) => setOrganization(e.target.value)}
             className="w-full rounded border border-diligent-gray-2 px-3 py-2.5 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
           />
         </div>
