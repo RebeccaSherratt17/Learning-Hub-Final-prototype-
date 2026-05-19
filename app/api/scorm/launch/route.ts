@@ -51,10 +51,16 @@ export async function POST(request: NextRequest) {
       data: { launchToken },
     })
 
+    // Convert the Blob URL to a proxy URL so the iframe loads through
+    // /api/scorm/content/ with correct headers (inline disposition, no restrictive CSP).
+    // Blob URL: https://{store}.public.blob.vercel-storage.com/courses/{courseId}/{path}
+    // Proxy URL: /api/scorm/content/{courseId}/{path}
+    const launchUrl = blobUrlToProxyUrl(course.launchFile)
+
     return NextResponse.json({
       attemptId: attempt.id,
       launchToken,
-      launchUrl: course.launchFile,
+      launchUrl,
       scormVersion: course.scormVersion,
     })
   } catch (error) {
@@ -64,4 +70,15 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
+}
+
+/**
+ * Convert a Vercel Blob URL to a proxy URL that serves through /api/scorm/content/.
+ * Input:  https://{store}.public.blob.vercel-storage.com/courses/{courseId}/{path}
+ * Output: /api/scorm/content/{courseId}/{path}
+ */
+function blobUrlToProxyUrl(blobUrl: string): string {
+  const match = blobUrl.match(/\/courses\/(.+)$/)
+  if (!match) return blobUrl
+  return `/api/scorm/content/${match[1]}`
 }
