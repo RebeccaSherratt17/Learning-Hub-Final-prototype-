@@ -51,7 +51,8 @@ export async function PUT(
       title,
       slug,
       description,
-      scormCourseId,
+      launchFile,
+      scormVersion,
       thumbnailUrl,
       thumbnailAlt,
       ogImageUrl,
@@ -74,7 +75,8 @@ export async function PUT(
       title?: string
       slug?: string
       description?: string
-      scormCourseId?: string
+      launchFile?: string
+      scormVersion?: string
       thumbnailUrl?: string
       thumbnailAlt?: string
       ogImageUrl?: string
@@ -126,7 +128,8 @@ export async function PUT(
           title: title.trim(),
           slug: slug.trim(),
           description: description.trim(),
-          scormCourseId: scormCourseId?.trim() || null,
+          launchFile: launchFile?.trim() || null,
+          scormVersion: scormVersion?.trim() || null,
           thumbnailUrl: thumbnailUrl || null,
           thumbnailAlt: thumbnailAlt || null,
           ogImageUrl: ogImageUrl || null,
