@@ -38,6 +38,12 @@ const config: Config = {
           'sans-serif',
         ],
       },
+      keyframes: {
+        slideUp: {
+          '0%': { transform: 'translateY(100%)' },
+          '100%': { transform: 'translateY(0)' },
+        },
+      },
       fontSize: {
         'display-1': ['clamp(2.5rem, 4vw + 1rem, 4rem)', { lineHeight: '1.05', letterSpacing: '-0.03em' }],
         'display-2': ['clamp(2rem, 3vw + 0.5rem, 3rem)', { lineHeight: '1.15' }],
