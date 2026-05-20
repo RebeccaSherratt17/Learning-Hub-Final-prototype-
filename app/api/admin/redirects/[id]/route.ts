@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
+import { revalidatePath } from 'next/cache'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
@@ -58,6 +59,7 @@ export async function PUT(
       data,
     })
 
+    revalidatePath('/api/redirects')
     return NextResponse.json(redirect)
   } catch (error) {
     if (
@@ -85,6 +87,7 @@ export async function DELETE(
 
   try {
     await prisma.redirect.delete({ where: { id: params.id } })
+    revalidatePath('/api/redirects')
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Failed to delete redirect:', error)

@@ -58,7 +58,7 @@ function CheckboxOption({
         type="checkbox"
         checked={checked}
         onChange={onChange}
-        className="h-3.5 w-3.5 accent-diligent-red"
+        className="h-4 w-4 accent-diligent-red"
       />
       <span>{label}</span>
       {count !== undefined && (

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
+import { revalidatePath } from 'next/cache'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
@@ -77,6 +78,7 @@ export async function POST(request: Request) {
       },
     })
 
+    revalidatePath('/api/redirects')
     return NextResponse.json(redirect, { status: 201 })
   } catch (error) {
     if (

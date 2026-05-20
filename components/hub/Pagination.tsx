@@ -43,12 +43,12 @@ export function Pagination({
   const pages = getPageNumbers(currentPage, totalPages)
 
   return (
-    <nav aria-label="Pagination" className="mt-10 flex justify-center gap-1">
+    <nav aria-label="Pagination" className="mt-10 flex justify-center gap-1.5">
       <button
         type="button"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="rounded-sm px-3 py-2 text-sm text-diligent-gray-4 transition hover:bg-diligent-gray-1 disabled:opacity-40 disabled:hover:bg-transparent"
+        className="rounded-sm px-3 py-3 text-sm text-diligent-gray-4 transition hover:bg-diligent-gray-1 disabled:opacity-40 disabled:hover:bg-transparent"
         aria-label="Previous page"
       >
         &lsaquo;
@@ -57,7 +57,7 @@ export function Pagination({
         page === '...' ? (
           <span
             key={`ellipsis-${i}`}
-            className="px-2 py-2 text-sm text-diligent-gray-3"
+            className="px-2 py-3 text-sm text-diligent-gray-3"
           >
             &hellip;
           </span>
@@ -68,7 +68,7 @@ export function Pagination({
             onClick={() => onPageChange(page)}
             aria-current={page === currentPage ? 'page' : undefined}
             className={cn(
-              'min-w-[2.5rem] rounded-sm px-3 py-2 text-sm transition',
+              'min-w-[2.75rem] rounded-sm px-3 py-3 text-sm transition',
               page === currentPage
                 ? 'bg-diligent-gray-5 font-semibold text-white'
                 : 'text-diligent-gray-4 hover:bg-diligent-gray-1',
@@ -82,7 +82,7 @@ export function Pagination({
         type="button"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="rounded-sm px-3 py-2 text-sm text-diligent-gray-4 transition hover:bg-diligent-gray-1 disabled:opacity-40 disabled:hover:bg-transparent"
+        className="rounded-sm px-3 py-3 text-sm text-diligent-gray-4 transition hover:bg-diligent-gray-1 disabled:opacity-40 disabled:hover:bg-transparent"
         aria-label="Next page"
       >
         &rsaquo;

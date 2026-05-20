@@ -19,7 +19,7 @@ function PartnerLogo({ partner }: { partner: Partner }) {
   if (!partner.logoUrl) return null
 
   const img = (
-    <div className="flex h-16 w-[140px] items-center justify-center">
+    <div className="flex h-10 w-[100px] items-center justify-center sm:h-14 sm:w-[120px] lg:h-16 lg:w-[140px]">
       <Image
         src={partner.logoUrl}
         alt={partner.logoAlt ?? partner.name ?? 'Partner logo'}
@@ -64,7 +64,7 @@ export function PartnerLogoScroller({
       </div>
       <div className="group relative overflow-hidden partner-scroller-mask">
         <div
-          className="flex items-center gap-12 motion-safe:animate-[marquee_45s_linear_infinite] motion-safe:group-hover:[animation-play-state:paused]"
+          className="flex items-center gap-6 sm:gap-8 lg:gap-12 motion-safe:animate-[marquee_45s_linear_infinite] motion-safe:group-hover:[animation-play-state:paused]"
           style={{ width: 'max-content' }}
         >
           {allLogos.map((partner, i) => (
