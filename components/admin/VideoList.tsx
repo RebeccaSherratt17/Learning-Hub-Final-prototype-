@@ -13,6 +13,7 @@ interface VideoListItem {
   accessTier: AccessTier
   duration: string | null
   publishedAt: string | null
+  scheduledPublishAt: string | null
   createdAt: string
   personas: { persona: { id: string; name: string } }[]
   regions: { region: { id: string; name: string } }[]
@@ -430,7 +431,15 @@ export default function VideoList() {
                     {video.duration || '-'}
                   </td>
                   <td className="px-4 py-3 text-diligent-gray-4">
-                    {formatDate(video.publishedAt)}
+                    {video.status === 'SCHEDULED' && video.scheduledPublishAt ? (
+                      <span className="text-xs text-diligent-gray-3">
+                        {new Date(video.scheduledPublishAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        {', '}
+                        {new Date(video.scheduledPublishAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    ) : (
+                      formatDate(video.publishedAt)
+                    )}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-1">

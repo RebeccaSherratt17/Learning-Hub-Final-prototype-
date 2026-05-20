@@ -13,6 +13,7 @@ interface TemplateListItem {
   accessTier: AccessTier
   fileType: string | null
   publishedAt: string | null
+  scheduledPublishAt: string | null
   createdAt: string
   personas: { persona: { id: string; name: string } }[]
   regions: { region: { id: string; name: string } }[]
@@ -441,7 +442,15 @@ export default function TemplateList() {
                     {getFileTypeLabel(template.fileType)}
                   </td>
                   <td className="px-4 py-3 text-diligent-gray-4">
-                    {formatDate(template.publishedAt)}
+                    {template.status === 'SCHEDULED' && template.scheduledPublishAt ? (
+                      <span className="text-xs text-diligent-gray-3">
+                        {new Date(template.scheduledPublishAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        {', '}
+                        {new Date(template.scheduledPublishAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    ) : (
+                      formatDate(template.publishedAt)
+                    )}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-1">

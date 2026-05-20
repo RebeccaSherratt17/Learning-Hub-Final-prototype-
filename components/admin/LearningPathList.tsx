@@ -12,6 +12,7 @@ interface LearningPathListItem {
   status: ContentStatus
   accessTier: AccessTier
   publishedAt: string | null
+  scheduledPublishAt: string | null
   createdAt: string
   _count: { items: number }
 }
@@ -427,7 +428,15 @@ export default function LearningPathList() {
                     {lp._count.items}
                   </td>
                   <td className="px-4 py-3 text-diligent-gray-4">
-                    {formatDate(lp.publishedAt)}
+                    {lp.status === 'SCHEDULED' && lp.scheduledPublishAt ? (
+                      <span className="text-xs text-diligent-gray-3">
+                        {new Date(lp.scheduledPublishAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        {', '}
+                        {new Date(lp.scheduledPublishAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    ) : (
+                      formatDate(lp.publishedAt)
+                    )}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-1">
