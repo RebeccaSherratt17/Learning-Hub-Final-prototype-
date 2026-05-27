@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getLearnerIdFromCookie } from '@/lib/learner-session'
+import { issueCredlyBadge } from '@/lib/credly'
 
 interface ProgressBody {
   learningPathItemId: string
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
   // Verify the learner exists
   const learner = await prisma.learner.findUnique({
     where: { id: learnerId },
-    select: { id: true, email: true },
+    select: { id: true, email: true, firstName: true, lastName: true },
   })
 
   if (!learner) {
@@ -119,10 +120,19 @@ export async function POST(request: Request) {
       })
 
       if (learningPath?.credlyBadgeId) {
-        // TODO: Call /api/credly/issue when Credly integration is built
-        console.log(
-          `[Credly] Learner ${learner.email} completed all mandatory items in "${learningPath.title}" — badge ${learningPath.credlyBadgeId} should be issued`,
-        )
+        // Issue Credly badge asynchronously — do not block the response
+        issueCredlyBadge({
+          learnerEmail: learner.email,
+          learnerFirstName: learner.firstName,
+          learnerLastName: learner.lastName,
+          badgeTemplateId: learningPath.credlyBadgeId,
+          learningPathId: body.learningPathId,
+        }).catch((err) => {
+          console.error(
+            `[Credly] Failed to issue badge for ${learner.email} on path "${learningPath.title}":`,
+            err,
+          )
+        })
       }
     }
 

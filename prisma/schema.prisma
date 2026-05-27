@@ -650,6 +650,23 @@ model LearnerProgress {
 }
 
 // ─────────────────────────────────────────────
+// Credly Badge Issuances (prevents duplicate issuance)
+// ─────────────────────────────────────────────
+
+model CredlyBadgeIssuance {
+  id             String   @id @default(cuid())
+  learnerEmail   String
+  learningPathId String
+  badgeTemplateId String
+  credlyBadgeId  String?  // ID returned by Credly API after issuance
+  issuedAt       DateTime @default(now())
+
+  @@unique([learnerEmail, learningPathId])
+  @@index([learnerEmail])
+  @@map("credly_badge_issuances")
+}
+
+// ─────────────────────────────────────────────
 // SCORM Attempts (course completion tracking)
 // ─────────────────────────────────────────────
 
