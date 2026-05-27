@@ -77,24 +77,24 @@ export async function issueCredlyBadge(
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const response = await fetch(
-        `https://api.credly.com/v1/organizations/${orgId}/badges`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-          body: JSON.stringify({
-            recipient_email: learnerEmail,
-            badge_template_id: badgeTemplateId,
-            issued_to_first_name: learnerFirstName,
-            issued_to_last_name: learnerLastName || '',
-            issuer_earner_id: learnerEmail,
-          }),
+      const url = `https://api.credly.com/v1/organizations/${orgId}/badges`
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          // Credly API uses HTTP Basic auth: API key as username, empty password
+          Authorization: `Basic ${Buffer.from(`${apiKey}:`).toString('base64')}`,
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
         },
-      )
+        body: JSON.stringify({
+          recipient_email: learnerEmail,
+          badge_template_id: badgeTemplateId,
+          issued_to_first_name: learnerFirstName,
+          issued_to_last_name: learnerLastName || '',
+          issuer_earner_id: learnerEmail,
+          issued_at: new Date().toISOString(),
+        }),
+      })
 
       if (response.ok) {
         const data = await response.json()
