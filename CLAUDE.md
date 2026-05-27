@@ -18,6 +18,7 @@ The hub will live as a separate but connected space under www.diligent.com as a 
 - **Styling**: Tailwind CSS
 - **Language**: TypeScript throughout
 - **Lead management**: Marketo (REST API, server-side proxy)
+- **Analytics**: Amplitude (client-side SDK for UI interactions, server-side HTTP API for backend events)
 - **Digital badges**: Credly (REST API, server-side proxy — for select learning paths)
 - **Deployment target**: Vercel
 
@@ -456,16 +457,22 @@ Build the following pages within the `/admin` section:
 
 ## Reporting & Analytics
 
-Implement event tracking ready for Google Analytics 4 (GA4). Track:
+Implement event tracking using Amplitude. Use a hybrid approach:
+- **Client-side** (Amplitude browser SDK): page views, search queries, filter usage, content card clicks, demo CTA clicks, gate form abandonment
+- **Server-side** (Amplitude HTTP API from Next.js API routes): template downloads, course enrollments and completions, gate form submissions, learning path completions, Credly badge issuance
+
+All Amplitude tracking must be conditional on cookie consent — do not initialise the Amplitude SDK or fire any server-side events until the visitor has accepted cookies via the consent banner.
+
+Track:
 - Hub page visits
-- Most visited pages across the hub (tracked automatically via GA4)
-- Traffic sources — where visitors arrive from (organic search, direct, social, email, referral — tracked automatically via GA4)
-- Bounce rate and time on page for hub homepage and content pages (tracked automatically via GA4)
-- Return visitor rate — how many visitors return to the hub more than once (tracked automatically via GA4)
-- Device type breakdown — desktop vs mobile vs tablet (tracked automatically via GA4)
+- Most visited pages across the hub (tracked automatically via Amplitude session tracking)
+- Traffic sources — where visitors arrive from (organic search, direct, social, email, referral — tracked via Amplitude's referrer detection)
+- Bounce rate and time on page for hub homepage and content pages (tracked automatically via Amplitude session tracking)
+- Return visitor rate — how many visitors return to the hub more than once (tracked automatically via Amplitude user identification)
+- Device type breakdown — desktop vs mobile vs tablet (tracked automatically via Amplitude device detection)
 - Content item clicks (by type: course / template / video / learning path)
-- Internal search queries — what terms visitors type into the hub search bar (requires explicit instrumentation: fire a custom GA4 event containing the search term each time a search is performed)
-- Filter usage — which filters are applied most frequently in the content library, broken down by filter type (persona, region, subject, content type); requires explicit instrumentation: fire a custom GA4 event each time a filter is applied, capturing the filter type and value selected
+- Internal search queries — what terms visitors type into the hub search bar (requires explicit instrumentation: fire a custom Amplitude event containing the search term each time a search is performed)
+- Filter usage — which filters are applied most frequently in the content library, broken down by filter type (persona, region, subject, content type); requires explicit instrumentation: fire a custom Amplitude event each time a filter is applied, capturing the filter type and value selected
 - Video page opens (tracked on page load for each video content item)
 - Video play events (tracked via the Vidyard player API if Vidyard exposes a play event callback — confirm availability in Vidyard's JavaScript API documentation before implementing; do not block the analytics integration on this if unsupported)
 - Video drop-off point (the percentage through the video at which a learner stopped watching — tracked via the Vidyard player API if a progress or seek event callback is available; confirm support in Vidyard's JavaScript API documentation before implementing; do not block the analytics integration on this if unsupported)
@@ -482,7 +489,7 @@ Implement event tracking ready for Google Analytics 4 (GA4). Track:
 - Learning path fully completed events (all items in the path checked off by an identified learner)
 - Learning path partial completion rate (track the number of items completed per learner per path, so the reporting dashboard can surface what percentage of learners complete some but not all items — calculated from the gap between item completion events and full path completion events)
 
-Use a lightweight analytics abstraction layer so the tracking provider can be swapped without rewriting call sites.
+Use a lightweight analytics abstraction layer (`lib/analytics.ts`) so the tracking provider can be swapped without rewriting call sites. The abstraction layer should expose a single `track(eventName, properties)` function that routes to Amplitude client-side or server-side as appropriate.
 
 Build a `/admin/reporting` page with two modes:
 
@@ -506,7 +513,7 @@ Admins can visit `/admin/reporting` at any time to pull current data without wai
   - Internal search queries (most common terms)
   - Filter usage breakdown
 
-All data should pull from the GA4 Data API where available, supplemented by any custom event log stored in the PostgreSQL database for hub-specific events that GA4 does not capture natively.
+All data should pull from the Amplitude Analytics API where available, supplemented by the custom event log stored in the PostgreSQL `AnalyticsEvent` table for hub-specific events. The reporting dashboard should support a date range picker and CSV export.
 
 ---
 
@@ -573,11 +580,11 @@ Every user-facing failure or empty condition must have a designed, intentional r
 
 ## Cookie Consent & Privacy Compliance
 
-The hub collects personal data via gate forms, fires GA4 analytics events, and stores session cookies. Given diligent.com serves a global audience including EU visitors, GDPR compliance is required.
+The hub collects personal data via gate forms, fires Amplitude analytics events, and stores session cookies. Given diligent.com serves a global audience including EU visitors, GDPR compliance is required.
 
-- **Cookie consent banner**: Display a cookie consent banner on first visit that clearly explains what cookies and tracking are used. Visitors must be able to accept or decline non-essential cookies (analytics, tracking) before any GA4 events fire. Do not fire GA4 tracking events until consent is given
+- **Cookie consent banner**: Display a cookie consent banner on first visit that clearly explains what cookies and tracking are used. Visitors must be able to accept or decline non-essential cookies (analytics, tracking) before the Amplitude SDK initialises or any server-side Amplitude events fire. Do not fire any Amplitude events until consent is given
 - **Consent persistence**: Store the visitor's consent choice in a cookie so the banner does not reappear on subsequent visits within a reasonable window (e.g. 12 months)
-- **Consent-aware analytics**: GA4 initialisation must be conditional on cookie consent — use GA4's consent mode or equivalent to ensure tracking only activates after the visitor accepts
+- **Consent-aware analytics**: Amplitude SDK initialisation must be conditional on cookie consent — check the `hasAnalyticsConsent` flag from the `CookieConsentProvider` before initialising Amplitude or firing any events
 - **Privacy policy link**: Every gate form and the cookie consent banner must include a visible link to Diligent's privacy policy (URL to be confirmed with the Diligent legal team)
 - **Data minimisation**: Gate forms should collect only what is necessary (name, email, organization, job title) — do not add additional fields without a clear reason
 - **Session cookies**: Document which cookies the hub sets, their purpose and their expiry, so this information can be included in Diligent's cookie policy
@@ -823,8 +830,8 @@ CREDLY_API_KEY=
 CREDLY_ORGANIZATION_ID=
 
 # Analytics
-GA4_MEASUREMENT_ID=
-GA4_API_SECRET=
+AMPLITUDE_API_KEY=   # Client-side Amplitude API key
+AMPLITUDE_SECRET_KEY=   # Server-side Amplitude secret key (for HTTP API)
 ```
 ---
 
@@ -843,7 +850,7 @@ GA4_API_SECRET=
 11. Implement the tiered access/gating system with the Marketo API proxy route
 12. Wire up scorm-again self-hosted SCORM delivery (upload pipeline, launch endpoint, tracking endpoint, ScormEmbed component)
 13. Wire up Credly badge issuance on learning path completion
-14. Wire up analytics event tracking
+14. Wire up Amplitude analytics event tracking (client-side SDK + server-side HTTP API, consent-aware)
 15. Polish UI to match Diligent brand guidelines
 
 **Start with steps 1–5 and confirm the database schema looks right before building any UI.**
