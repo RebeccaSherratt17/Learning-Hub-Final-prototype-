@@ -654,14 +654,16 @@ model LearnerProgress {
 // ─────────────────────────────────────────────
 
 model CredlyBadgeIssuance {
-  id             String   @id @default(cuid())
-  learnerEmail   String
-  learningPathId String
+  id              String   @id @default(cuid())
+  learnerEmail    String
+  learningPathId  String?  // set for learning path badges
+  courseId        String?  // set for standalone course badges
   badgeTemplateId String
-  credlyBadgeId  String?  // ID returned by Credly API after issuance
-  issuedAt       DateTime @default(now())
+  credlyBadgeId   String?  // ID returned by Credly API after issuance
+  issuedAt        DateTime @default(now())
 
   @@unique([learnerEmail, learningPathId])
+  @@unique([learnerEmail, courseId])
   @@index([learnerEmail])
   @@map("credly_badge_issuances")
 }

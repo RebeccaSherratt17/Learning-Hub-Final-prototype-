@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { verifyLaunchToken } from '@/lib/scorm/token'
+import { issueCredlyBadge } from '@/lib/credly'
 
 export async function POST(
   request: NextRequest,
@@ -103,6 +104,32 @@ export async function POST(
         rawCmi: cmi,
       },
     })
+
+    // Issue Credly badge if course just completed and has a badge configured
+    const wasAlreadyComplete =
+      attempt.status === 'COMPLETED' || attempt.status === 'PASSED'
+
+    if (isComplete && !wasAlreadyComplete) {
+      const course = await prisma.course.findUnique({
+        where: { id: attempt.courseId },
+        select: { credlyBadgeId: true, title: true },
+      })
+
+      if (course?.credlyBadgeId) {
+        issueCredlyBadge({
+          learnerEmail: attempt.learnerEmail,
+          learnerFirstName: attempt.learnerFirstName,
+          learnerLastName: attempt.learnerLastName ?? undefined,
+          badgeTemplateId: course.credlyBadgeId,
+          courseId: attempt.courseId,
+        }).catch((err) => {
+          console.error(
+            `[Credly] Failed to issue badge for ${attempt.learnerEmail} on course "${course.title}":`,
+            err,
+          )
+        })
+      }
+    }
 
     return NextResponse.json({ success: true, status })
   } catch (error) {

@@ -5,7 +5,8 @@ interface IssueCredlyBadgeParams {
   learnerFirstName: string
   learnerLastName?: string
   badgeTemplateId: string
-  learningPathId: string
+  learningPathId?: string
+  courseId?: string
 }
 
 interface CredlyBadgeResponse {
@@ -20,8 +21,18 @@ const BASE_DELAY_MS = 1000
 export async function issueCredlyBadge(
   params: IssueCredlyBadgeParams,
 ): Promise<CredlyBadgeResponse> {
-  const { learnerEmail, learnerFirstName, learnerLastName, badgeTemplateId, learningPathId } =
-    params
+  const {
+    learnerEmail,
+    learnerFirstName,
+    learnerLastName,
+    badgeTemplateId,
+    learningPathId,
+    courseId,
+  } = params
+
+  if (!learningPathId && !courseId) {
+    return { success: false, error: 'Either learningPathId or courseId is required' }
+  }
 
   const apiKey = process.env.CREDLY_API_KEY
   const orgId = process.env.CREDLY_ORGANIZATION_ID
@@ -32,18 +43,31 @@ export async function issueCredlyBadge(
   }
 
   // Check for duplicate issuance
-  const existing = await prisma.credlyBadgeIssuance.findUnique({
-    where: {
-      learnerEmail_learningPathId: {
-        learnerEmail,
-        learningPathId,
-      },
-    },
-  })
+  const contextLabel = learningPathId
+    ? `learning path ${learningPathId}`
+    : `course ${courseId}`
+
+  const existing = learningPathId
+    ? await prisma.credlyBadgeIssuance.findUnique({
+        where: {
+          learnerEmail_learningPathId: {
+            learnerEmail,
+            learningPathId,
+          },
+        },
+      })
+    : await prisma.credlyBadgeIssuance.findUnique({
+        where: {
+          learnerEmail_courseId: {
+            learnerEmail,
+            courseId: courseId!,
+          },
+        },
+      })
 
   if (existing) {
     console.log(
-      `[Credly] Badge already issued to ${learnerEmail} for learning path ${learningPathId} — skipping`,
+      `[Credly] Badge already issued to ${learnerEmail} for ${contextLabel} — skipping`,
     )
     return { success: true, credlyBadgeId: existing.credlyBadgeId ?? undefined }
   }
@@ -80,7 +104,8 @@ export async function issueCredlyBadge(
         await prisma.credlyBadgeIssuance.create({
           data: {
             learnerEmail,
-            learningPathId,
+            learningPathId: learningPathId ?? null,
+            courseId: courseId ?? null,
             badgeTemplateId,
             credlyBadgeId,
           },
