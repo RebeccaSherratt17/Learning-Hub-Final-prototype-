@@ -100,6 +100,17 @@ export default function TemplateForm({
 
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [orgTypeError, setOrgTypeError] = useState<string | null>(null)
+
+  // Derive organization type subject IDs for validation
+  const orgTypeSubjectIds = subjects.filter((s) => s.group.name === 'Organization Type').map((s) => s.id)
+  const hasOrgTypeSelected = selectedSubjectIds.some((id) => orgTypeSubjectIds.includes(id))
+
+  useEffect(() => {
+    if (hasOrgTypeSelected && orgTypeError) {
+      setOrgTypeError(null)
+    }
+  }, [hasOrgTypeSelected, orgTypeError])
 
   useEffect(() => {
     if (message?.type === 'success') {
@@ -124,6 +135,12 @@ export default function TemplateForm({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
+    if (!hasOrgTypeSelected) {
+      setOrgTypeError('No organization type selected')
+      return
+    }
+
     setSaving(true)
     setMessage(null)
 
@@ -530,6 +547,9 @@ export default function TemplateForm({
 
       {/* Submit */}
       <div className="flex items-center justify-end gap-3">
+        {orgTypeError && (
+          <span className="text-sm font-medium text-diligent-red">{orgTypeError}</span>
+        )}
         {previewButton}
         <button
           type="submit"

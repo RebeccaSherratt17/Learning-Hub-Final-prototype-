@@ -95,6 +95,8 @@ function CheckboxGrid({
   )
 }
 
+const ORG_TYPE_GROUP_NAME = 'Organization Type'
+
 export default function TaxonomySelect({
   personas,
   regions,
@@ -106,15 +108,31 @@ export default function TaxonomySelect({
   onRegionsChange,
   onSubjectsChange,
 }: TaxonomySelectProps) {
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({})
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    organizationType: true,
+  })
 
   function toggleSection(key: string) {
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }))
   }
 
-  // Group subjects by their group
-  const subjectsByGroup = new Map<string, { groupName: string; subjects: { id: string; name: string }[] }>()
+  // Separate organization type subjects from other subjects
+  const orgTypeSubjects: { id: string; name: string }[] = []
+  const otherSubjects: typeof subjects = []
   for (const subject of subjects) {
+    if (subject.group.name === ORG_TYPE_GROUP_NAME) {
+      orgTypeSubjects.push({ id: subject.id, name: subject.name })
+    } else {
+      otherSubjects.push(subject)
+    }
+  }
+
+  const selectedOrgTypeCount = orgTypeSubjects.filter((s) => selectedSubjectIds.includes(s.id)).length
+  const selectedNonOrgSubjectCount = selectedSubjectIds.length - selectedOrgTypeCount
+
+  // Group remaining subjects by their group
+  const subjectsByGroup = new Map<string, { groupName: string; subjects: { id: string; name: string }[] }>()
+  for (const subject of otherSubjects) {
     const existing = subjectsByGroup.get(subject.group.id)
     if (existing) {
       existing.subjects.push({ id: subject.id, name: subject.name })
@@ -128,6 +146,19 @@ export default function TaxonomySelect({
 
   return (
     <div className="divide-y divide-diligent-gray-2">
+      <AccordionSection
+        label="Organization type"
+        selectedCount={selectedOrgTypeCount}
+        isOpen={!!openSections.organizationType}
+        onToggle={() => toggleSection('organizationType')}
+      >
+        <CheckboxGrid
+          items={orgTypeSubjects}
+          selectedIds={selectedSubjectIds}
+          onChange={onSubjectsChange}
+        />
+      </AccordionSection>
+
       <AccordionSection
         label="Personas"
         selectedCount={selectedPersonaIds.length}
@@ -156,7 +187,7 @@ export default function TaxonomySelect({
 
       <AccordionSection
         label="Subjects"
-        selectedCount={selectedSubjectIds.length}
+        selectedCount={selectedNonOrgSubjectCount}
         isOpen={!!openSections.subjects}
         onToggle={() => toggleSection('subjects')}
       >
