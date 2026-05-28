@@ -40,7 +40,6 @@ async function main() {
     { name: 'Executive Management', slug: 'executive-management' },
     { name: 'Company Secretary', slug: 'company-secretary' },
     { name: 'General Counsel', slug: 'general-counsel' },
-    { name: 'Practitioner', slug: 'practitioner' },
     { name: 'Risk', slug: 'risk' },
     { name: 'Legal', slug: 'legal' },
   ]
@@ -81,19 +80,38 @@ async function main() {
 
   const subjectGroups = [
     {
-      name: 'Board Leadership & Operations',
-      slug: 'board-leadership-operations',
+      name: 'Board Governance',
+      slug: 'board-governance',
       subjects: [
-        { name: 'Board governance', slug: 'board-governance' },
-        { name: 'Meetings', slug: 'meetings' },
-        { name: 'Structure', slug: 'structure' },
-        { name: 'Agendas', slug: 'agendas' },
-        { name: 'Board committees', slug: 'board-committees' },
-        { name: 'Evaluations', slug: 'evaluations' },
+        { name: 'Board governance', slug: 'board-governance-subject' },
+        { name: 'Board structure', slug: 'board-structure' },
         { name: 'Director onboarding', slug: 'director-onboarding' },
+        { name: 'Board evaluations', slug: 'board-evaluations' },
+        { name: 'Entity management', slug: 'entity-management' },
+      ],
+    },
+    {
+      name: 'Board Meetings & Committees',
+      slug: 'board-meetings-committees',
+      subjects: [
+        { name: 'Board meetings', slug: 'board-meetings' },
+        { name: 'Agendas and calendars', slug: 'agendas-and-calendars' },
+        { name: 'Meeting minutes', slug: 'meeting-minutes' },
+        { name: 'Board committees', slug: 'board-committees' },
         { name: 'Compensation', slug: 'compensation' },
         { name: 'Financials', slug: 'financials' },
-        { name: 'Meeting minutes', slug: 'meeting-minutes' },
+      ],
+    },
+    {
+      name: 'AI & Technology',
+      slug: 'ai-technology',
+      subjects: [
+        { name: 'AI governance', slug: 'ai-governance' },
+        { name: 'AI ethics', slug: 'ai-ethics' },
+        { name: 'AI risk management', slug: 'ai-risk-management' },
+        { name: 'Cyber risk', slug: 'cyber-risk' },
+        { name: 'Cyber resilience', slug: 'cyber-resilience' },
+        { name: 'Incident response', slug: 'incident-response' },
       ],
     },
     {
@@ -101,27 +119,28 @@ async function main() {
       slug: 'risk-management',
       subjects: [
         { name: 'ERM', slug: 'erm' },
-        { name: 'Cybersecurity', slug: 'cybersecurity' },
-        { name: 'AI', slug: 'ai' },
         { name: 'ESG', slug: 'esg' },
         { name: 'Market risk', slug: 'market-risk' },
-      ],
-    },
-    {
-      name: 'Regulations & Compliance',
-      slug: 'regulations-compliance',
-      subjects: [
-        { name: 'Compliance', slug: 'compliance' },
-        { name: 'ESG compliance', slug: 'esg-compliance' },
         { name: 'IPO', slug: 'ipo' },
+        { name: 'Investor stewardship', slug: 'investor-stewardship' },
       ],
     },
     {
-      name: 'Entity Management',
-      slug: 'entity-management',
+      name: 'Compliance & Policy',
+      slug: 'compliance-policy',
       subjects: [
-        { name: 'Entity management', slug: 'entity-mgmt' },
-        { name: 'Subsidiaries', slug: 'subsidiaries' },
+        { name: 'Regulatory compliance', slug: 'regulatory-compliance' },
+        { name: 'Corporate policies', slug: 'corporate-policies' },
+        { name: 'ESG compliance', slug: 'esg-compliance' },
+      ],
+    },
+    {
+      name: 'Governance Professionals',
+      slug: 'governance-professionals',
+      subjects: [
+        { name: 'Professional development', slug: 'professional-development' },
+        { name: 'Governance administration', slug: 'governance-administration' },
+        { name: 'Strategic communication', slug: 'strategic-communication' },
       ],
     },
     {

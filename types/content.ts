@@ -48,9 +48,11 @@ export const accessTierLabels: Record<AccessTier, string> = {
 }
 
 export const subjectGroupLabels: Record<string, string> = {
-  'board-leadership-operations': 'Board Leadership & Operations',
+  'board-governance': 'Board Governance',
+  'board-meetings-committees': 'Board Meetings & Committees',
+  'ai-technology': 'AI & Technology',
   'risk-management': 'Risk Management',
-  'regulations-compliance': 'Regulations & Compliance',
-  'entity-management': 'Entity Management',
+  'compliance-policy': 'Compliance & Policy',
+  'governance-professionals': 'Governance Professionals',
   'organization-type': 'Organization Type',
 }
