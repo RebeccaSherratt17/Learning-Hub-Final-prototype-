@@ -141,14 +141,18 @@ export function FilterSidebar({
       return (ai === -1 ? regionOrder.length : ai) - (bi === -1 ? regionOrder.length : bi)
     })
 
-  const groupedSubjects = Object.entries(subjectGroupLabels).map(
-    ([groupValue, groupLabel]) => ({
+  const orgTypeItems = subjects
+    .filter((s) => s.group === 'organization-type')
+    .map((s) => ({ value: s._id, label: toSentenceCase(s.title ?? '') }))
+
+  const groupedSubjects = Object.entries(subjectGroupLabels)
+    .filter(([groupValue]) => groupValue !== 'organization-type')
+    .map(([groupValue, groupLabel]) => ({
       groupLabel,
       items: subjects
         .filter((s) => s.group === groupValue)
         .map((s) => ({ value: s._id, label: toSentenceCase(s.title ?? '') })),
-    }),
-  )
+    }))
 
   const activeCount =
     filters.personas.length +
@@ -180,6 +184,23 @@ export function FilterSidebar({
 
       {/* Accordion groups */}
       <div className="border-t border-diligent-gray-5">
+        <AccordionGroup label="Organization type">
+          {orgTypeItems.map((opt) => (
+            <CheckboxOption
+              key={opt.value}
+              label={opt.label}
+              checked={filters.subjects.includes(opt.value)}
+              onChange={() =>
+                onFilterChange({
+                  ...filters,
+                  subjects: toggleValue(filters.subjects, opt.value),
+                })
+              }
+              count={filterCounts[opt.value] ?? 0}
+            />
+          ))}
+        </AccordionGroup>
+
         <AccordionGroup label="Subject">
           {groupedSubjects.map(
             ({ groupLabel, items }) =>
