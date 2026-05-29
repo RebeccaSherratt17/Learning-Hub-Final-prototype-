@@ -247,7 +247,7 @@ export default function HubSettingsForm({ initialSettings }: HubSettingsFormProp
             onChange={(v) => updateField('heroCTAUrl', v)}
           />
           <p className="mt-1 text-xs text-diligent-gray-3">
-            Use #resource-library to scroll to the resource library, or a full URL
+            Use /library to link to the resource library, or a full URL
           </p>
         </div>
       </SectionCard>

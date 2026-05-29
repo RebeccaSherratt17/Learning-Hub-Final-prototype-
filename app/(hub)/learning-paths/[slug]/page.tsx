@@ -250,7 +250,7 @@ export default async function LearningPathPage({ params, searchParams }: PagePro
                 {learningPath.subjects.map((s) => (
                   <a
                     key={`subject-${s.subject.id}`}
-                    href={`/?subject=${s.subject.id}#resource-library`}
+                    href={`/library?subject=${s.subject.id}`}
                     className="rounded border border-diligent-gray-2 px-2.5 py-1 text-xs text-diligent-gray-4 transition-colors hover:border-diligent-gray-3 hover:text-diligent-gray-5"
                   >
                     {s.subject.name}
@@ -259,7 +259,7 @@ export default async function LearningPathPage({ params, searchParams }: PagePro
                 {learningPath.regions.map((r) => (
                   <a
                     key={`region-${r.region.id}`}
-                    href={`/?region=${r.region.id}#resource-library`}
+                    href={`/library?region=${r.region.id}`}
                     className="rounded border border-diligent-gray-2 px-2.5 py-1 text-xs text-diligent-gray-4 transition-colors hover:border-diligent-gray-3 hover:text-diligent-gray-5"
                   >
                     {r.region.name}
@@ -268,7 +268,7 @@ export default async function LearningPathPage({ params, searchParams }: PagePro
                 {learningPath.personas.map((p) => (
                   <a
                     key={`persona-${p.persona.id}`}
-                    href={`/?persona=${p.persona.id}#resource-library`}
+                    href={`/library?persona=${p.persona.id}`}
                     className="rounded border border-diligent-gray-2 px-2.5 py-1 text-xs text-diligent-gray-4 transition-colors hover:border-diligent-gray-3 hover:text-diligent-gray-5"
                   >
                     {p.persona.name}

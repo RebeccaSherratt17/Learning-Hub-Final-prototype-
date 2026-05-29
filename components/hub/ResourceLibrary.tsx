@@ -206,7 +206,7 @@ export function ResourceLibrary({
       if (p > 1) params.set('page', String(p))
 
       const qs = params.toString()
-      router.replace(`${pathname}${qs ? `?${qs}` : ''}#resource-library`, {
+      router.replace(`${pathname}${qs ? `?${qs}` : ''}`, {
         scroll: false,
       })
     },

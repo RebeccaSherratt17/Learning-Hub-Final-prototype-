@@ -25,56 +25,71 @@ export function OrgTypeSelector({
   return (
     <section className="border-b border-diligent-gray-2">
       <div className="mx-auto max-w-[var(--max-content-width)] px-6">
-        <p className="pb-3 pt-12 text-[11px] font-semibold uppercase tracking-[0.1em] text-diligent-gray-3">
+        <p className="pb-3 pt-12 text-[11px] font-bold uppercase tracking-[0.1em] text-diligent-gray-5">
           I work for a&hellip;
         </p>
-        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-lg bg-diligent-gray-4 pb-12 sm:grid-cols-3">
-          {orgTypes.map((org) => {
-            const config = orgTypeConfig[org.slug]
-            if (!config) return null
+      </div>
+      <div className="mx-auto max-w-[var(--max-content-width)] px-6 pb-12">
+        {/* Red top accent line + dark bar */}
+        <div className="overflow-hidden rounded-md border-t-[3px] border-diligent-red bg-diligent-gray-5">
+          <div className="grid grid-cols-1 sm:grid-cols-3">
+            {orgTypes.map((org, index) => {
+              const config = orgTypeConfig[org.slug]
+              if (!config) return null
 
-            const isActive = org.id === activeOrgTypeId
+              const isActive = org.id === activeOrgTypeId
+              const isLast = index === orgTypes.length - 1
 
-            return (
-              <button
-                key={org.id}
-                type="button"
-                aria-pressed={isActive}
-                onClick={() => onOrgTypeChange(org.id)}
-                className={cn(
-                  'relative flex flex-col gap-1 px-6 py-5 text-left transition-colors',
-                  isActive
-                    ? 'bg-diligent-red text-white'
-                    : 'bg-diligent-gray-5 text-white hover:bg-[#343a44]'
-                )}
-              >
-                {isActive && (
-                  <span className="absolute right-4 top-4 flex items-center gap-1 rounded-sm bg-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white">
-                    <Icon name="check" className="text-[14px]" />
-                    Viewing
-                  </span>
-                )}
-                <Icon name={config.icon} className="text-[28px]" />
-                <p className="text-lg font-semibold">{org.name}</p>
-                <p
+              return (
+                <button
+                  key={org.id}
+                  type="button"
+                  aria-pressed={isActive}
+                  onClick={() => onOrgTypeChange(org.id)}
                   className={cn(
-                    'text-[11px] font-medium uppercase tracking-wider',
-                    isActive ? 'text-white/70' : 'text-diligent-gray-3'
+                    'relative flex items-center gap-4 px-5 py-4 text-left transition-colors',
+                    !isLast && 'sm:border-r sm:border-white/10',
+                    isActive
+                      ? 'bg-diligent-red text-white'
+                      : 'bg-diligent-gray-5 text-white hover:bg-[#343a44]',
                   )}
                 >
-                  {config.subtitle}
-                </p>
-                <p
-                  className={cn(
-                    'text-xs font-semibold uppercase tracking-wider',
-                    isActive ? 'text-white/80' : 'text-diligent-gray-3'
+                  {/* Icon box */}
+                  <div
+                    className={cn(
+                      'flex h-9 w-9 shrink-0 items-center justify-center rounded',
+                      isActive ? 'bg-white/20' : 'bg-white/10',
+                    )}
+                  >
+                    <Icon name={config.icon} className="text-[20px] text-white" />
+                  </div>
+
+                  {/* Text content */}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[15px] font-bold leading-tight">
+                      {org.name}
+                    </p>
+                    <p
+                      className={cn(
+                        'mt-0.5 text-[10px] font-semibold uppercase tracking-[0.08em]',
+                        isActive ? 'text-white/60' : 'text-diligent-gray-3',
+                      )}
+                    >
+                      {org.count} resources &middot; {config.subtitle}
+                    </p>
+                  </div>
+
+                  {/* Viewing badge — top-right */}
+                  {isActive && (
+                    <span className="absolute right-2.5 top-2.5 inline-flex items-center gap-0.5 rounded bg-white/20 px-1 py-px text-[7px] font-bold uppercase tracking-wider text-white">
+                      <Icon name="check" className="text-[12px]" />
+                      Viewing
+                    </span>
                   )}
-                >
-                  {org.count} resources
-                </p>
-              </button>
-            )
-          })}
+                </button>
+              )
+            })}
+          </div>
         </div>
       </div>
     </section>

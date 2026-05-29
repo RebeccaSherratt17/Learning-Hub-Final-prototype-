@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, FormEvent } from 'react'
+import { useState, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { Icon } from '@/components/ui/Icon'
 
@@ -15,12 +15,6 @@ const SUGGESTION_PILLS = [
 export function HomepageHero() {
   const router = useRouter()
   const [query, setQuery] = useState('')
-  const [isMac, setIsMac] = useState(true)
-
-  useEffect(() => {
-    setIsMac(/Mac|iPod|iPhone|iPad/.test(navigator.platform))
-  }, [])
-
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
     const trimmed = query.trim()
@@ -36,10 +30,10 @@ export function HomepageHero() {
   }
 
   return (
-    <section className="bg-diligent-gray-1 py-16 md:py-24">
-      <div className="mx-auto max-w-3xl px-4 text-center">
+    <section className="bg-diligent-gray-1 py-8 md:py-12">
+      <div className="mx-auto px-4 text-center">
         {/* Heading */}
-        <h1 className="text-display-1 font-semibold text-diligent-gray-5">
+        <h1 className="whitespace-nowrap text-center text-3xl font-semibold text-diligent-gray-5 md:text-4xl lg:text-display-1">
           Search the hub. Or scan the{' '}
           <span className="text-diligent-red">shelves.</span>
         </h1>
@@ -51,7 +45,7 @@ export function HomepageHero() {
         </p>
 
         {/* Search bar */}
-        <form onSubmit={handleSubmit} className="relative mt-8">
+        <form onSubmit={handleSubmit} className="relative mx-auto mt-8 max-w-3xl">
           <Icon
             name="search"
             className="absolute left-4 top-1/2 -translate-y-1/2 text-diligent-gray-3"
@@ -61,18 +55,12 @@ export function HomepageHero() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search courses, templates, videos..."
-            className="w-full rounded-lg border border-diligent-gray-2 bg-white py-4 pl-12 pr-20 text-base shadow-sm placeholder:text-diligent-gray-3 focus:border-diligent-gray-3 focus:outline-none focus:ring-2 focus:ring-diligent-red/20"
+            className="w-full rounded-lg border-2 border-diligent-gray-5 bg-white py-4 pl-12 pr-4 text-base shadow-sm placeholder:text-diligent-gray-3 focus:outline-none focus:ring-2 focus:ring-diligent-red/20"
           />
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 rounded border border-diligent-gray-2 bg-diligent-gray-1 px-2 py-0.5 text-xs text-diligent-gray-3"
-          >
-            {isMac ? '\u2318 K' : 'Ctrl K'}
-          </span>
         </form>
 
         {/* Suggestion pills */}
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+        <div className="mx-auto mt-5 flex max-w-3xl flex-wrap items-center justify-center gap-2">
           <span className="text-xs font-semibold uppercase tracking-wider text-diligent-gray-3">
             Try:
           </span>

@@ -59,74 +59,55 @@ export function DemoRequestForm() {
     'w-full rounded-sm border border-white/20 bg-white/10 px-4 py-3 text-sm text-white focus:border-white focus:outline-none [&>option]:bg-white [&>option]:text-diligent-gray-5'
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div>
-          <label htmlFor="firstName" className="mb-1 block text-sm text-diligent-gray-3">
-            First name
-          </label>
-          <input
-            id="firstName"
-            name="firstName"
-            type="text"
-            required
-            className={inputClasses}
-          />
-        </div>
-        <div>
-          <label htmlFor="lastName" className="mb-1 block text-sm text-diligent-gray-3">
-            Last name
-          </label>
-          <input
-            id="lastName"
-            name="lastName"
-            type="text"
-            required
-            className={inputClasses}
-          />
-        </div>
-      </div>
-      <div>
-        <label htmlFor="workEmail" className="mb-1 block text-sm text-diligent-gray-3">
-          Work email
-        </label>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <input
-          id="workEmail"
-          name="workEmail"
-          type="email"
-          required
-          className={inputClasses}
-        />
-      </div>
-      <div>
-        <label htmlFor="phone" className="mb-1 block text-sm text-diligent-gray-3">
-          Phone number
-        </label>
-        <input
-          id="phone"
-          name="phone"
-          type="tel"
-          required
-          className={inputClasses}
-        />
-      </div>
-      <div>
-        <label htmlFor="companyName" className="mb-1 block text-sm text-diligent-gray-3">
-          Company name
-        </label>
-        <input
-          id="companyName"
-          name="companyName"
+          id="firstName"
+          name="firstName"
           type="text"
           required
+          placeholder="First name"
+          aria-label="First name"
+          className={inputClasses}
+        />
+        <input
+          id="lastName"
+          name="lastName"
+          type="text"
+          required
+          placeholder="Last name"
+          aria-label="Last name"
           className={inputClasses}
         />
       </div>
-      <div>
-        <label htmlFor="country" className="mb-1 block text-sm text-diligent-gray-3">
-          Country
-        </label>
-        <select
+      <input
+        id="workEmail"
+        name="workEmail"
+        type="email"
+        required
+        placeholder="Work email"
+        aria-label="Work email"
+        className={inputClasses}
+      />
+      <input
+        id="phone"
+        name="phone"
+        type="tel"
+        required
+        placeholder="Phone number"
+        aria-label="Phone number"
+        className={inputClasses}
+      />
+      <input
+        id="companyName"
+        name="companyName"
+        type="text"
+        required
+        placeholder="Company name"
+        aria-label="Company name"
+        className={inputClasses}
+      />
+      <select
           id="country"
           name="country"
           required
@@ -230,12 +211,11 @@ export function DemoRequestForm() {
           <option value="Vietnam">Vietnam</option>
           <option value="Zimbabwe">Zimbabwe</option>
         </select>
-      </div>
 
       <p className="text-[11px] leading-relaxed text-diligent-gray-4">
         By submitting this form, you agree to receive the information requested as well as sales and/or marketing communication on resources, news, and events related to the Diligent suite of solutions. You can unsubscribe at any time or manage the types of communication you would like to receive by visiting our{' '}
-        <a href="https://learn.diligent.com/preference-center.html" target="_blank" rel="noopener noreferrer" className="text-[#0B4CCE] no-underline hover:no-underline">Preference Center</a>. For further details regarding how Diligent processes your personal information, please refer to our{' '}
-        <a href="https://www.diligent.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-[#0B4CCE] no-underline hover:no-underline">Privacy Notice</a>.
+        <a href="https://learn.diligent.com/preference-center.html" target="_blank" rel="noopener noreferrer" className="text-diligent-gray-3 no-underline hover:underline">Preference Center</a>. For further details regarding how Diligent processes your personal information, please refer to our{' '}
+        <a href="https://www.diligent.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-diligent-gray-3 no-underline hover:underline">Privacy Notice</a>.
       </p>
 
       {status === 'error' && (
@@ -247,7 +227,7 @@ export function DemoRequestForm() {
         disabled={status === 'submitting'}
         className="mt-2 inline-flex w-full items-center justify-center rounded-sm bg-diligent-red px-6 py-3 text-sm font-medium text-white no-underline transition hover:bg-diligent-red-2 hover:no-underline focus-visible:bg-diligent-red-2 focus-visible:no-underline disabled:opacity-60"
       >
-        {status === 'submitting' ? 'Submitting...' : 'Submit'}
+        {status === 'submitting' ? 'Submitting...' : 'Request a demo'}
       </button>
     </form>
   )

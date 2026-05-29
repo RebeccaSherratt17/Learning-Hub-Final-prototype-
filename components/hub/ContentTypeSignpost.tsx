@@ -46,12 +46,13 @@ export function ContentTypeSignpost() {
 
   function handleClick(e: React.MouseEvent, filterParam: string) {
     e.preventDefault()
-    router.push(`/?type=${filterParam}`, { scroll: false })
+    router.push(`/library?type=${filterParam}`)
+    // After navigation completes, scroll to the resource library section
     setTimeout(() => {
       document
         .getElementById('resource-library')
         ?.scrollIntoView({ behavior: 'smooth' })
-    }, 100)
+    }, 300)
   }
 
   return (
@@ -59,7 +60,7 @@ export function ContentTypeSignpost() {
       {signposts.map((item) => (
         <a
           key={item.filterParam}
-          href={`/?type=${item.filterParam}#resource-library`}
+          href={`/library?type=${item.filterParam}`}
           onClick={(e) => handleClick(e, item.filterParam)}
           className="group relative flex flex-col gap-3 bg-white px-6 py-7 no-underline transition-colors hover:bg-diligent-gray-1 hover:no-underline"
         >

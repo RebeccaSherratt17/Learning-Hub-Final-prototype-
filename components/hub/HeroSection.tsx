@@ -45,7 +45,7 @@ export function HeroSection({ heading, subheading, overview, ctaText, ctaUrl }: 
             )}
             {ctaText && (
               <a
-                href={ctaUrl ?? '#resource-library'}
+                href={ctaUrl ?? '/library'}
                 className="mt-8 inline-block rounded bg-diligent-red px-[22px] py-[14px] text-[15px] font-medium text-white hover:bg-diligent-red-2"
               >
                 {ctaText}

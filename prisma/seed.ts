@@ -194,7 +194,7 @@ async function main() {
       heroOverview:
         'Our Learning Hub brings together practical tools and expert insights to help business leaders strengthen their governance, risk, and compliance practices. Here, you\u2019ll find a curated collection of ready-to-use templates, professionally crafted courses and videos drawn from our premium eLearning platform, the Education & Templates Library.\n\nWhether you\u2019re building foundational frameworks or refining board operations, these resources are designed to save time and improve effectiveness.',
       heroCTAText: 'Explore Resource Library',
-      heroCTAUrl: '#resource-library',
+      heroCTAUrl: '/library',
 
       // Section 2: Popular & Featured
       popularSectionHeading: 'Jump in: Popular and featured content',

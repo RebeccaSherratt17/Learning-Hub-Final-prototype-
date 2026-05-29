@@ -24,7 +24,7 @@ export default function NotFound() {
           Go to homepage
         </Link>
         <Link
-          href="/#resource-library"
+          href="/library"
           className="inline-flex items-center rounded-lg border border-diligent-gray-2 px-8 py-3.5 text-sm font-medium text-diligent-gray-5 transition-colors hover:border-diligent-gray-3"
         >
           Browse resource library

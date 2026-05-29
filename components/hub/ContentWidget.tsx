@@ -1,6 +1,3 @@
-'use client'
-
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Badge, type BadgeVariant } from '@/components/ui/Badge'
@@ -10,7 +7,6 @@ import {
   type ContentItem,
   type ContentType,
   contentTypeLabels,
-  accessTierLabels,
 } from '@/types/content'
 
 const routePrefix: Record<ContentType, string> = {
@@ -24,33 +20,13 @@ function badgeVariantForType(t: ContentType): BadgeVariant {
   return t
 }
 
-function badgeVariantForTier(tier: ContentItem['accessTier']): BadgeVariant {
-  if (tier === 'gated') return 'gated'
-  if (tier === 'premium') return 'premium'
-  return 'free'
-}
-
 interface ContentWidgetProps {
   title: string
   items: ContentItem[]
   seeAllHref?: string
 }
 
-export function ContentWidget({ title, items, seeAllHref = '#resource-library' }: ContentWidgetProps) {
-  const router = useRouter()
-
-  function handleSeeAll(e: React.MouseEvent) {
-    e.preventDefault()
-    // Extract query string from href (e.g. "/?sort=popular#resource-library" → "/?sort=popular")
-    const url = seeAllHref.split('#')[0] || '/'
-    router.push(url, { scroll: false })
-    setTimeout(() => {
-      document
-        .getElementById('resource-library')
-        ?.scrollIntoView({ behavior: 'smooth' })
-    }, 100)
-  }
-
+export function ContentWidget({ title, items, seeAllHref = '/library' }: ContentWidgetProps) {
   if (items.length === 0) return null
 
   return (
@@ -58,14 +34,13 @@ export function ContentWidget({ title, items, seeAllHref = '#resource-library' }
       {/* Widget header */}
       <div className="mb-6 flex items-center justify-between border-b border-diligent-gray-5 pb-4">
         <h3 className="text-xl font-semibold text-diligent-gray-5">{title}</h3>
-        <a
+        <Link
           href={seeAllHref}
-          onClick={handleSeeAll}
           className="inline-flex items-center gap-1 text-[13px] font-medium text-diligent-gray-5 no-underline hover:text-diligent-red hover:no-underline"
         >
           See all
           <Icon name="arrow_forward" className="text-[14px]" />
-        </a>
+        </Link>
       </div>
 
       {/* Item list */}

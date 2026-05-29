@@ -21,8 +21,8 @@ export function PopularFeaturedSection({
           {heading ?? 'Jump in: Popular and featured content'}
         </h2>
         <div className="grid grid-cols-1 gap-12 md:grid-cols-2">
-          <ContentWidget title="Most popular" items={popularItems} seeAllHref="/?sort=popular#resource-library" />
-          <ContentWidget title="Newest" items={newestItems} seeAllHref="/?sort=newest#resource-library" />
+          <ContentWidget title="Most popular" items={popularItems} seeAllHref="/library?sort=popular" />
+          <ContentWidget title="Newest" items={newestItems} seeAllHref="/library?sort=newest" />
         </div>
       </div>
     </section>
