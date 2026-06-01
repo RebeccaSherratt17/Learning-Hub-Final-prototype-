@@ -24,6 +24,8 @@ export interface ContentCardProps {
   item: ContentItem
   className?: string
   showDescription?: boolean
+  /** Compact variant: taller thumbnail, smaller title text */
+  compact?: boolean
 }
 
 /** Strip HTML tags and truncate to ~120 characters at a sentence or word boundary. */
@@ -40,7 +42,7 @@ function truncateDescription(raw: string | null | undefined): string | null {
   return (wordEnd > 0 ? plain.slice(0, wordEnd) : plain.slice(0, 120)) + '…'
 }
 
-export function ContentCard({ item, className, showDescription }: ContentCardProps) {
+export function ContentCard({ item, className, showDescription, compact }: ContentCardProps) {
   const href = `${routePrefix[item._type]}/${item.slug ?? ''}`
   const thumbUrl = item.thumbnailUrl ?? null
 
@@ -52,14 +54,14 @@ export function ContentCard({ item, className, showDescription }: ContentCardPro
       )}
     >
       <Link href={href} className="block no-underline hover:no-underline">
-        <div className="relative aspect-[16/9] w-full bg-white">
+        <div className={cn('relative w-full bg-white', compact ? 'aspect-[3/2]' : 'aspect-[16/9]')}>
           {thumbUrl ? (
             <Image
               src={thumbUrl}
               alt={item.thumbnailAlt ?? item.title ?? ''}
               fill
               sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-              className={item._type === 'learningPath' ? 'object-contain' : 'object-cover'}
+              className={compact ? 'object-contain' : (item._type === 'learningPath' ? 'object-contain' : 'object-cover')}
             />
           ) : (
             <FallbackThumbnail alt={item.title ?? 'Diligent Learning Hub'} />
@@ -71,7 +73,7 @@ export function ContentCard({ item, className, showDescription }: ContentCardPro
               {contentTypeLabels[item._type]}
             </Badge>
           </div>
-          <h3 className="text-heading-3 font-semibold text-diligent-gray-5">
+          <h3 className={cn(compact ? 'text-sm font-semibold leading-snug text-diligent-gray-5' : 'text-heading-3 font-semibold text-diligent-gray-5')}>
             {item.title}
           </h3>
           {showDescription && truncateDescription(item.description) && (

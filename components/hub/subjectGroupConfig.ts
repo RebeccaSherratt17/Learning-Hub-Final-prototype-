@@ -10,20 +10,19 @@ interface SubjectGroupMeta {
 export const subjectGroupConfig: Record<string, SubjectGroupMeta> = {
   'board-governance': {
     icon: 'gavel',
-    description: 'Everything boards and their teams need to govern effectively',
+    description: 'Tools to help leaders govern effectively',
   },
   'board-meetings-committees': {
     icon: 'groups',
-    description: 'Tools and guidance for running board meetings and committees',
+    description: 'Guidance for running meetings and committees',
   },
   'ai-technology': {
     icon: 'smart_toy',
-    description:
-      'Navigate the governance, ethics and risk dimensions of AI and cybersecurity',
+    description: 'Governance of AI, technology and cyber risk',
   },
   'risk-management': {
     icon: 'shield',
-    description: 'Build robust risk management practices across your organization',
+    description: 'Managing risk across your organization',
   },
   'compliance-policy': {
     icon: 'policy',
@@ -31,7 +30,7 @@ export const subjectGroupConfig: Record<string, SubjectGroupMeta> = {
   },
   'governance-professionals': {
     icon: 'person',
-    description: 'Resources designed for the people who make governance work',
+    description: 'For the people who make governance work',
   },
 }
 
