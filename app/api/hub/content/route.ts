@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
 
   const orgType = searchParams.get('orgType') || undefined
   const subjectIds = searchParams.getAll('subject').filter(Boolean)
+  const regionIds = searchParams.getAll('region').filter(Boolean)
   const sort = searchParams.get('sort') === 'newest' ? 'newest' : 'popular'
   const typeParam = searchParams.get('type') as ContentTypeParam | null
   const limitParam = parseInt(searchParams.get('limit') ?? '', 10)
@@ -35,8 +36,7 @@ export async function GET(request: NextRequest) {
     ? Math.min(Math.max(limitParam, 1), MAX_LIMIT)
     : DEFAULT_LIMIT
 
-  // Build subject filter clauses — orgType and subject use AND logic.
-  // Each clause is a separate `some` filter so Prisma applies them with AND.
+  // Build filter clauses — orgType, subject, and region use AND logic between dimensions.
   const andClauses: Record<string, unknown>[] = []
   if (orgType) {
     andClauses.push({ subjects: { some: { subjectId: orgType } } })
@@ -44,6 +44,20 @@ export async function GET(request: NextRequest) {
   if (subjectIds.length > 0) {
     andClauses.push({
       subjects: { some: { subjectId: { in: subjectIds } } },
+    })
+  }
+
+  // Region filter — include "Global" content alongside the selected region(s)
+  if (regionIds.length > 0) {
+    const globalRegion = await prisma.region.findFirst({
+      where: { slug: 'global' },
+      select: { id: true },
+    })
+    const allRegionIds = globalRegion && !regionIds.includes(globalRegion.id)
+      ? [...regionIds, globalRegion.id]
+      : regionIds
+    andClauses.push({
+      regions: { some: { regionId: { in: allRegionIds } } },
     })
   }
 

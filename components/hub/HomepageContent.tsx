@@ -105,6 +105,7 @@ export function HomepageContent({
           groupName={group.name}
           subjects={group.subjects}
           items={itemsForGroup(group.slug)}
+          activeOrgTypeId={activeOrgTypeId}
           activeOrgTypeSlug={activeOrgTypeSlug}
         />
       ))}

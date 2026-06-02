@@ -48,6 +48,7 @@ export function filterItems(
   items: ContentItem[],
   search: string,
   filters: FilterState,
+  globalRegionId?: string,
 ): ContentItem[] {
   return items.filter((item) => {
     // Search term (case-insensitive substring match on title)
@@ -66,11 +67,13 @@ export function filterItems(
         return false
       }
     }
-    // Region filter (OR within)
+    // Region filter (OR within) — always include "Global" content alongside specific regions
     if (filters.regions.length > 0) {
       const itemWithRegions = item as ContentItem & { regions?: { _id: string }[] | null }
       const itemRegionIds = itemWithRegions.regions?.map((r) => r._id) ?? []
-      if (!filters.regions.some((id) => itemRegionIds.includes(id))) {
+      const matchesSelected = filters.regions.some((id) => itemRegionIds.includes(id))
+      const matchesGlobal = globalRegionId ? itemRegionIds.includes(globalRegionId) : false
+      if (!matchesSelected && !matchesGlobal) {
         return false
       }
     }
@@ -259,10 +262,16 @@ export function ResourceLibrary({
     [syncUrl],
   )
 
+  // Look up the "Global" region ID by title so it persists across reseeds
+  const globalRegionId = useMemo(
+    () => regions.find((r) => r.title === 'Global')?._id,
+    [regions],
+  )
+
   // Compute filtered, sorted, paginated items
   const filtered = useMemo(
-    () => filterItems(items, search, filters),
-    [items, search, filters],
+    () => filterItems(items, search, filters, globalRegionId),
+    [items, search, filters, globalRegionId],
   )
   const sorted = useMemo(() => sortItems(filtered, sort), [filtered, sort])
   const totalPages = Math.ceil(sorted.length / ITEMS_PER_PAGE)

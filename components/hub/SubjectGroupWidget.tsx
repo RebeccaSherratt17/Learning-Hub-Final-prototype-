@@ -1,8 +1,7 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { Icon } from '@/components/ui/Icon'
 import { ContentCard } from '@/components/hub/ContentCard'
 import { subjectGroupConfig } from '@/components/hub/subjectGroupConfig'
@@ -33,6 +32,7 @@ interface SubjectGroupWidgetProps {
   groupName: string
   subjects: SubjectInfo[]
   items: ContentItem[]
+  activeOrgTypeId: string
   activeOrgTypeSlug: string
 }
 
@@ -41,14 +41,57 @@ export function SubjectGroupWidget({
   groupName,
   subjects,
   items,
+  activeOrgTypeId,
   activeOrgTypeSlug,
 }: SubjectGroupWidgetProps) {
   const router = useRouter()
   const config = subjectGroupConfig[groupSlug]
+  const [activeSubjectId, setActiveSubjectId] = useState<string | null>(null)
+  const [filteredItems, setFilteredItems] = useState<ContentItem[] | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const abortRef = useRef<AbortController | null>(null)
+
   if (!config) return null
 
   const seeAllHref = `/library?subject=${groupSlug}&orgType=${activeOrgTypeSlug}`
-  const displayItems = items.slice(0, 4)
+
+  // Fetch filtered content when a sub-topic pill is clicked
+  useEffect(() => {
+    if (!activeSubjectId) {
+      setFilteredItems(null)
+      return
+    }
+
+    abortRef.current?.abort()
+    const controller = new AbortController()
+    abortRef.current = controller
+
+    setIsLoading(true)
+    const params = new URLSearchParams({
+      subject: activeSubjectId,
+      ...(activeOrgTypeId ? { orgType: activeOrgTypeId } : {}),
+    })
+
+    fetch(`/api/hub/content?${params.toString()}`, { signal: controller.signal })
+      .then((res) => res.json())
+      .then((data: ContentItem[]) => {
+        if (!controller.signal.aborted) {
+          setFilteredItems(data)
+          setIsLoading(false)
+        }
+      })
+      .catch((err) => {
+        if (err.name !== 'AbortError') {
+          setIsLoading(false)
+        }
+      })
+
+    return () => controller.abort()
+  }, [activeSubjectId, activeOrgTypeId])
+
+  const handlePillClick = useCallback((subjectId: string) => {
+    setActiveSubjectId((prev) => (prev === subjectId ? null : subjectId))
+  }, [])
 
   const navigateToLibrary = useCallback(
     (e: React.MouseEvent) => {
@@ -62,6 +105,8 @@ export function SubjectGroupWidget({
     },
     [router, seeAllHref]
   )
+
+  const displayItems = (filteredItems ?? items).slice(0, 4)
 
   return (
     <section className="py-6">
@@ -85,16 +130,21 @@ export function SubjectGroupWidget({
                 {config.description}
               </p>
 
-              {/* Sub-topic pills */}
+              {/* Sub-topic pills — local filters */}
               <div className="mt-4 flex flex-wrap gap-1.5">
                 {subjects.map((subject) => (
-                  <Link
+                  <button
                     key={subject.id}
-                    href={`/library?subject=${subject.id}`}
-                    className="rounded-full border border-diligent-gray-3 bg-white px-2 py-0.5 text-[11px] font-medium text-diligent-gray-5 no-underline transition-colors hover:border-diligent-gray-4 hover:no-underline"
+                    type="button"
+                    onClick={() => handlePillClick(subject.id)}
+                    className={`rounded-full border px-2 py-0.5 text-[11px] font-medium transition-colors ${
+                      activeSubjectId === subject.id
+                        ? 'border-diligent-red bg-diligent-red text-white'
+                        : 'border-diligent-gray-3 bg-white text-diligent-gray-5 hover:border-diligent-gray-4'
+                    }`}
                   >
                     {subject.name}
-                  </Link>
+                  </button>
                 ))}
               </div>
             </div>
@@ -116,28 +166,44 @@ export function SubjectGroupWidget({
           {/* Right panel — horizontally scrollable cards + end cap */}
           <div className="min-w-0 flex-1 overflow-x-auto">
             <div className="flex h-full">
-              {displayItems.map((item) => (
-                <div
-                  key={item._id}
-                  className="w-[260px] flex-shrink-0 border-l border-diligent-gray-2"
-                >
-                  <ContentCard
-                    item={item}
-                    compact
-                    className="h-full rounded-none border-0 shadow-none hover:translate-y-0 hover:shadow-none"
-                  />
-                </div>
-              ))}
-              {/* Fill empty slots if fewer than 4 items */}
-              {displayItems.length < 4 &&
-                Array.from({ length: 4 - displayItems.length }).map((_, i) => (
+              {isLoading ? (
+                // Loading placeholders
+                Array.from({ length: 4 }).map((_, i) => (
                   <div
-                    key={`empty-${i}`}
+                    key={`loading-${i}`}
                     className="flex w-[260px] flex-shrink-0 items-center justify-center border-l border-diligent-gray-2 bg-white p-6"
                   >
-                    <p className="text-sm text-diligent-gray-3">No content</p>
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-diligent-gray-3 border-t-diligent-red" />
                   </div>
-                ))}
+                ))
+              ) : (
+                <>
+                  {displayItems.map((item) => (
+                    <div
+                      key={item._id}
+                      className="w-[260px] flex-shrink-0 border-l border-diligent-gray-2"
+                    >
+                      <ContentCard
+                        item={item}
+                        compact
+                        className="h-full rounded-none border-0 shadow-none hover:translate-y-0 hover:shadow-none"
+                      />
+                    </div>
+                  ))}
+                  {/* Fill empty slots if fewer than 4 items */}
+                  {displayItems.length < 4 &&
+                    Array.from({ length: 4 - displayItems.length }).map((_, i) => (
+                      <div
+                        key={`empty-${i}`}
+                        className="flex w-[260px] flex-shrink-0 items-center justify-center border-l border-diligent-gray-2 bg-white p-6"
+                      >
+                        <p className="text-sm text-diligent-gray-3">
+                          {activeSubjectId ? 'No matching content' : 'No content'}
+                        </p>
+                      </div>
+                    ))}
+                </>
+              )}
 
               {/* "See all in this category" end cap */}
               <a

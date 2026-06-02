@@ -178,6 +178,9 @@ export default function TaxonomySelect({
         isOpen={!!openSections.regions}
         onToggle={() => toggleSection('regions')}
       >
+        <p className="mb-2 text-xs italic text-diligent-gray-4">
+          Items tagged as Global are automatically included in all region filters — no need to tag individual countries separately.
+        </p>
         <CheckboxGrid
           items={regions}
           selectedIds={selectedRegionIds}
