@@ -141,6 +141,16 @@ export function ResourceLibrary({
   )
   const [drawerOpen, setDrawerOpen] = useState(false)
 
+  // Scroll to this section when the URL hash is #resource-library
+  useEffect(() => {
+    if (window.location.hash === '#resource-library') {
+      // Allow the page to finish rendering before scrolling
+      requestAnimationFrame(() => {
+        document.getElementById('resource-library')?.scrollIntoView({ behavior: 'smooth' })
+      })
+    }
+  }, [])
+
   // React to external URL changes (e.g. signpost links updating ?type=)
   useEffect(() => {
     const urlTypes = searchParams

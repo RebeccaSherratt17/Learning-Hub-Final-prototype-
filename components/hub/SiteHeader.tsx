@@ -75,8 +75,8 @@ export function SiteHeader() {
         {/* Logo */}
         <Link
           href="/"
-          className="no-underline hover:no-underline"
-          aria-label="Diligent — Home"
+          className="flex items-center no-underline hover:no-underline"
+          aria-label="Diligent Learning Hub — Home"
         >
           <Image
             src="/diligent-logo.jpg"
@@ -86,6 +86,9 @@ export function SiteHeader() {
             className="block h-8 w-auto"
             priority
           />
+          <span className="ml-2 text-lg font-semibold text-diligent-gray-5">
+            Learning Hub
+          </span>
         </Link>
 
         {/* Desktop nav — centred, hidden on mobile */}

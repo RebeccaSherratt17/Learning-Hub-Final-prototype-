@@ -1,20 +1,33 @@
 'use client'
 
-import { useState, FormEvent } from 'react'
+import { useState, useEffect, FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { Icon } from '@/components/ui/Icon'
 
-const SUGGESTION_PILLS = [
-  'CSRD reporting',
-  'AGM minutes',
-  'Cybersecurity oversight',
+const SUGGESTION_POOL = [
+  'AI governance',
+  'Meeting minutes',
+  'Board evaluations',
+  'Cybersecurity',
+  'Director onboarding',
+  'Investor stewardship',
   'Subsidiary governance',
-  'AI policy',
+  'Audit committee',
+  'Compensation committee',
+  'AI ethics',
+  'ERM',
+  'IPO',
 ]
 
 export function HomepageHero() {
   const router = useRouter()
   const [query, setQuery] = useState('')
+  const [pills, setPills] = useState<string[]>([])
+
+  useEffect(() => {
+    const shuffled = [...SUGGESTION_POOL].sort(() => Math.random() - 0.5)
+    setPills(shuffled.slice(0, 4))
+  }, [])
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
     const trimmed = query.trim()
@@ -26,7 +39,7 @@ export function HomepageHero() {
   }
 
   function handlePillClick(term: string) {
-    router.push(`/library?q=${encodeURIComponent(term)}`)
+    router.push(`/library?q=${encodeURIComponent(term)}#resource-library`)
   }
 
   return (
@@ -60,11 +73,11 @@ export function HomepageHero() {
         </form>
 
         {/* Suggestion pills */}
-        <div className="mx-auto mt-5 flex max-w-3xl flex-wrap items-center justify-center gap-2">
+        <div className="mx-auto mt-5 flex max-w-3xl flex-nowrap items-center justify-center gap-2 overflow-hidden whitespace-nowrap">
           <span className="text-xs font-semibold uppercase tracking-wider text-diligent-gray-3">
             Try:
           </span>
-          {SUGGESTION_PILLS.map((term) => (
+          {pills.map((term) => (
             <button
               key={term}
               type="button"
