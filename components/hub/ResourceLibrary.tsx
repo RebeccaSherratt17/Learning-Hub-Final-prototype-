@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { ContentCard } from '@/components/hub/ContentCard'
 import { SearchBar } from '@/components/hub/SearchBar'
@@ -276,10 +276,15 @@ export function ResourceLibrary({
     [syncUrl],
   )
 
+  const contentAreaRef = useRef<HTMLDivElement>(null)
+
   const handlePageChange = useCallback(
     (newPage: number) => {
       setPage(newPage)
       syncUrl({ page: newPage })
+      requestAnimationFrame(() => {
+        contentAreaRef.current?.scrollIntoView({ behavior: 'smooth' })
+      })
     },
     [syncUrl],
   )
@@ -396,7 +401,7 @@ export function ResourceLibrary({
           </aside>
 
           {/* Content grid */}
-          <div className="min-w-0">
+          <div ref={contentAreaRef} className="min-w-0">
             {/* Resource count + sort + mobile filter toggle */}
             <div className="mb-6 flex items-center justify-between gap-4">
               <p className="text-lg font-semibold text-diligent-gray-5">
