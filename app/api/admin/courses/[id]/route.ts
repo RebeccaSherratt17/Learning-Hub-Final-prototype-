@@ -110,6 +110,13 @@ export async function PUT(
       return NextResponse.json({ error: 'Slug is required' }, { status: 400 })
     }
 
+    if (status === 'PUBLISHED' && (!launchFile || launchFile.trim().length === 0)) {
+      return NextResponse.json(
+        { error: 'A SCORM file must be uploaded before publishing a course.' },
+        { status: 400 }
+      )
+    }
+
     const { relatedItems } = body as { relatedItems?: { type: string; id: string }[] }
 
     const course = await prisma.$transaction(async (tx) => {

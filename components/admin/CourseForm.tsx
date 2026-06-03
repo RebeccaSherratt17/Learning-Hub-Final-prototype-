@@ -111,6 +111,7 @@ export default function CourseForm({
   const [levelError, setLevelError] = useState<string | null>(null)
   const [tokenLoading, setTokenLoading] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [scormWarning, setScormWarning] = useState(false)
 
   // Derive organization type subject IDs for validation
   const orgTypeSubjectIds = subjects.filter((s) => s.group.name === 'Organization Type').map((s) => s.id)
@@ -127,6 +128,13 @@ export default function CourseForm({
       setLevelError(null)
     }
   }, [level, levelError])
+
+  // Clear SCORM warning when status changes away from PUBLISHED or a SCORM file is uploaded
+  useEffect(() => {
+    if (scormWarning && (status !== 'PUBLISHED' || launchFile)) {
+      setScormWarning(false)
+    }
+  }, [status, launchFile, scormWarning])
 
   useEffect(() => {
     if (message?.type === 'success') {
@@ -241,6 +249,11 @@ export default function CourseForm({
     if (!level) {
       setLevelError('No difficulty level selected')
       setMessage({ type: 'error', text: 'No difficulty level selected' })
+      return
+    }
+
+    if (status === 'PUBLISHED' && !launchFile) {
+      setScormWarning(true)
       return
     }
 
@@ -813,6 +826,11 @@ export default function CourseForm({
           <span className="text-sm font-medium text-diligent-red">{levelError}</span>
         )}
         {previewButton}
+        {scormWarning && (
+          <span className="text-xs font-medium" style={{ color: '#EE312E', fontSize: '12px' }}>
+            Upload a SCORM file before publishing this course.
+          </span>
+        )}
         <button
           type="submit"
           disabled={saving}

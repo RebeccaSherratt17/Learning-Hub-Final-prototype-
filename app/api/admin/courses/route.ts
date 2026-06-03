@@ -130,6 +130,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Description is required' }, { status: 400 })
     }
 
+    if (status === 'PUBLISHED' && (!launchFile || launchFile.trim().length === 0)) {
+      return NextResponse.json(
+        { error: 'A SCORM file must be uploaded before publishing a course.' },
+        { status: 400 }
+      )
+    }
+
     const finalSlug = slug?.trim() || generateSlug(title)
 
     const { relatedItems } = body as { relatedItems?: { type: string; id: string }[] }
