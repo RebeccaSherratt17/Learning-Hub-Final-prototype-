@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
   const regionIds = searchParams.getAll('region').filter(Boolean)
   const sort = searchParams.get('sort') === 'newest' ? 'newest' : 'popular'
   const typeParam = searchParams.get('type') as ContentTypeParam | null
+  const levelParam = searchParams.get('level') || undefined
   const limitParam = parseInt(searchParams.get('limit') ?? '', 10)
   const limit = Number.isFinite(limitParam)
     ? Math.min(Math.max(limitParam, 1), MAX_LIMIT)
@@ -59,6 +60,11 @@ export async function GET(request: NextRequest) {
     andClauses.push({
       regions: { some: { regionId: { in: allRegionIds } } },
     })
+  }
+
+  // Level filter
+  if (levelParam) {
+    andClauses.push({ level: levelParam })
   }
 
   // Determine which content types to query

@@ -5,10 +5,11 @@
  * paths into the unified `ContentItem` interface used by public hub components.
  */
 
-import type { ContentItem, ContentType, AccessTier } from '@/types/content'
+import type { ContentItem, ContentType, AccessTier, DifficultyLevel } from '@/types/content'
 import {
   AccessTier as PrismaAccessTier,
   ContentStatus,
+  DifficultyLevel as PrismaDifficultyLevel,
 } from '@/lib/generated/prisma'
 
 // ---------------------------------------------------------------------------
@@ -64,6 +65,7 @@ interface BaseRow {
   thumbnailUrl: string | null
   thumbnailAlt: string | null
   accessTier: PrismaAccessTier
+  level?: PrismaDifficultyLevel | null
   publishedAt: Date | null
   viewCount: number
   subjects: TaxonomySubjectRow[]
@@ -85,6 +87,7 @@ function mapRow(row: BaseRow, type: ContentType): ContentItem {
     thumbnailUrl: row.thumbnailUrl,
     thumbnailAlt: row.thumbnailAlt,
     accessTier: mapAccessTier(row.accessTier),
+    level: (row.level as DifficultyLevel) ?? null,
     subjects: row.subjects.map((s) => ({
       _id: s.subject.id,
       title: s.subject.name,

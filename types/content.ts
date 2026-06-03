@@ -8,6 +8,8 @@ export type ContentType = 'course' | 'template' | 'video' | 'learningPath'
 
 export type AccessTier = 'free' | 'gated' | 'premium'
 
+export type DifficultyLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
+
 export interface TaxonomyRef {
   _id: string
   title: string | null
@@ -30,6 +32,7 @@ export interface ContentItem {
   subjects: TaxonomyRef[]
   personas?: TaxonomyRef[]
   regions?: TaxonomyRef[]
+  level?: DifficultyLevel | null
   publishedAt: string | null
   viewCount?: number
 }

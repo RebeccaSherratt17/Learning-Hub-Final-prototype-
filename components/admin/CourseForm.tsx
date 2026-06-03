@@ -41,6 +41,7 @@ interface CourseFormProps {
     seoDescription: string | null
     sku: string | null
     credlyBadgeId: string | null
+    level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | null
     personaIds: string[]
     regionIds: string[]
     subjectIds: string[]
@@ -98,6 +99,7 @@ export default function CourseForm({
   const [seoDescription, setSeoDescription] = useState(course?.seoDescription ?? '')
   const [sku, setSku] = useState(course?.sku ?? '')
   const [credlyBadgeId, setCredlyBadgeId] = useState(course?.credlyBadgeId ?? '')
+  const [level, setLevel] = useState<string>(course?.level ?? '')
   const [selectedPersonaIds, setSelectedPersonaIds] = useState<string[]>(course?.personaIds ?? [])
   const [selectedRegionIds, setSelectedRegionIds] = useState<string[]>(course?.regionIds ?? [])
   const [selectedSubjectIds, setSelectedSubjectIds] = useState<string[]>(course?.subjectIds ?? [])
@@ -106,6 +108,7 @@ export default function CourseForm({
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [orgTypeError, setOrgTypeError] = useState<string | null>(null)
+  const [levelError, setLevelError] = useState<string | null>(null)
   const [tokenLoading, setTokenLoading] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -118,6 +121,12 @@ export default function CourseForm({
       setOrgTypeError(null)
     }
   }, [hasOrgTypeSelected, orgTypeError])
+
+  useEffect(() => {
+    if (level && levelError) {
+      setLevelError(null)
+    }
+  }, [level, levelError])
 
   useEffect(() => {
     if (message?.type === 'success') {
@@ -225,6 +234,13 @@ export default function CourseForm({
 
     if (!hasOrgTypeSelected) {
       setOrgTypeError('No organization type selected')
+      setMessage({ type: 'error', text: 'No organization type selected' })
+      return
+    }
+
+    if (!level) {
+      setLevelError('No difficulty level selected')
+      setMessage({ type: 'error', text: 'No difficulty level selected' })
       return
     }
 
@@ -252,6 +268,7 @@ export default function CourseForm({
       seoDescription: seoDescription || null,
       sku: sku || null,
       credlyBadgeId: credlyBadgeId || null,
+      level: level || null,
       personaIds: selectedPersonaIds,
       regionIds: selectedRegionIds,
       subjectIds: selectedSubjectIds,
@@ -492,6 +509,38 @@ export default function CourseForm({
             label="Open Graph image"
             hint="Used when sharing on social media"
           />
+        </div>
+      </div>
+
+      {/* Level */}
+      <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-diligent-gray-5">Level</h2>
+        <div>
+          <span className="block text-sm font-medium text-diligent-gray-5 mb-2">
+            Difficulty level <span className="text-diligent-red">*</span>
+          </span>
+          <div className="flex gap-6">
+            {([
+              { value: 'BEGINNER', label: 'Beginner-friendly' },
+              { value: 'INTERMEDIATE', label: 'Intermediate' },
+              { value: 'ADVANCED', label: 'Advanced' },
+            ] as const).map((opt) => (
+              <label key={opt.value} className="flex items-center gap-2 text-sm text-diligent-gray-5 cursor-pointer">
+                <input
+                  type="radio"
+                  name="level"
+                  value={opt.value}
+                  checked={level === opt.value}
+                  onChange={() => setLevel(opt.value)}
+                  className="h-4 w-4 border-diligent-gray-2 text-diligent-red focus:ring-diligent-red"
+                />
+                {opt.label}
+              </label>
+            ))}
+          </div>
+          {levelError && (
+            <p className="mt-2 text-sm font-medium text-diligent-red">{levelError}</p>
+          )}
         </div>
       </div>
 
@@ -759,6 +808,9 @@ export default function CourseForm({
       <div className="flex items-center justify-end gap-3">
         {orgTypeError && (
           <span className="text-sm font-medium text-diligent-red">{orgTypeError}</span>
+        )}
+        {levelError && (
+          <span className="text-sm font-medium text-diligent-red">{levelError}</span>
         )}
         {previewButton}
         <button

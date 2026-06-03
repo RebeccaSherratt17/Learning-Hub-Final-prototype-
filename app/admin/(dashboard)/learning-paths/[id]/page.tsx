@@ -117,6 +117,7 @@ export default async function EditLearningPathPage({
     seoTitle: learningPath.seoTitle,
     seoDescription: learningPath.seoDescription,
     sku: learningPath.sku,
+    level: learningPath.level,
     personaIds: learningPath.personas.map((lp) => lp.persona.id),
     regionIds: learningPath.regions.map((lr) => lr.region.id),
     subjectIds: learningPath.subjects.map((ls) => ls.subject.id),

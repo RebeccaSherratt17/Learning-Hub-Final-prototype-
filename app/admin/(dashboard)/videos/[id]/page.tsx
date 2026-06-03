@@ -65,6 +65,7 @@ export default async function EditVideoPage({
     seoDescription: video.seoDescription,
     sku: video.sku,
     credlyBadgeId: video.credlyBadgeId,
+    level: video.level,
     personaIds: video.personas.map((vp) => vp.persona.id),
     regionIds: video.regions.map((vr) => vr.region.id),
     subjectIds: video.subjects.map((vs) => vs.subject.id),

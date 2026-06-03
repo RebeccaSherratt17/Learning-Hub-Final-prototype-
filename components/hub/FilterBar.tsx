@@ -18,6 +18,7 @@ export interface FilterState {
   personas: string[]
   regions: string[]
   subjects: string[]
+  level: string
 }
 
 interface FilterBarProps {
@@ -167,7 +168,7 @@ export function FilterBar({
         <button
           type="button"
           onClick={() =>
-            onFilterChange({ types: [], personas: [], regions: [], subjects: [] })
+            onFilterChange({ types: [], personas: [], regions: [], subjects: [], level: '' })
           }
           className="text-xs font-medium text-link hover:underline"
         >

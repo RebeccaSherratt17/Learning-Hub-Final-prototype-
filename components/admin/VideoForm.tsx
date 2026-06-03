@@ -36,6 +36,7 @@ interface VideoFormProps {
     seoDescription: string | null
     sku: string | null
     credlyBadgeId: string | null
+    level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | null
     personaIds: string[]
     regionIds: string[]
     subjectIds: string[]
@@ -86,6 +87,7 @@ export default function VideoForm({
   const [seoDescription, setSeoDescription] = useState(video?.seoDescription ?? '')
   const [sku, setSku] = useState(video?.sku ?? '')
   const [credlyBadgeId, setCredlyBadgeId] = useState(video?.credlyBadgeId ?? '')
+  const [level, setLevel] = useState<string>(video?.level ?? '')
   const [selectedPersonaIds, setSelectedPersonaIds] = useState<string[]>(video?.personaIds ?? [])
   const [selectedRegionIds, setSelectedRegionIds] = useState<string[]>(video?.regionIds ?? [])
   const [selectedSubjectIds, setSelectedSubjectIds] = useState<string[]>(video?.subjectIds ?? [])
@@ -94,6 +96,7 @@ export default function VideoForm({
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [orgTypeError, setOrgTypeError] = useState<string | null>(null)
+  const [levelError, setLevelError] = useState<string | null>(null)
 
   // Derive organization type subject IDs for validation
   const orgTypeSubjectIds = subjects.filter((s) => s.group.name === 'Organization Type').map((s) => s.id)
@@ -104,6 +107,12 @@ export default function VideoForm({
       setOrgTypeError(null)
     }
   }, [hasOrgTypeSelected, orgTypeError])
+
+  useEffect(() => {
+    if (level && levelError) {
+      setLevelError(null)
+    }
+  }, [level, levelError])
 
   useEffect(() => {
     if (message?.type === 'success') {
@@ -134,6 +143,12 @@ export default function VideoForm({
       return
     }
 
+    if (!level) {
+      setLevelError('No difficulty level selected')
+      setMessage({ type: 'error', text: 'No difficulty level selected' })
+      return
+    }
+
     setSaving(true)
     setMessage(null)
 
@@ -154,6 +169,7 @@ export default function VideoForm({
       seoDescription: seoDescription || null,
       sku: sku || null,
       credlyBadgeId: credlyBadgeId || null,
+      level: level || null,
       personaIds: selectedPersonaIds,
       regionIds: selectedRegionIds,
       subjectIds: selectedSubjectIds,
@@ -357,6 +373,38 @@ export default function VideoForm({
         </div>
       </div>
 
+      {/* Level */}
+      <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-diligent-gray-5">Level</h2>
+        <div>
+          <span className="block text-sm font-medium text-diligent-gray-5 mb-2">
+            Difficulty level <span className="text-diligent-red">*</span>
+          </span>
+          <div className="flex gap-6">
+            {([
+              { value: 'BEGINNER', label: 'Beginner-friendly' },
+              { value: 'INTERMEDIATE', label: 'Intermediate' },
+              { value: 'ADVANCED', label: 'Advanced' },
+            ] as const).map((opt) => (
+              <label key={opt.value} className="flex items-center gap-2 text-sm text-diligent-gray-5 cursor-pointer">
+                <input
+                  type="radio"
+                  name="level"
+                  value={opt.value}
+                  checked={level === opt.value}
+                  onChange={() => setLevel(opt.value)}
+                  className="h-4 w-4 border-diligent-gray-2 text-diligent-red focus:ring-diligent-red"
+                />
+                {opt.label}
+              </label>
+            ))}
+          </div>
+          {levelError && (
+            <p className="mt-2 text-sm font-medium text-diligent-red">{levelError}</p>
+          )}
+        </div>
+      </div>
+
       {/* Taxonomy */}
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h2 className="text-lg font-semibold text-diligent-gray-5 mb-4">Taxonomy</h2>
@@ -538,6 +586,9 @@ export default function VideoForm({
       <div className="flex items-center justify-end gap-3">
         {orgTypeError && (
           <span className="text-sm font-medium text-diligent-red">{orgTypeError}</span>
+        )}
+        {levelError && (
+          <span className="text-sm font-medium text-diligent-red">{levelError}</span>
         )}
         {previewButton}
         <button

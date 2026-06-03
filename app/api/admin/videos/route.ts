@@ -87,6 +87,7 @@ export async function POST(request: Request) {
       seoDescription,
       sku,
       credlyBadgeId,
+      level,
       personaIds,
       regionIds,
       subjectIds,
@@ -107,6 +108,7 @@ export async function POST(request: Request) {
       seoDescription?: string
       sku?: string
       credlyBadgeId?: string
+      level?: string
       personaIds?: string[]
       regionIds?: string[]
       subjectIds?: string[]
@@ -143,6 +145,7 @@ export async function POST(request: Request) {
           seoDescription: seoDescription?.trim() || null,
           sku: sku?.trim() || null,
           credlyBadgeId: credlyBadgeId?.trim() || null,
+          level: (level as 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED') || null,
         },
       })
 

@@ -42,6 +42,12 @@ enum AttemptStatus {
   FAILED
 }
 
+enum DifficultyLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
 // ─────────────────────────────────────────────
 // Admin Users
 // ─────────────────────────────────────────────
@@ -138,6 +144,7 @@ model Course {
   seoDescription     String?       @db.Text
   sku                String?
   credlyBadgeId      String?
+  level              DifficultyLevel?
   viewCount          Int           @default(0)
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
@@ -209,6 +216,7 @@ model Video {
   seoDescription     String?       @db.Text
   sku                String?
   credlyBadgeId      String?
+  level              DifficultyLevel?
   viewCount          Int           @default(0)
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
@@ -242,6 +250,7 @@ model LearningPath {
   seoTitle                String?
   seoDescription          String?       @db.Text
   sku                     String?
+  level                   DifficultyLevel?
   viewCount               Int           @default(0)
   createdAt               DateTime      @default(now())
   updatedAt               DateTime      @updatedAt

@@ -4,11 +4,7 @@ import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import { prisma } from '@/lib/db'
 import type { ContentItem } from '@/types/content'
-import { HeroSection } from '@/components/hub/HeroSection'
-import { PopularFeaturedSection } from '@/components/hub/PopularFeaturedSection'
-import { PartnerLogoScroller } from '@/components/hub/PartnerLogoScroller'
 import { ResourceLibrary } from '@/components/hub/ResourceLibrary'
-import { CertificationsSection } from '@/components/hub/CertificationsSection'
 import { FooterCTASection } from '@/components/hub/FooterCTASection'
 import {
   toCourseItem,
@@ -67,7 +63,6 @@ export default async function LibraryPage() {
     videos,
     learningPaths,
     partners,
-    badges,
     personas,
     regions,
     subjectsWithGroups,
@@ -78,7 +73,6 @@ export default async function LibraryPage() {
     fetchVideos(),
     fetchLearningPaths(),
     prisma.educationalPartner.findMany({ orderBy: { order: 'asc' } }),
-    prisma.certificationBadge.findMany({ orderBy: { order: 'asc' } }),
     prisma.persona.findMany({ orderBy: { name: 'asc' } }),
     prisma.region.findMany({ orderBy: { name: 'asc' } }),
     prisma.subject.findMany({
@@ -95,20 +89,6 @@ export default async function LibraryPage() {
     ...learningPaths.map(toLearningPathItem),
   ]
 
-  // Popular: top 3 by viewCount
-  const popularItems = [...allItems]
-    .sort((a, b) => (b.viewCount ?? 0) - (a.viewCount ?? 0))
-    .slice(0, 3)
-
-  // Newest: top 3 by publishedAt
-  const newestItems = [...allItems]
-    .sort(
-      (a, b) =>
-        new Date(b.publishedAt ?? 0).getTime() -
-        new Date(a.publishedAt ?? 0).getTime(),
-    )
-    .slice(0, 3)
-
   // Map partners
   const mappedPartners = partners.map((p) => ({
     _id: p.id,
@@ -116,15 +96,6 @@ export default async function LibraryPage() {
     logoUrl: p.logoUrl,
     logoAlt: p.logoAlt,
     url: p.linkUrl,
-  }))
-
-  // Map badges
-  const mappedBadges = badges.map((b) => ({
-    _id: b.id,
-    title: b.name,
-    imageUrl: b.imageUrl,
-    imageAlt: b.imageAlt,
-    url: b.linkUrl,
   }))
 
   // Map taxonomy for filters
@@ -164,29 +135,7 @@ export default async function LibraryPage() {
 
   return (
     <>
-      {/* Section 1: Hero */}
-      <HeroSection
-        heading={settings?.heroHeading ?? null}
-        subheading={settings?.heroSubheading ?? null}
-        overview={settings?.heroOverview ?? null}
-        ctaText={settings?.heroCTAText ?? null}
-        ctaUrl={settings?.heroCTAUrl ?? null}
-      />
-
-      {/* Section 2: Popular & Featured Content */}
-      <PopularFeaturedSection
-        heading={settings?.popularSectionHeading ?? null}
-        popularItems={popularItems}
-        newestItems={newestItems}
-      />
-
-      {/* Section 3: Educational Partners */}
-      <PartnerLogoScroller
-        heading={settings?.partnersSectionHeading ?? null}
-        partners={mappedPartners}
-      />
-
-      {/* Section 4: Full Resource Library */}
+      {/* Section 1: Full Resource Library */}
       <Suspense fallback={null}>
         <ResourceLibrary
           heading={settings?.librarySectionHeading ?? null}
@@ -196,17 +145,11 @@ export default async function LibraryPage() {
           regions={mappedRegions}
           subjects={mappedSubjects}
           filterCounts={filterCounts}
+          partners={mappedPartners}
         />
       </Suspense>
 
-      {/* Section 5: Professionally-Accredited Certifications */}
-      <CertificationsSection
-        heading={settings?.certificationsSectionHeading ?? null}
-        body={settings?.certificationsSectionBody ?? null}
-        badges={mappedBadges}
-      />
-
-      {/* Section 6: Footer CTA */}
+      {/* Section 2: Footer CTA */}
       <FooterCTASection
         heading={settings?.footerHeading ?? null}
         body={settings?.footerBody ?? null}

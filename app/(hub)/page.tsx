@@ -12,7 +12,6 @@ import {
 } from '@/lib/content'
 import { HomepageHero } from '@/components/hub/HomepageHero'
 import { HomepageContent } from '@/components/hub/HomepageContent'
-import { PartnerLogoScroller } from '@/components/hub/PartnerLogoScroller'
 import { FooterCTASection } from '@/components/hub/FooterCTASection'
 
 export default async function HubHomePage() {
@@ -113,7 +112,7 @@ export default async function HubHomePage() {
   return (
     <>
       {/* Section 1: Hero / Search */}
-      <HomepageHero />
+      <HomepageHero partners={mappedPartners} />
 
       {/* Sections 2-4: Org type selector, Popular, Subject groups */}
       <HomepageContent
@@ -123,13 +122,7 @@ export default async function HubHomePage() {
         initialItems={initialItems}
       />
 
-      {/* Section 5: Educational Partners */}
-      <PartnerLogoScroller
-        heading={settings?.partnersSectionHeading ?? null}
-        partners={mappedPartners}
-      />
-
-      {/* Section 6: Footer CTA */}
+      {/* Section 5: Footer CTA */}
       <FooterCTASection
         heading={settings?.footerHeading ?? null}
         body={settings?.footerBody ?? null}

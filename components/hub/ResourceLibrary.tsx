@@ -8,11 +8,12 @@ import { SortDropdown, type SortOption } from '@/components/hub/SortDropdown'
 import { type FilterState } from '@/components/hub/FilterBar'
 import { FilterSidebar } from '@/components/hub/FilterSidebar'
 import { FilterDrawer } from '@/components/hub/FilterDrawer'
-import { ContentTypeDropdown } from '@/components/hub/ContentTypeDropdown'
 import { Pagination } from '@/components/hub/Pagination'
 import { SafeHtml } from '@/components/hub/SafeHtml'
 import { Icon } from '@/components/ui/Icon'
+import Image from 'next/image'
 import type { ContentItem } from '@/types/content'
+import { SEARCH_SUGGESTION_POOL } from '@/lib/searchSuggestions'
 
 const ITEMS_PER_PAGE = 15
 
@@ -33,6 +34,14 @@ interface SubjectItem extends TaxonomyItem {
   group: string | null
 }
 
+interface Partner {
+  _id: string
+  name: string | null
+  logoUrl: string | null
+  logoAlt: string | null
+  url: string | null
+}
+
 interface ResourceLibraryProps {
   heading: string | null
   body: string | null
@@ -41,6 +50,7 @@ interface ResourceLibraryProps {
   regions: TaxonomyItem[]
   subjects: SubjectItem[]
   filterCounts: Record<string, number>
+  partners?: Partner[]
 }
 
 /** Filter items by search term and multi-select filters. Exported for testing. */
@@ -84,6 +94,10 @@ export function filterItems(
         return false
       }
     }
+    // Level filter (single-select)
+    if (filters.level && item.level !== filters.level) {
+      return false
+    }
     return true
   })
 }
@@ -118,6 +132,7 @@ export function ResourceLibrary({
   regions,
   subjects,
   filterCounts,
+  partners = [],
 }: ResourceLibraryProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -135,11 +150,18 @@ export function ResourceLibrary({
     personas: searchParams.getAll('persona'),
     regions: searchParams.getAll('region'),
     subjects: searchParams.getAll('subject'),
+    level: searchParams.get('level') ?? '',
   }))
   const [page, setPage] = useState(
     Number(searchParams.get('page')) || 1,
   )
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [searchPills, setSearchPills] = useState<string[]>([])
+
+  useEffect(() => {
+    const shuffled = [...SEARCH_SUGGESTION_POOL].sort(() => Math.random() - 0.5)
+    setSearchPills(shuffled.slice(0, 4))
+  }, [])
 
   // Scroll to this section when the URL hash is #resource-library
   useEffect(() => {
@@ -216,6 +238,7 @@ export function ResourceLibrary({
       f.personas.forEach((v) => params.append('persona', v))
       f.regions.forEach((v) => params.append('region', v))
       f.subjects.forEach((v) => params.append('subject', v))
+      if (f.level) params.set('level', f.level)
       if (p > 1) params.set('page', String(p))
 
       const qs = params.toString()
@@ -253,17 +276,6 @@ export function ResourceLibrary({
     [syncUrl],
   )
 
-  const handleContentTypeChange = useCallback(
-    (value: string) => {
-      const newTypes = value ? [value] : []
-      const newFilters = { ...filters, types: newTypes }
-      setFilters(newFilters)
-      setPage(1)
-      syncUrl({ filters: newFilters, page: 1 })
-    },
-    [filters, syncUrl],
-  )
-
   const handlePageChange = useCallback(
     (newPage: number) => {
       setPage(newPage)
@@ -294,35 +306,80 @@ export function ResourceLibrary({
   return (
     <section id="resource-library" className="border-b border-diligent-gray-2 py-16">
       <div className="mx-auto max-w-[var(--max-content-width)] px-6">
-        <h2 className="mb-4 text-heading-1 font-semibold text-diligent-gray-5">
-          {heading ?? 'Full resource library'}
+        <h2 className="mb-4 text-3xl font-semibold text-diligent-gray-5 md:text-4xl lg:text-display-1">
+          Resource <span style={{ color: '#EE312E' }}>library</span>
         </h2>
         {body && (
           <SafeHtml
             html={body}
-            className="mb-8 text-base text-diligent-gray-4 prose"
+            className="mb-6 text-base text-diligent-gray-4 prose"
           />
         )}
 
-        {/* Controls row */}
-        <div className="mb-8 flex flex-wrap items-center gap-4">
-          <div className="min-w-0 flex-1">
-            <SearchBar value={search} onChange={handleSearchChange} />
+        {/* Compact partner logo scroller */}
+        {partners.length > 0 && (
+          <div className="mb-6 flex items-center gap-4" style={{ height: '48px' }}>
+            <span
+              className="flex-shrink-0 uppercase text-diligent-gray-4"
+              style={{ fontSize: '10px', letterSpacing: '0.08em' }}
+            >
+              In partnership with
+            </span>
+            <div className="relative min-w-0 flex-1 overflow-hidden partner-scroller-mask" style={{ height: '48px' }}>
+            <div
+              className="flex items-center gap-6 motion-safe:animate-[marquee_90s_linear_infinite]"
+              style={{ width: 'max-content', height: '48px' }}
+            >
+              {[...partners, ...partners].map((p, i) => {
+                if (!p.logoUrl) return null
+                const img = (
+                  <div key={`${p._id}-${i}`} className="flex h-8 w-[90px] flex-shrink-0 items-center justify-center">
+                    <Image
+                      src={p.logoUrl}
+                      alt={p.logoAlt ?? p.name ?? 'Partner logo'}
+                      width={90}
+                      height={32}
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
+                )
+                return p.url ? (
+                  <a key={`${p._id}-${i}`} href={p.url} target="_blank" rel="noopener noreferrer" className="flex-shrink-0 no-underline">
+                    {img}
+                  </a>
+                ) : (
+                  img
+                )
+              })}
+            </div>
+            </div>
           </div>
-          <ContentTypeDropdown
-            value={filters.types.length === 1 ? filters.types[0] : ''}
-            onChange={handleContentTypeChange}
-          />
-          <SortDropdown value={sort} onChange={handleSortChange} />
-          {/* Mobile filter toggle */}
-          <button
-            type="button"
-            onClick={() => setDrawerOpen(true)}
-            className="flex items-center gap-1.5 rounded-sm border border-diligent-gray-2 px-3 py-2 text-sm text-diligent-gray-4 hover:border-diligent-gray-3 lg:hidden"
+        )}
+
+        {/* Search bar — full width */}
+        <div className="mb-4">
+          <SearchBar value={search} onChange={handleSearchChange} />
+        </div>
+
+        {/* Popular searches */}
+        <div className="mb-8 flex flex-wrap items-center gap-2">
+          <span
+            className="flex-shrink-0 uppercase text-diligent-gray-4"
+            style={{ fontSize: '10px', letterSpacing: '0.08em' }}
           >
-            <Icon name="filter_list" className="text-[18px]" />
-            Filters
-          </button>
+            Popular searches
+          </span>
+          {searchPills.map((term) => (
+            <button
+              key={term}
+              type="button"
+              onClick={() => handleSearchChange(term)}
+              className="rounded-full border border-diligent-gray-2 bg-white text-diligent-gray-5 transition-colors hover:border-diligent-gray-3"
+              style={{ fontSize: '12px', padding: '4px 10px' }}
+            >
+              {term}
+            </button>
+          ))}
         </div>
 
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[280px_1fr]">
@@ -340,6 +397,94 @@ export function ResourceLibrary({
 
           {/* Content grid */}
           <div className="min-w-0">
+            {/* Resource count + sort + mobile filter toggle */}
+            <div className="mb-6 flex items-center justify-between gap-4">
+              <p className="text-lg font-semibold text-diligent-gray-5">
+                {filtered.length} resources
+              </p>
+              <div className="flex items-center gap-4">
+                <SortDropdown value={sort} onChange={handleSortChange} />
+                {/* Mobile filter toggle */}
+                <button
+                  type="button"
+                  onClick={() => setDrawerOpen(true)}
+                  className="flex items-center gap-1.5 rounded-sm border border-diligent-gray-2 px-3 py-2 text-sm text-diligent-gray-4 hover:border-diligent-gray-3 lg:hidden"
+                >
+                  <Icon name="filter_list" className="text-[18px]" />
+                  Filters
+                </button>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="mb-4 border-b border-diligent-gray-2" />
+
+            {/* Active filter tags */}
+            {(() => {
+              const typeLabels: Record<string, string> = {
+                course: 'Course',
+                template: 'Template',
+                video: 'Video',
+                learningPath: 'Learning path',
+              }
+              const levelLabels: Record<string, string> = {
+                BEGINNER: 'Beginner-friendly',
+                INTERMEDIATE: 'Intermediate',
+                ADVANCED: 'Advanced',
+              }
+              const tags: { label: string; onRemove: () => void }[] = []
+              filters.types.forEach((t) => {
+                tags.push({
+                  label: typeLabels[t] ?? t,
+                  onRemove: () => handleFilterChange({ ...filters, types: filters.types.filter((v) => v !== t) }),
+                })
+              })
+              filters.subjects.forEach((id) => {
+                const s = subjects.find((s) => s._id === id)
+                if (s) tags.push({
+                  label: s.title ?? id,
+                  onRemove: () => handleFilterChange({ ...filters, subjects: filters.subjects.filter((v) => v !== id) }),
+                })
+              })
+              if (filters.level) {
+                tags.push({
+                  label: levelLabels[filters.level] ?? filters.level,
+                  onRemove: () => handleFilterChange({ ...filters, level: '' }),
+                })
+              }
+              filters.regions.forEach((id) => {
+                const r = regions.find((r) => r._id === id)
+                if (r) tags.push({
+                  label: r.title ?? id,
+                  onRemove: () => handleFilterChange({ ...filters, regions: filters.regions.filter((v) => v !== id) }),
+                })
+              })
+              filters.personas.forEach((id) => {
+                const p = personas.find((p) => p._id === id)
+                if (p) tags.push({
+                  label: p.title ?? id,
+                  onRemove: () => handleFilterChange({ ...filters, personas: filters.personas.filter((v) => v !== id) }),
+                })
+              })
+              if (tags.length === 0) return null
+              return (
+                <div className="mb-6 flex flex-wrap gap-2">
+                  {tags.map((tag) => (
+                    <button
+                      key={tag.label}
+                      type="button"
+                      onClick={tag.onRemove}
+                      className="flex items-center gap-1.5 rounded bg-white border border-diligent-gray-2 text-diligent-gray-5 transition-colors hover:border-diligent-gray-3"
+                      style={{ fontSize: '12px', padding: '6px 10px' }}
+                    >
+                      <span>{tag.label}</span>
+                      <span className="text-diligent-gray-4" style={{ fontSize: '12px' }}>×</span>
+                    </button>
+                  ))}
+                </div>
+              )
+            })()}
+
             {paginatedItems.length === 0 ? (
               <div className="py-12 text-center">
                 <p className="text-diligent-gray-4">
@@ -356,6 +501,7 @@ export function ResourceLibrary({
                       personas: [],
                       regions: [],
                       subjects: [],
+                      level: '',
                     })
                     setPage(1)
                     syncUrl({
@@ -365,6 +511,7 @@ export function ResourceLibrary({
                         personas: [],
                         regions: [],
                         subjects: [],
+                        level: '',
                       },
                       page: 1,
                     })

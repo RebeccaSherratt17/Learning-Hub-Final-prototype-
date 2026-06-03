@@ -70,6 +70,7 @@ export default async function EditCoursePage({
     seoDescription: course.seoDescription,
     sku: course.sku,
     credlyBadgeId: course.credlyBadgeId,
+    level: course.level,
     personaIds: course.personas.map((cp) => cp.persona.id),
     regionIds: course.regions.map((cr) => cr.region.id),
     subjectIds: course.subjects.map((cs) => cs.subject.id),

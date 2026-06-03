@@ -124,10 +124,17 @@ export function FilterSidebar({
   subjects,
   filterCounts,
 }: FilterSidebarProps) {
-  const personaOptions = personas.map((p) => ({
-    value: p._id,
-    label: toSentenceCase(p.title ?? ''),
-  }))
+  const personaOrder = ['Board director', 'Executive management', 'Company secretary', 'General counsel', 'Legal', 'Risk']
+  const personaOptions = personas
+    .map((p) => ({
+      value: p._id,
+      label: toSentenceCase(p.title ?? ''),
+    }))
+    .sort((a, b) => {
+      const ai = personaOrder.indexOf(a.label)
+      const bi = personaOrder.indexOf(b.label)
+      return (ai === -1 ? personaOrder.length : ai) - (bi === -1 ? personaOrder.length : bi)
+    })
 
   const regionOrder = ['Global', 'USA', 'EU', 'UK', 'APAC', 'Canada']
   const regionOptions = regions
@@ -141,9 +148,15 @@ export function FilterSidebar({
       return (ai === -1 ? regionOrder.length : ai) - (bi === -1 ? regionOrder.length : bi)
     })
 
+  const orgTypeOrder = ['Public company', 'Private company', 'Nonprofit']
   const orgTypeItems = subjects
     .filter((s) => s.group === 'organization-type')
     .map((s) => ({ value: s._id, label: toSentenceCase(s.title ?? '') }))
+    .sort((a, b) => {
+      const ai = orgTypeOrder.indexOf(a.label)
+      const bi = orgTypeOrder.indexOf(b.label)
+      return (ai === -1 ? orgTypeOrder.length : ai) - (bi === -1 ? orgTypeOrder.length : bi)
+    })
 
   const groupedSubjects = Object.entries(subjectGroupLabels)
     .filter(([groupValue]) => groupValue !== 'organization-type')
@@ -153,11 +166,14 @@ export function FilterSidebar({
         .filter((s) => s.group === groupValue)
         .map((s) => ({ value: s._id, label: toSentenceCase(s.title ?? '') })),
     }))
+    .sort((a, b) => toSentenceCase(a.groupLabel).localeCompare(toSentenceCase(b.groupLabel)))
 
   const activeCount =
+    filters.types.length +
     filters.personas.length +
     filters.regions.length +
-    filters.subjects.length
+    filters.subjects.length +
+    (filters.level ? 1 : 0)
 
   return (
     <div>
@@ -173,17 +189,39 @@ export function FilterSidebar({
           <button
             type="button"
             onClick={() =>
-              onFilterChange({ types: [], personas: [], regions: [], subjects: [] })
+              onFilterChange({ types: [], personas: [], regions: [], subjects: [], level: '' })
             }
-            className="text-xs font-medium text-link hover:underline"
+            className="text-xs font-medium hover:opacity-80"
+            style={{ fontSize: '12px', color: '#0B4CCE' }}
           >
-            Clear all
+            Reset all
           </button>
         )}
       </div>
 
       {/* Accordion groups */}
       <div className="border-t border-diligent-gray-5">
+        <AccordionGroup label="Content type">
+          {([
+            { value: 'course', label: 'Course' },
+            { value: 'template', label: 'Template' },
+            { value: 'video', label: 'Video' },
+            { value: 'learningPath', label: 'Learning path' },
+          ] as const).map((opt) => (
+            <CheckboxOption
+              key={opt.value}
+              label={opt.label}
+              checked={filters.types.includes(opt.value)}
+              onChange={() =>
+                onFilterChange({
+                  ...filters,
+                  types: toggleValue(filters.types, opt.value),
+                })
+              }
+            />
+          ))}
+        </AccordionGroup>
+
         <AccordionGroup label="Organization type">
           {orgTypeItems.map((opt) => (
             <CheckboxOption
@@ -201,11 +239,31 @@ export function FilterSidebar({
           ))}
         </AccordionGroup>
 
+        <AccordionGroup label="Level">
+          {([
+            { value: 'BEGINNER', label: 'Beginner-friendly' },
+            { value: 'INTERMEDIATE', label: 'Intermediate' },
+            { value: 'ADVANCED', label: 'Advanced' },
+          ] as const).map((opt) => (
+            <CheckboxOption
+              key={opt.value}
+              label={opt.label}
+              checked={filters.level === opt.value}
+              onChange={() =>
+                onFilterChange({
+                  ...filters,
+                  level: filters.level === opt.value ? '' : opt.value,
+                })
+              }
+            />
+          ))}
+        </AccordionGroup>
+
         <AccordionGroup label="Subject">
           {groupedSubjects.map(
             ({ groupLabel, items }) =>
               items.length > 0 && (
-                <SubjectSubgroup key={groupLabel} label={groupLabel}>
+                <SubjectSubgroup key={groupLabel} label={toSentenceCase(groupLabel)}>
                   {items.map((opt) => (
                     <CheckboxOption
                       key={opt.value}

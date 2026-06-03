@@ -2,22 +2,9 @@
 
 import { useState, useEffect, useRef, useCallback, FormEvent, KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Icon } from '@/components/ui/Icon'
-
-const SUGGESTION_POOL = [
-  'AI governance',
-  'Meeting minutes',
-  'Board evaluations',
-  'Cybersecurity',
-  'Director onboarding',
-  'Investor stewardship',
-  'Subsidiary governance',
-  'Audit committee',
-  'Compensation committee',
-  'AI ethics',
-  'ERM',
-  'IPO',
-]
+import { SEARCH_SUGGESTION_POOL } from '@/lib/searchSuggestions'
 
 interface Suggestion {
   id: string
@@ -41,6 +28,18 @@ const TYPE_BADGE_COLORS: Record<Suggestion['type'], string> = {
   learningPath: 'bg-diligent-gray-4',
 }
 
+interface Partner {
+  _id: string
+  name: string | null
+  logoUrl: string | null
+  logoAlt: string | null
+  url: string | null
+}
+
+interface HomepageHeroProps {
+  partners?: Partner[]
+}
+
 const TYPE_ROUTES: Record<Suggestion['type'], string> = {
   course: '/courses',
   template: '/templates',
@@ -48,7 +47,7 @@ const TYPE_ROUTES: Record<Suggestion['type'], string> = {
   learningPath: '/learning-paths',
 }
 
-export function HomepageHero() {
+export function HomepageHero({ partners = [] }: HomepageHeroProps) {
   const router = useRouter()
   const [query, setQuery] = useState('')
   const [pills, setPills] = useState<string[]>([])
@@ -60,7 +59,7 @@ export function HomepageHero() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    const shuffled = [...SUGGESTION_POOL].sort(() => Math.random() - 0.5)
+    const shuffled = [...SEARCH_SUGGESTION_POOL].sort(() => Math.random() - 0.5)
     setPills(shuffled.slice(0, 4))
   }, [])
 
@@ -159,6 +158,7 @@ export function HomepageHero() {
   }
 
   return (
+    <>
     <section className="bg-diligent-gray-1 py-8 md:py-12">
       <div className="mx-auto px-4 text-center">
         {/* Heading */}
@@ -284,7 +284,49 @@ export function HomepageHero() {
             </button>
           ))}
         </div>
+
       </div>
     </section>
+
+    {/* Compact partner logo scroller — outside grey hero, on white background */}
+    {partners.length > 0 && (
+      <div className="mx-auto flex max-w-3xl items-center gap-4 px-4 py-2" style={{ height: '48px' }}>
+        <span
+          className="flex-shrink-0 uppercase text-diligent-gray-4"
+          style={{ fontSize: '10px', letterSpacing: '0.08em' }}
+        >
+          In partnership with
+        </span>
+        <div className="relative min-w-0 flex-1 overflow-hidden partner-scroller-mask" style={{ height: '48px' }}>
+          <div
+            className="flex items-center gap-6 motion-safe:animate-[marquee_90s_linear_infinite]"
+            style={{ width: 'max-content', height: '48px' }}
+          >
+            {[...partners, ...partners].map((p, i) => {
+              if (!p.logoUrl) return null
+              const img = (
+                <div className="flex h-8 w-[90px] flex-shrink-0 items-center justify-center">
+                  <Image
+                    src={p.logoUrl}
+                    alt={p.logoAlt ?? p.name ?? 'Partner logo'}
+                    width={90}
+                    height={32}
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+              )
+              return p.url ? (
+                <a key={`${p._id}-${i}`} href={p.url} target="_blank" rel="noopener noreferrer" className="flex-shrink-0 no-underline">
+                  {img}
+                </a>
+              ) : (
+                <span key={`${p._id}-${i}`} className="flex-shrink-0">{img}</span>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   )
 }
