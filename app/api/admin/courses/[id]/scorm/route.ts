@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { put } from '@vercel/blob'
+import { put, del } from '@vercel/blob'
 import { extractScormPackage } from '@/lib/scorm/extract'
 import { parseManifest } from '@/lib/scorm/manifest'
+
+// Allow up to 60s for large SCORM extraction
+export const maxDuration = 60
 
 export async function POST(
   request: NextRequest,
@@ -24,19 +27,21 @@ export async function POST(
     return NextResponse.json({ error: 'Course not found' }, { status: 404 })
   }
 
-  // Read the uploaded zip file
-  const formData = await request.formData()
-  const file = formData.get('scormZip') as File | null
-  if (!file) {
-    return NextResponse.json({ error: 'No file uploaded' }, { status: 400 })
-  }
+  const body = await request.json()
+  const { blobUrl } = body as { blobUrl?: string }
 
-  if (!file.name.endsWith('.zip')) {
-    return NextResponse.json({ error: 'File must be a .zip archive' }, { status: 400 })
+  if (!blobUrl || typeof blobUrl !== 'string') {
+    return NextResponse.json({ error: 'blobUrl is required' }, { status: 400 })
   }
 
   try {
-    const arrayBuffer = await file.arrayBuffer()
+    // Download the zip from Vercel Blob
+    const zipResponse = await fetch(blobUrl)
+    if (!zipResponse.ok) {
+      return NextResponse.json({ error: 'Failed to download SCORM package from storage' }, { status: 400 })
+    }
+
+    const arrayBuffer = await zipResponse.arrayBuffer()
     const zipBuffer = Buffer.from(arrayBuffer)
 
     // Extract with security protections
@@ -75,6 +80,13 @@ export async function POST(
         { error: `Launch file "${launchFile}" not found in extracted package` },
         { status: 400 }
       )
+    }
+
+    // Clean up the temporary zip blob
+    try {
+      await del(blobUrl)
+    } catch {
+      // Non-critical — the temp blob will be cleaned up eventually
     }
 
     // Update the course record

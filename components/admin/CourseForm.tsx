@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import { upload } from '@vercel/blob/client'
 import ImageUpload from './ImageUpload'
 import RichTextEditor from './RichTextEditor'
 import TaxonomySelect from './TaxonomySelect'
@@ -211,17 +212,22 @@ export default function CourseForm({
     setScormMessage(null)
 
     try {
-      const formData = new FormData()
-      formData.append('scormZip', file)
+      // Step 1: Upload zip directly to Vercel Blob (bypasses 4.5MB serverless limit)
+      const blob = await upload(file.name, file, {
+        access: 'public',
+        handleUploadUrl: `/api/admin/courses/${course.id}/scorm/upload`,
+      })
 
+      // Step 2: Tell the server to download from Blob, extract, and process
       const res = await fetch(`/api/admin/courses/${course.id}/scorm`, {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ blobUrl: blob.url }),
       })
 
       if (!res.ok) {
         const data = await res.json()
-        setScormMessage(data.error || 'Upload failed')
+        setScormMessage(data.error || 'Processing failed')
         return
       }
 
