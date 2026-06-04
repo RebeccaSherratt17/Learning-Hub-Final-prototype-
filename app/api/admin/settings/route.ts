@@ -44,8 +44,6 @@ export async function PUT(request: Request) {
       'partnersSectionHeading',
       'librarySectionHeading',
       'librarySectionBody',
-      'certificationsSectionHeading',
-      'certificationsSectionBody',
       'footerHeading',
       'footerBody',
       'footerCTAText',

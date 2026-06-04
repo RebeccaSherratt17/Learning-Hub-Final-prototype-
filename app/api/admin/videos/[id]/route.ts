@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { createRevision } from '@/lib/revisions'
+import { validateVideoPublish } from '@/lib/admin/metadataHealth'
 import type { ContentStatus } from '@/lib/generated/prisma'
 
 export async function GET(
@@ -19,6 +20,7 @@ export async function GET(
     const video = await prisma.video.findUnique({
       where: { id: params.id },
       include: {
+        author: true,
         personas: { include: { persona: true } },
         regions: { include: { region: true } },
         subjects: { include: { subject: true } },
@@ -56,6 +58,7 @@ export async function PUT(
       thumbnailUrl,
       thumbnailAlt,
       ogImageUrl,
+      ogImageAlt,
       accessTier,
       publishedAt,
       scheduledPublishAt,
@@ -63,6 +66,7 @@ export async function PUT(
       seoTitle,
       seoDescription,
       sku,
+      authorId,
       credlyBadgeId,
       level,
       personaIds,
@@ -77,6 +81,7 @@ export async function PUT(
       thumbnailUrl?: string
       thumbnailAlt?: string
       ogImageUrl?: string
+      ogImageAlt?: string
       accessTier?: string
       publishedAt?: string
       scheduledPublishAt?: string
@@ -84,6 +89,7 @@ export async function PUT(
       seoTitle?: string
       seoDescription?: string
       sku?: string
+      authorId?: string
       credlyBadgeId?: string
       level?: string
       personaIds?: string[]
@@ -100,6 +106,32 @@ export async function PUT(
     }
     if (!slug || slug.trim().length === 0) {
       return NextResponse.json({ error: 'Slug is required' }, { status: 400 })
+    }
+
+    if (status === 'PUBLISHED') {
+      const orgTypeGroup = await prisma.subjectGroup.findUnique({ where: { slug: 'organization-type' } })
+      const orgTypeIds = orgTypeGroup
+        ? (await prisma.subject.findMany({ where: { groupId: orgTypeGroup.id }, select: { id: true } })).map((s) => s.id)
+        : []
+      const hasOrgType = (subjectIds as string[] | undefined)?.some((id: string) => orgTypeIds.includes(id)) ?? false
+
+      const missing = validateVideoPublish({
+        title: title.trim(),
+        slug: slug.trim(),
+        description: description.trim(),
+        vidyardUrl: vidyardUrl?.trim() || null,
+        duration: duration?.trim() || null,
+        thumbnailUrl: thumbnailUrl?.trim() || null,
+        ogImageUrl: ogImageUrl?.trim() || null,
+        level: level || null,
+        hasOrgType,
+      })
+      if (missing.length > 0) {
+        return NextResponse.json(
+          { error: `Required to publish: ${missing.join(', ')}` },
+          { status: 400 }
+        )
+      }
     }
 
     const { relatedItems } = body as { relatedItems?: { type: string; id: string }[] }
@@ -127,6 +159,7 @@ export async function PUT(
           thumbnailUrl: thumbnailUrl || null,
           thumbnailAlt: thumbnailAlt || null,
           ogImageUrl: ogImageUrl || null,
+          ogImageAlt: ogImageAlt || null,
           accessTier: (accessTier as 'FREE' | 'GATED' | 'PREMIUM') || 'FREE',
           publishedAt: publishedAt ? new Date(publishedAt) : null,
           scheduledPublishAt: scheduledPublishAt ? new Date(scheduledPublishAt) : null,
@@ -134,6 +167,7 @@ export async function PUT(
           seoTitle: seoTitle?.trim() || null,
           seoDescription: seoDescription?.trim() || null,
           sku: sku?.trim() || null,
+          authorId: authorId?.trim() || null,
           credlyBadgeId: credlyBadgeId?.trim() || null,
           level: (level as 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED') || null,
         },

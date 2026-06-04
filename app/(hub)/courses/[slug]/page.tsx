@@ -17,6 +17,7 @@ import { CourseRightColumn } from '@/components/hub/CourseRightColumn'
 import { GatedPrompt } from '@/components/hub/GatedPrompt'
 
 const COURSE_INCLUDES = {
+  author: true,
   subjects: {
     select: {
       subject: { select: { id: true, name: true, group: { select: { name: true } } } },
@@ -164,7 +165,7 @@ export default async function CoursePage({ params, searchParams }: PageProps) {
     description: course.description ?? undefined,
     ...(course.thumbnailUrl ? { image: course.thumbnailUrl } : {}),
     ...(course.publishedAt ? { datePublished: course.publishedAt.toISOString() } : {}),
-    ...(course.author ? { provider: { '@type': 'Organization', name: course.author } } : {}),
+    ...(course.author ? { provider: { '@type': 'Organization', name: course.author.name } } : {}),
     ...(course.estimatedDuration ? { timeRequired: course.estimatedDuration } : {}),
   }
 
@@ -243,7 +244,7 @@ export default async function CoursePage({ params, searchParams }: PageProps) {
                 {course.author && (
                   <>
                     {course.estimatedDuration && <span aria-hidden="true">|</span>}
-                    <span>By {course.author}</span>
+                    <span>By {course.author.name}</span>
                   </>
                 )}
                 {publishedLabel && (

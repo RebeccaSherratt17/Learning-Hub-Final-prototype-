@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { createRevision } from '@/lib/revisions'
+import { validateCoursePublish } from '@/lib/admin/metadataHealth'
 import type { ContentStatus } from '@/lib/generated/prisma'
 
 export async function GET(
@@ -56,8 +57,9 @@ export async function PUT(
       thumbnailUrl,
       thumbnailAlt,
       ogImageUrl,
+      ogImageAlt,
       accessTier,
-      author,
+      authorId,
       publishedAt,
       scheduledPublishAt,
       estimatedDuration,
@@ -81,8 +83,9 @@ export async function PUT(
       thumbnailUrl?: string
       thumbnailAlt?: string
       ogImageUrl?: string
+      ogImageAlt?: string
       accessTier?: string
-      author?: string
+      authorId?: string
       publishedAt?: string
       scheduledPublishAt?: string
       estimatedDuration?: string
@@ -110,11 +113,30 @@ export async function PUT(
       return NextResponse.json({ error: 'Slug is required' }, { status: 400 })
     }
 
-    if (status === 'PUBLISHED' && (!launchFile || launchFile.trim().length === 0)) {
-      return NextResponse.json(
-        { error: 'A SCORM file must be uploaded before publishing a course.' },
-        { status: 400 }
-      )
+    // Publish-blocking validation
+    if (status === 'PUBLISHED') {
+      const orgTypeGroup = await prisma.subjectGroup.findUnique({ where: { slug: 'organization-type' } })
+      const orgTypeIds = orgTypeGroup
+        ? (await prisma.subject.findMany({ where: { groupId: orgTypeGroup.id }, select: { id: true } })).map((s) => s.id)
+        : []
+      const hasOrgType = subjectIds?.some((id: string) => orgTypeIds.includes(id)) ?? false
+
+      const missing = validateCoursePublish({
+        title: title.trim(),
+        slug: slug.trim(),
+        description: description.trim(),
+        thumbnailUrl: thumbnailUrl?.trim() || null,
+        ogImageUrl: ogImageUrl?.trim() || null,
+        level: level || null,
+        launchFile: launchFile?.trim() || null,
+        hasOrgType,
+      })
+      if (missing.length > 0) {
+        return NextResponse.json(
+          { error: `Required to publish: ${missing.join(', ')}` },
+          { status: 400 }
+        )
+      }
     }
 
     const { relatedItems } = body as { relatedItems?: { type: string; id: string }[] }
@@ -142,8 +164,9 @@ export async function PUT(
           thumbnailUrl: thumbnailUrl || null,
           thumbnailAlt: thumbnailAlt || null,
           ogImageUrl: ogImageUrl || null,
+          ogImageAlt: ogImageAlt || null,
           accessTier: (accessTier as 'FREE' | 'GATED' | 'PREMIUM') || 'FREE',
-          author: author?.trim() || null,
+          authorId: authorId?.trim() || null,
           publishedAt: publishedAt ? new Date(publishedAt) : null,
           scheduledPublishAt: scheduledPublishAt ? new Date(scheduledPublishAt) : null,
           estimatedDuration: estimatedDuration?.trim() || null,

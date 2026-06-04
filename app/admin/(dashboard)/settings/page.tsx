@@ -16,8 +16,6 @@ export default async function SettingsPage() {
     partnersSectionHeading: settings?.partnersSectionHeading ?? null,
     librarySectionHeading: settings?.librarySectionHeading ?? null,
     librarySectionBody: settings?.librarySectionBody ?? null,
-    certificationsSectionHeading: settings?.certificationsSectionHeading ?? null,
-    certificationsSectionBody: settings?.certificationsSectionBody ?? null,
     footerHeading: settings?.footerHeading ?? null,
     footerBody: settings?.footerBody ?? null,
     footerCTAText: settings?.footerCTAText ?? null,

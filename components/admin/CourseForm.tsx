@@ -6,8 +6,10 @@ import { upload } from '@vercel/blob/client'
 import ImageUpload from './ImageUpload'
 import RichTextEditor from './RichTextEditor'
 import TaxonomySelect from './TaxonomySelect'
+import AuthorSelect from './AuthorSelect'
 import RelatedItemsPicker from './RelatedItemsPicker'
 import type { RelatedItem } from './RelatedItemsPicker'
+import { validateCoursePublish } from '@/lib/admin/metadataHealth'
 
 function generateSlug(name: string): string {
   return name
@@ -29,8 +31,9 @@ interface CourseFormProps {
     thumbnailUrl: string | null
     thumbnailAlt: string | null
     ogImageUrl: string | null
+    ogImageAlt: string | null
     accessTier: 'FREE' | 'GATED' | 'PREMIUM'
-    author: string | null
+    authorId: string | null
     publishedAt: string | null
     scheduledPublishAt: string | null
     estimatedDuration: string | null
@@ -87,8 +90,9 @@ export default function CourseForm({
   const [thumbnailUrl, setThumbnailUrl] = useState(course?.thumbnailUrl ?? '')
   const [thumbnailAlt, setThumbnailAlt] = useState(course?.thumbnailAlt ?? '')
   const [ogImageUrl, setOgImageUrl] = useState(course?.ogImageUrl ?? '')
+  const [ogImageAlt, setOgImageAlt] = useState(course?.ogImageAlt ?? '')
   const [accessTier, setAccessTier] = useState(course?.accessTier ?? 'FREE')
-  const [author, setAuthor] = useState(course?.author ?? '')
+  const [authorId, setAuthorId] = useState(course?.authorId ?? '')
   const [publishedAt, setPublishedAt] = useState(toDateTimeLocal(course?.publishedAt ?? null))
   const [scheduledPublishAt, setScheduledPublishAt] = useState(toDateTimeLocal(course?.scheduledPublishAt ?? null))
   const [estimatedDuration, setEstimatedDuration] = useState(course?.estimatedDuration ?? '')
@@ -108,34 +112,17 @@ export default function CourseForm({
 
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
-  const [orgTypeError, setOrgTypeError] = useState<string | null>(null)
-  const [levelError, setLevelError] = useState<string | null>(null)
+  const [publishError, setPublishError] = useState<string | null>(null)
   const [tokenLoading, setTokenLoading] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [scormWarning, setScormWarning] = useState(false)
 
   // Derive organization type subject IDs for validation
   const orgTypeSubjectIds = subjects.filter((s) => s.group.name === 'Organization Type').map((s) => s.id)
   const hasOrgTypeSelected = selectedSubjectIds.some((id) => orgTypeSubjectIds.includes(id))
 
   useEffect(() => {
-    if (hasOrgTypeSelected && orgTypeError) {
-      setOrgTypeError(null)
-    }
-  }, [hasOrgTypeSelected, orgTypeError])
-
-  useEffect(() => {
-    if (level && levelError) {
-      setLevelError(null)
-    }
-  }, [level, levelError])
-
-  // Clear SCORM warning when status changes away from PUBLISHED or a SCORM file is uploaded
-  useEffect(() => {
-    if (scormWarning && (status !== 'PUBLISHED' || launchFile)) {
-      setScormWarning(false)
-    }
-  }, [status, launchFile, scormWarning])
+    if (status !== 'PUBLISHED') setPublishError(null)
+  }, [status])
 
   useEffect(() => {
     if (message?.type === 'success') {
@@ -246,22 +233,24 @@ export default function CourseForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
-    if (!hasOrgTypeSelected) {
-      setOrgTypeError('No organization type selected')
-      setMessage({ type: 'error', text: 'No organization type selected' })
-      return
+    // Publish-blocking validation
+    if (status === 'PUBLISHED') {
+      const missing = validateCoursePublish({
+        title,
+        slug,
+        description,
+        thumbnailUrl: thumbnailUrl || null,
+        ogImageUrl: ogImageUrl || null,
+        level: level || null,
+        launchFile: launchFile || null,
+        hasOrgType: hasOrgTypeSelected,
+      })
+      if (missing.length > 0) {
+        setPublishError(`Required to publish: ${missing.join(', ')}`)
+        return
+      }
     }
-
-    if (!level) {
-      setLevelError('No difficulty level selected')
-      setMessage({ type: 'error', text: 'No difficulty level selected' })
-      return
-    }
-
-    if (status === 'PUBLISHED' && !launchFile) {
-      setScormWarning(true)
-      return
-    }
+    setPublishError(null)
 
     setSaving(true)
     setMessage(null)
@@ -275,8 +264,9 @@ export default function CourseForm({
       thumbnailUrl: thumbnailUrl || null,
       thumbnailAlt: thumbnailAlt || null,
       ogImageUrl: ogImageUrl || null,
+      ogImageAlt: ogImageAlt || null,
       accessTier,
-      author: author || null,
+      authorId: authorId || null,
       publishedAt: publishedAt ? new Date(publishedAt).toISOString() : null,
       scheduledPublishAt: scheduledPublishAt ? new Date(scheduledPublishAt).toISOString() : null,
       estimatedDuration: estimatedDuration || null,
@@ -359,37 +349,39 @@ export default function CourseForm({
           />
         </div>
 
-        <div>
-          <label htmlFor="slug" className="block text-sm font-medium text-diligent-gray-5 mb-1">
-            Slug <span className="text-diligent-red">*</span>
-          </label>
-          <div className="flex items-center">
-            <span className="text-sm text-diligent-gray-4 mr-1">/courses/</span>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="slug" className="block text-sm font-medium text-diligent-gray-5 mb-1">
+              Slug <span className="text-diligent-red">*</span>
+            </label>
+            <div className="flex items-center">
+              <span className="text-sm text-diligent-gray-4 mr-1">/courses/</span>
+              <input
+                id="slug"
+                type="text"
+                value={slug}
+                onChange={(e) => {
+                  setSlug(e.target.value)
+                  setSlugManuallyEdited(true)
+                }}
+                required
+                className="flex-1 border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="sku" className="block text-sm font-medium text-diligent-gray-5 mb-1">
+              SKU
+            </label>
             <input
-              id="slug"
+              id="sku"
               type="text"
-              value={slug}
-              onChange={(e) => {
-                setSlug(e.target.value)
-                setSlugManuallyEdited(true)
-              }}
-              required
-              className="flex-1 border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
+              value={sku}
+              onChange={(e) => setSku(e.target.value)}
+              className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
             />
           </div>
-        </div>
-
-        <div>
-          <label htmlFor="sku" className="block text-sm font-medium text-diligent-gray-5 mb-1">
-            SKU
-          </label>
-          <input
-            id="sku"
-            type="text"
-            value={sku}
-            onChange={(e) => setSku(e.target.value)}
-            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
-          />
         </div>
 
         <div>
@@ -404,13 +396,7 @@ export default function CourseForm({
             <label htmlFor="author" className="block text-sm font-medium text-diligent-gray-5 mb-1">
               Author
             </label>
-            <input
-              id="author"
-              type="text"
-              value={author}
-              onChange={(e) => setAuthor(e.target.value)}
-              className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
-            />
+            <AuthorSelect value={authorId} onChange={setAuthorId} />
           </div>
 
           <div>
@@ -473,61 +459,76 @@ export default function CourseForm({
         )}
       </div>
 
-      {/* Credly Badge */}
-      <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-diligent-gray-5">Credly badge</h2>
-
-        <div>
-          <label htmlFor="credlyBadgeId" className="block text-sm font-medium text-diligent-gray-5 mb-1">
-            Credly badge template ID
-          </label>
-          <input
-            id="credlyBadgeId"
-            type="text"
-            value={credlyBadgeId}
-            onChange={(e) => setCredlyBadgeId(e.target.value)}
-            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red md:w-1/2"
-          />
-          <p className="mt-1 text-xs text-diligent-gray-3">
-            Optional. If set, learners who complete this course will receive a Credly badge. Enter the badge template ID from the Credly dashboard.
-          </p>
-        </div>
-      </div>
-
       {/* Media */}
       <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
         <h2 className="text-lg font-semibold text-diligent-gray-5">Media</h2>
 
-        <ImageUpload
-          folder="thumbnails"
-          currentUrl={thumbnailUrl || null}
-          currentAlt={thumbnailAlt || null}
-          onUpload={(url, alt) => {
-            setThumbnailUrl(url)
-            setThumbnailAlt(alt)
-          }}
-          onRemove={() => {
-            setThumbnailUrl('')
-            setThumbnailAlt('')
-          }}
-          label="Thumbnail image"
-          hint="Recommended: 1200x675px (16:9)"
-        />
+        <div className="grid grid-cols-2 gap-6">
+          <div className="space-y-3">
+            <span className="block text-sm font-medium text-diligent-gray-5 mb-1">
+              Thumbnail image <span className="text-diligent-red">*</span>
+            </span>
+            <ImageUpload
+              folder="thumbnails"
+              currentUrl={thumbnailUrl || null}
+              currentAlt={thumbnailAlt || null}
+              onUpload={(url, alt) => {
+                setThumbnailUrl(url)
+                setThumbnailAlt(alt)
+              }}
+              onRemove={() => {
+                setThumbnailUrl('')
+                setThumbnailAlt('')
+              }}
+              label=""
+              hint="Recommended: 1200x675px (16:9)"
+            />
+            <div>
+              <label htmlFor="thumbnailAlt" className="block text-sm font-medium text-diligent-gray-5 mb-1">
+                Thumbnail alt text
+              </label>
+              <input
+                id="thumbnailAlt"
+                type="text"
+                value={thumbnailAlt}
+                onChange={(e) => setThumbnailAlt(e.target.value)}
+                className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
+              />
+            </div>
+          </div>
 
-        <div className="pt-4 border-t border-diligent-gray-1">
-          <ImageUpload
-            folder="og-images"
-            currentUrl={ogImageUrl || null}
-            currentAlt="Open Graph image"
-            onUpload={(url) => {
-              setOgImageUrl(url)
-            }}
-            onRemove={() => {
-              setOgImageUrl('')
-            }}
-            label="Open Graph image"
-            hint="Used when sharing on social media"
-          />
+          <div className="space-y-3 border-l border-diligent-gray-2 pl-6">
+            <span className="block text-sm font-medium text-diligent-gray-5 mb-1">
+              Open Graph image <span className="text-diligent-red">*</span>
+            </span>
+            <ImageUpload
+              folder="og-images"
+              currentUrl={ogImageUrl || null}
+              currentAlt={ogImageAlt || null}
+              onUpload={(url, alt) => {
+                setOgImageUrl(url)
+                setOgImageAlt(alt)
+              }}
+              onRemove={() => {
+                setOgImageUrl('')
+                setOgImageAlt('')
+              }}
+              label=""
+              hint="Used when sharing on social media"
+            />
+            <div>
+              <label htmlFor="ogImageAlt" className="block text-sm font-medium text-diligent-gray-5 mb-1">
+                OG image alt text
+              </label>
+              <input
+                id="ogImageAlt"
+                type="text"
+                value={ogImageAlt}
+                onChange={(e) => setOgImageAlt(e.target.value)}
+                className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -557,9 +558,6 @@ export default function CourseForm({
               </label>
             ))}
           </div>
-          {levelError && (
-            <p className="mt-2 text-sm font-medium text-diligent-red">{levelError}</p>
-          )}
         </div>
       </div>
 
@@ -579,41 +577,18 @@ export default function CourseForm({
         />
       </div>
 
-      {/* SEO */}
-      <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-diligent-gray-5">SEO</h2>
-
-        <div>
-          <label htmlFor="seoTitle" className="block text-sm font-medium text-diligent-gray-5 mb-1">
-            Meta title
-          </label>
-          <input
-            id="seoTitle"
-            type="text"
-            value={seoTitle}
-            onChange={(e) => setSeoTitle(e.target.value)}
-            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
-          />
-          <p className="mt-1 text-xs text-diligent-gray-3">
-            {seoTitle.length} characters. Recommended: 50-60 characters.
-          </p>
-        </div>
-
-        <div>
-          <label htmlFor="seoDescription" className="block text-sm font-medium text-diligent-gray-5 mb-1">
-            Meta description
-          </label>
-          <textarea
-            id="seoDescription"
-            value={seoDescription}
-            onChange={(e) => setSeoDescription(e.target.value)}
-            rows={3}
-            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
-          />
-          <p className="mt-1 text-xs text-diligent-gray-3">
-            {seoDescription.length} characters. Recommended: 150-160 characters.
-          </p>
-        </div>
+      {/* Related Items */}
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <h2 className="text-lg font-semibold text-diligent-gray-5 mb-1">Related items</h2>
+        <p className="text-sm text-diligent-gray-3 mb-4">
+          Select up to 3 related content items to display on the public page.
+        </p>
+        <RelatedItemsPicker
+          value={relatedItems}
+          onChange={setRelatedItems}
+          excludeType="COURSE"
+          excludeId={course?.id}
+        />
       </div>
 
       {/* Access & Restrictions */}
@@ -723,18 +698,62 @@ export default function CourseForm({
         </div>
       </div>
 
-      {/* Related Items */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-lg font-semibold text-diligent-gray-5 mb-1">Related items</h2>
-        <p className="text-sm text-diligent-gray-3 mb-4">
-          Select up to 3 related content items to display on the public page.
-        </p>
-        <RelatedItemsPicker
-          value={relatedItems}
-          onChange={setRelatedItems}
-          excludeType="COURSE"
-          excludeId={course?.id}
-        />
+      {/* SEO */}
+      <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-diligent-gray-5">SEO</h2>
+
+        <div>
+          <label htmlFor="seoTitle" className="block text-sm font-medium text-diligent-gray-5 mb-1">
+            Meta title
+          </label>
+          <input
+            id="seoTitle"
+            type="text"
+            value={seoTitle}
+            onChange={(e) => setSeoTitle(e.target.value)}
+            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
+          />
+          <p className="mt-1 text-xs text-diligent-gray-3">
+            {seoTitle.length} characters. Recommended: 50-60 characters.
+          </p>
+        </div>
+
+        <div>
+          <label htmlFor="seoDescription" className="block text-sm font-medium text-diligent-gray-5 mb-1">
+            Meta description
+          </label>
+          <textarea
+            id="seoDescription"
+            value={seoDescription}
+            onChange={(e) => setSeoDescription(e.target.value)}
+            rows={3}
+            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
+          />
+          <p className="mt-1 text-xs text-diligent-gray-3">
+            {seoDescription.length} characters. Recommended: 150-160 characters.
+          </p>
+        </div>
+      </div>
+
+      {/* Credly Badge */}
+      <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-diligent-gray-5">Credly badge</h2>
+
+        <div>
+          <label htmlFor="credlyBadgeId" className="block text-sm font-medium text-diligent-gray-5 mb-1">
+            Credly badge template ID
+          </label>
+          <input
+            id="credlyBadgeId"
+            type="text"
+            value={credlyBadgeId}
+            onChange={(e) => setCredlyBadgeId(e.target.value)}
+            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red md:w-1/2"
+          />
+          <p className="mt-1 text-xs text-diligent-gray-3">
+            Optional. If set, learners who complete this course will receive a Credly badge. Enter the badge template ID from the Credly dashboard.
+          </p>
+        </div>
       </div>
 
       {/* Content relationships (edit mode only) */}
@@ -825,18 +844,10 @@ export default function CourseForm({
 
       {/* Submit */}
       <div className="flex items-center justify-end gap-3">
-        {orgTypeError && (
-          <span className="text-sm font-medium text-diligent-red">{orgTypeError}</span>
-        )}
-        {levelError && (
-          <span className="text-sm font-medium text-diligent-red">{levelError}</span>
+        {publishError && (
+          <span className="text-xs font-medium text-diligent-red">{publishError}</span>
         )}
         {previewButton}
-        {scormWarning && (
-          <span className="text-xs font-medium" style={{ color: '#EE312E', fontSize: '12px' }}>
-            Upload a SCORM file before publishing this course.
-          </span>
-        )}
         <button
           type="submit"
           disabled={saving}

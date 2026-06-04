@@ -6,8 +6,10 @@ import FileUpload from './FileUpload'
 import ImageUpload from './ImageUpload'
 import RichTextEditor from './RichTextEditor'
 import TaxonomySelect from './TaxonomySelect'
+import AuthorSelect from './AuthorSelect'
 import RelatedItemsPicker from './RelatedItemsPicker'
 import type { RelatedItem } from './RelatedItemsPicker'
+import { validateTemplatePublish } from '@/lib/admin/metadataHealth'
 
 function generateSlug(name: string): string {
   return name
@@ -32,6 +34,7 @@ interface TemplateFormProps {
     thumbnailUrl: string | null
     thumbnailAlt: string | null
     ogImageUrl: string | null
+    ogImageAlt: string | null
     accessTier: 'FREE' | 'GATED' | 'PREMIUM'
     publishedAt: string | null
     scheduledPublishAt: string | null
@@ -39,6 +42,7 @@ interface TemplateFormProps {
     seoTitle: string | null
     seoDescription: string | null
     sku: string | null
+    authorId: string | null
     credlyBadgeId: string | null
     personaIds: string[]
     regionIds: string[]
@@ -85,6 +89,7 @@ export default function TemplateForm({
   const [thumbnailUrl, setThumbnailUrl] = useState(template?.thumbnailUrl ?? '')
   const [thumbnailAlt, setThumbnailAlt] = useState(template?.thumbnailAlt ?? '')
   const [ogImageUrl, setOgImageUrl] = useState(template?.ogImageUrl ?? '')
+  const [ogImageAlt, setOgImageAlt] = useState(template?.ogImageAlt ?? '')
   const [accessTier, setAccessTier] = useState(template?.accessTier ?? 'GATED')
   const [publishedAt, setPublishedAt] = useState(toDateTimeLocal(template?.publishedAt ?? null))
   const [scheduledPublishAt, setScheduledPublishAt] = useState(toDateTimeLocal(template?.scheduledPublishAt ?? null))
@@ -92,6 +97,7 @@ export default function TemplateForm({
   const [seoTitle, setSeoTitle] = useState(template?.seoTitle ?? '')
   const [seoDescription, setSeoDescription] = useState(template?.seoDescription ?? '')
   const [sku, setSku] = useState(template?.sku ?? '')
+  const [authorId, setAuthorId] = useState(template?.authorId ?? '')
   const [credlyBadgeId, setCredlyBadgeId] = useState(template?.credlyBadgeId ?? '')
   const [selectedPersonaIds, setSelectedPersonaIds] = useState<string[]>(template?.personaIds ?? [])
   const [selectedRegionIds, setSelectedRegionIds] = useState<string[]>(template?.regionIds ?? [])
@@ -100,17 +106,15 @@ export default function TemplateForm({
 
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
-  const [orgTypeError, setOrgTypeError] = useState<string | null>(null)
+  const [publishError, setPublishError] = useState<string | null>(null)
 
   // Derive organization type subject IDs for validation
   const orgTypeSubjectIds = subjects.filter((s) => s.group.name === 'Organization Type').map((s) => s.id)
   const hasOrgTypeSelected = selectedSubjectIds.some((id) => orgTypeSubjectIds.includes(id))
 
   useEffect(() => {
-    if (hasOrgTypeSelected && orgTypeError) {
-      setOrgTypeError(null)
-    }
-  }, [hasOrgTypeSelected, orgTypeError])
+    if (status !== 'PUBLISHED') setPublishError(null)
+  }, [status])
 
   useEffect(() => {
     if (message?.type === 'success') {
@@ -136,10 +140,23 @@ export default function TemplateForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
-    if (!hasOrgTypeSelected) {
-      setOrgTypeError('No organization type selected')
-      return
+    // Publish-blocking validation
+    if (status === 'PUBLISHED') {
+      const missing = validateTemplatePublish({
+        title,
+        slug,
+        description,
+        fileUrl: fileUrl || null,
+        thumbnailUrl: thumbnailUrl || null,
+        ogImageUrl: ogImageUrl || null,
+        hasOrgType: hasOrgTypeSelected,
+      })
+      if (missing.length > 0) {
+        setPublishError(`Required to publish: ${missing.join(', ')}`)
+        return
+      }
     }
+    setPublishError(null)
 
     setSaving(true)
     setMessage(null)
@@ -156,6 +173,7 @@ export default function TemplateForm({
       thumbnailUrl: thumbnailUrl || null,
       thumbnailAlt: thumbnailAlt || null,
       ogImageUrl: ogImageUrl || null,
+      ogImageAlt: ogImageAlt || null,
       accessTier,
       publishedAt: publishedAt ? new Date(publishedAt).toISOString() : null,
       scheduledPublishAt: scheduledPublishAt ? new Date(scheduledPublishAt).toISOString() : null,
@@ -163,6 +181,7 @@ export default function TemplateForm({
       seoTitle: seoTitle || null,
       seoDescription: seoDescription || null,
       sku: sku || null,
+      authorId: authorId || null,
       credlyBadgeId: credlyBadgeId || null,
       personaIds: selectedPersonaIds,
       regionIds: selectedRegionIds,
@@ -233,37 +252,45 @@ export default function TemplateForm({
           />
         </div>
 
-        <div>
-          <label htmlFor="slug" className="block text-sm font-medium text-diligent-gray-5 mb-1">
-            Slug <span className="text-diligent-red">*</span>
-          </label>
-          <div className="flex items-center">
-            <span className="text-sm text-diligent-gray-4 mr-1">/templates/</span>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="slug" className="block text-sm font-medium text-diligent-gray-5 mb-1">
+              Slug <span className="text-diligent-red">*</span>
+            </label>
+            <div className="flex items-center">
+              <span className="text-sm text-diligent-gray-4 mr-1">/templates/</span>
+              <input
+                id="slug"
+                type="text"
+                value={slug}
+                onChange={(e) => {
+                  setSlug(e.target.value)
+                  setSlugManuallyEdited(true)
+                }}
+                required
+                className="flex-1 border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
+              />
+            </div>
+          </div>
+          <div>
+            <label htmlFor="sku" className="block text-sm font-medium text-diligent-gray-5 mb-1">
+              SKU
+            </label>
             <input
-              id="slug"
+              id="sku"
               type="text"
-              value={slug}
-              onChange={(e) => {
-                setSlug(e.target.value)
-                setSlugManuallyEdited(true)
-              }}
-              required
-              className="flex-1 border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
+              value={sku}
+              onChange={(e) => setSku(e.target.value)}
+              className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
             />
           </div>
         </div>
 
         <div>
-          <label htmlFor="sku" className="block text-sm font-medium text-diligent-gray-5 mb-1">
-            SKU
+          <label htmlFor="author" className="block text-sm font-medium text-diligent-gray-5 mb-1">
+            Author
           </label>
-          <input
-            id="sku"
-            type="text"
-            value={sku}
-            onChange={(e) => setSku(e.target.value)}
-            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
-          />
+          <AuthorSelect value={authorId} onChange={setAuthorId} />
         </div>
 
         <div>
@@ -278,6 +305,9 @@ export default function TemplateForm({
       <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
         <h2 className="text-lg font-semibold text-diligent-gray-5">Template file</h2>
 
+        <span className="block text-sm font-medium text-diligent-gray-5 mb-1">
+          Template file <span className="text-diligent-red">*</span>
+        </span>
         <FileUpload
           accept=".pdf,.docx,.xlsx"
           folder="templates"
@@ -304,67 +334,82 @@ export default function TemplateForm({
             setFileSize('')
             setPageCount(null)
           }}
-          label="Upload file"
+          label=""
           hint="Accepted formats: PDF, Word (.docx), Excel (.xlsx). Max 50MB."
         />
 
-      </div>
-
-      {/* Credly Badge */}
-      <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-diligent-gray-5">Credly badge</h2>
-
-        <div>
-          <label htmlFor="credlyBadgeId" className="block text-sm font-medium text-diligent-gray-5 mb-1">
-            Credly badge template ID
-          </label>
-          <input
-            id="credlyBadgeId"
-            type="text"
-            value={credlyBadgeId}
-            onChange={(e) => setCredlyBadgeId(e.target.value)}
-            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red md:w-1/2"
-          />
-          <p className="mt-1 text-xs text-diligent-gray-3">
-            Optional. If set, learners who complete this template will receive a Credly badge. Enter the badge template ID from the Credly dashboard.
-          </p>
-        </div>
       </div>
 
       {/* Media */}
       <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
         <h2 className="text-lg font-semibold text-diligent-gray-5">Media</h2>
 
-        <ImageUpload
-          folder="thumbnails"
-          currentUrl={thumbnailUrl || null}
-          currentAlt={thumbnailAlt || null}
-          onUpload={(url, alt) => {
-            setThumbnailUrl(url)
-            setThumbnailAlt(alt)
-          }}
-          onRemove={() => {
-            setThumbnailUrl('')
-            setThumbnailAlt('')
-          }}
-          label="Thumbnail image"
-          hint="Recommended: 1200x675px (16:9)"
-        />
+        <div className="grid grid-cols-2 gap-6">
+          <div className="space-y-3">
+            <span className="block text-sm font-medium text-diligent-gray-5 mb-1">
+              Thumbnail image <span className="text-diligent-red">*</span>
+            </span>
+            <ImageUpload
+              folder="thumbnails"
+              currentUrl={thumbnailUrl || null}
+              currentAlt={thumbnailAlt || null}
+              onUpload={(url, alt) => {
+                setThumbnailUrl(url)
+                setThumbnailAlt(alt)
+              }}
+              onRemove={() => {
+                setThumbnailUrl('')
+                setThumbnailAlt('')
+              }}
+              label=""
+              hint="Recommended: 1200x675px (16:9)"
+            />
+            <div>
+              <label htmlFor="thumbnailAlt" className="block text-sm font-medium text-diligent-gray-5 mb-1">
+                Thumbnail alt text
+              </label>
+              <input
+                id="thumbnailAlt"
+                type="text"
+                value={thumbnailAlt}
+                onChange={(e) => setThumbnailAlt(e.target.value)}
+                className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
+              />
+            </div>
+          </div>
 
-        <div className="pt-4 border-t border-diligent-gray-1">
-          <ImageUpload
-            folder="og-images"
-            currentUrl={ogImageUrl || null}
-            currentAlt="Open Graph image"
-            onUpload={(url) => {
-              setOgImageUrl(url)
-            }}
-            onRemove={() => {
-              setOgImageUrl('')
-            }}
-            label="Open Graph image"
-            hint="Used when sharing on social media"
-          />
+          <div className="space-y-3 border-l border-diligent-gray-2 pl-6">
+            <span className="block text-sm font-medium text-diligent-gray-5 mb-1">
+              Open Graph image <span className="text-diligent-red">*</span>
+            </span>
+            <ImageUpload
+              folder="og-images"
+              currentUrl={ogImageUrl || null}
+              currentAlt={ogImageAlt || null}
+              onUpload={(url, alt) => {
+                setOgImageUrl(url)
+                setOgImageAlt(alt)
+              }}
+              onRemove={() => {
+                setOgImageUrl('')
+                setOgImageAlt('')
+              }}
+              label=""
+              hint="Used when sharing on social media"
+            />
+            <div>
+              <label htmlFor="ogImageAlt" className="block text-sm font-medium text-diligent-gray-5 mb-1">
+                OG image alt text
+              </label>
+              <input
+                id="ogImageAlt"
+                type="text"
+                value={ogImageAlt}
+                onChange={(e) => setOgImageAlt(e.target.value)}
+                className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
+              />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -382,6 +427,44 @@ export default function TemplateForm({
           onRegionsChange={setSelectedRegionIds}
           onSubjectsChange={setSelectedSubjectIds}
         />
+      </div>
+
+      {/* Related Items */}
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <h2 className="text-lg font-semibold text-diligent-gray-5 mb-1">Related items</h2>
+        <p className="text-sm text-diligent-gray-3 mb-4">
+          Select up to 3 related content items to display on the public page.
+        </p>
+        <RelatedItemsPicker
+          value={relatedItems}
+          onChange={setRelatedItems}
+          excludeType="TEMPLATE"
+          excludeId={template?.id}
+        />
+      </div>
+
+      {/* Access */}
+      <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-diligent-gray-5">Access</h2>
+
+        <div>
+          <span className="block text-sm font-medium text-diligent-gray-5 mb-2">Access tier</span>
+          <div className="flex gap-6">
+            {(['FREE', 'GATED', 'PREMIUM'] as const).map((tier) => (
+              <label key={tier} className="flex items-center gap-2 text-sm text-diligent-gray-5 cursor-pointer">
+                <input
+                  type="radio"
+                  name="accessTier"
+                  value={tier}
+                  checked={accessTier === tier}
+                  onChange={() => setAccessTier(tier)}
+                  className="h-4 w-4 border-diligent-gray-2 text-diligent-red focus:ring-diligent-red"
+                />
+                {tier === 'FREE' ? 'Free' : tier === 'GATED' ? 'Gated' : 'Premium'}
+              </label>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* SEO */}
@@ -421,42 +504,25 @@ export default function TemplateForm({
         </div>
       </div>
 
-      {/* Access */}
+      {/* Credly Badge */}
       <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-diligent-gray-5">Access</h2>
+        <h2 className="text-lg font-semibold text-diligent-gray-5">Credly badge</h2>
 
         <div>
-          <span className="block text-sm font-medium text-diligent-gray-5 mb-2">Access tier</span>
-          <div className="flex gap-6">
-            {(['FREE', 'GATED', 'PREMIUM'] as const).map((tier) => (
-              <label key={tier} className="flex items-center gap-2 text-sm text-diligent-gray-5 cursor-pointer">
-                <input
-                  type="radio"
-                  name="accessTier"
-                  value={tier}
-                  checked={accessTier === tier}
-                  onChange={() => setAccessTier(tier)}
-                  className="h-4 w-4 border-diligent-gray-2 text-diligent-red focus:ring-diligent-red"
-                />
-                {tier === 'FREE' ? 'Free' : tier === 'GATED' ? 'Gated' : 'Premium'}
-              </label>
-            ))}
-          </div>
+          <label htmlFor="credlyBadgeId" className="block text-sm font-medium text-diligent-gray-5 mb-1">
+            Credly badge template ID
+          </label>
+          <input
+            id="credlyBadgeId"
+            type="text"
+            value={credlyBadgeId}
+            onChange={(e) => setCredlyBadgeId(e.target.value)}
+            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red md:w-1/2"
+          />
+          <p className="mt-1 text-xs text-diligent-gray-3">
+            Optional. If set, learners who complete this template will receive a Credly badge. Enter the badge template ID from the Credly dashboard.
+          </p>
         </div>
-      </div>
-
-      {/* Related Items */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-lg font-semibold text-diligent-gray-5 mb-1">Related items</h2>
-        <p className="text-sm text-diligent-gray-3 mb-4">
-          Select up to 3 related content items to display on the public page.
-        </p>
-        <RelatedItemsPicker
-          value={relatedItems}
-          onChange={setRelatedItems}
-          excludeType="TEMPLATE"
-          excludeId={template?.id}
-        />
       </div>
 
       {/* Content relationships (edit mode only) */}
@@ -547,8 +613,8 @@ export default function TemplateForm({
 
       {/* Submit */}
       <div className="flex items-center justify-end gap-3">
-        {orgTypeError && (
-          <span className="text-sm font-medium text-diligent-red">{orgTypeError}</span>
+        {publishError && (
+          <span className="text-xs font-medium text-diligent-red">{publishError}</span>
         )}
         {previewButton}
         <button

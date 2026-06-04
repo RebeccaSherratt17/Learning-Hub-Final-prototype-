@@ -13,7 +13,7 @@ export default async function PartnersPage() {
           Educational partners
         </h1>
         <p className="mt-1 text-diligent-gray-4">
-          Manage partner logos displayed on the homepage.
+          Manage the partner logos that appear across the Learning Hub — including on the homepage and the Resource Library page.
         </p>
       </div>
 

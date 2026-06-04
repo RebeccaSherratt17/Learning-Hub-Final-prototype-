@@ -16,12 +16,14 @@ interface TaxonomySelectProps {
 
 function AccordionSection({
   label,
+  required,
   selectedCount,
   isOpen,
   onToggle,
   children,
 }: {
   label: string
+  required?: boolean
   selectedCount: number
   isOpen: boolean
   onToggle: () => void
@@ -36,6 +38,7 @@ function AccordionSection({
       >
         <span>
           {label}
+          {required && <span className="text-diligent-red"> *</span>}
           {selectedCount > 0 && (
             <span className="ml-2 text-xs font-normal text-diligent-gray-4">
               ({selectedCount} selected)
@@ -148,6 +151,7 @@ export default function TaxonomySelect({
     <div className="divide-y divide-diligent-gray-2">
       <AccordionSection
         label="Organization type"
+        required
         selectedCount={selectedOrgTypeCount}
         isOpen={!!openSections.organizationType}
         onToggle={() => toggleSection('organizationType')}

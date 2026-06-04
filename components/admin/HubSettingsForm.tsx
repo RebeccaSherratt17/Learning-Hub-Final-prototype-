@@ -18,8 +18,6 @@ interface HubSettingsFormProps {
     partnersSectionHeading: string | null
     librarySectionHeading: string | null
     librarySectionBody: string | null
-    certificationsSectionHeading: string | null
-    certificationsSectionBody: string | null
     footerHeading: string | null
     footerBody: string | null
     footerCTAText: string | null
@@ -37,8 +35,6 @@ type SettingsData = {
   partnersSectionHeading: string
   librarySectionHeading: string
   librarySectionBody: string
-  certificationsSectionHeading: string
-  certificationsSectionBody: string
   footerHeading: string
   footerBody: string
   footerCTAText: string
@@ -60,8 +56,6 @@ function toFormData(settings: HubSettingsFormProps['initialSettings']): Settings
     partnersSectionHeading: settings.partnersSectionHeading ?? '',
     librarySectionHeading: settings.librarySectionHeading ?? '',
     librarySectionBody: settings.librarySectionBody ?? '',
-    certificationsSectionHeading: settings.certificationsSectionHeading ?? '',
-    certificationsSectionBody: settings.certificationsSectionBody ?? '',
     footerHeading: settings.footerHeading ?? '',
     footerBody: settings.footerBody ?? '',
     footerCTAText: settings.footerCTAText ?? '',
@@ -292,26 +286,6 @@ export default function HubSettingsForm({ initialSettings }: HubSettingsFormProp
             id="librarySectionBody"
             value={formData.librarySectionBody}
             onChange={(v) => updateField('librarySectionBody', v)}
-          />
-        </div>
-      </SectionCard>
-
-      {/* Section 5: Certifications */}
-      <SectionCard heading="Section 6: Certifications">
-        <div>
-          <FieldLabel htmlFor="certificationsSectionHeading">Section heading</FieldLabel>
-          <TextInput
-            id="certificationsSectionHeading"
-            value={formData.certificationsSectionHeading}
-            onChange={(v) => updateField('certificationsSectionHeading', v)}
-          />
-        </div>
-        <div>
-          <FieldLabel htmlFor="certificationsSectionBody">Body text</FieldLabel>
-          <RichTextEditor
-            id="certificationsSectionBody"
-            value={formData.certificationsSectionBody}
-            onChange={(v) => updateField('certificationsSectionBody', v)}
           />
         </div>
       </SectionCard>

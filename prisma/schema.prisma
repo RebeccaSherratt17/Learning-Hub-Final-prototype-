@@ -118,6 +118,23 @@ model Subject {
 }
 
 // ─────────────────────────────────────────────
+// Authors
+// ─────────────────────────────────────────────
+
+model Author {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  courses       Course[]
+  templates     Template[]
+  videos        Video[]
+  learningPaths LearningPath[]
+
+  @@map("authors")
+}
+
+// ─────────────────────────────────────────────
 // Content Type: Course
 // ─────────────────────────────────────────────
 
@@ -131,8 +148,10 @@ model Course {
   thumbnailUrl       String?
   thumbnailAlt       String?
   ogImageUrl         String?
+  ogImageAlt         String?
   accessTier         AccessTier    @default(FREE)
-  author             String?
+  authorId           String?
+  author             Author?       @relation(fields: [authorId], references: [id])
   publishedAt        DateTime?
   scheduledPublishAt DateTime?
   estimatedDuration  String?
@@ -174,7 +193,10 @@ model Template {
   thumbnailUrl       String?
   thumbnailAlt       String?
   ogImageUrl         String?
+  ogImageAlt         String?
   accessTier         AccessTier    @default(GATED)
+  authorId           String?
+  author             Author?       @relation(fields: [authorId], references: [id])
   publishedAt        DateTime?
   scheduledPublishAt DateTime?
   status             ContentStatus @default(DRAFT)
@@ -208,7 +230,10 @@ model Video {
   thumbnailUrl       String?
   thumbnailAlt       String?
   ogImageUrl         String?
+  ogImageAlt         String?
   accessTier         AccessTier    @default(FREE)
+  authorId           String?
+  author             Author?       @relation(fields: [authorId], references: [id])
   publishedAt        DateTime?
   scheduledPublishAt DateTime?
   status             ContentStatus @default(DRAFT)
@@ -240,9 +265,12 @@ model LearningPath {
   description             String        @db.Text
   estimatedCompletionTime String?
   credlyBadgeId           String?
+  authorId                String?
+  author                  Author?       @relation(fields: [authorId], references: [id])
   thumbnailUrl            String?
   thumbnailAlt            String?
   ogImageUrl              String?
+  ogImageAlt              String?
   accessTier              AccessTier    @default(FREE)
   publishedAt             DateTime?
   scheduledPublishAt      DateTime?
@@ -452,10 +480,6 @@ model HubSettings {
   librarySectionHeading String?
   librarySectionBody    String? @db.Text
 
-  // Section 5: Certifications
-  certificationsSectionHeading String?
-  certificationsSectionBody    String? @db.Text
-
   // Section 7: Footer CTA
   footerHeading String?
   footerBody    String? @db.Text
@@ -482,21 +506,6 @@ model EducationalPartner {
   order   Int     @default(0)
 
   @@map("educational_partners")
-}
-
-// ─────────────────────────────────────────────
-// Certification Badges
-// ─────────────────────────────────────────────
-
-model CertificationBadge {
-  id       String  @id @default(cuid())
-  name     String
-  imageUrl String
-  imageAlt String?
-  linkUrl  String?
-  order    Int     @default(0)
-
-  @@map("certification_badges")
 }
 
 // ─────────────────────────────────────────────

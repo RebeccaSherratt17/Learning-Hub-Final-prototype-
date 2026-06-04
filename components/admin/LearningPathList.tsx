@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import StatusBadge from './StatusBadge'
-import type { ContentStatus, AccessTier } from '@/lib/generated/prisma'
+import type { ContentStatus, AccessTier, DifficultyLevel } from '@/lib/generated/prisma'
+import { checkLearningPathHealth } from '@/lib/admin/metadataHealth'
 
 interface LearningPathListItem {
   id: string
@@ -14,6 +15,18 @@ interface LearningPathListItem {
   publishedAt: string | null
   scheduledPublishAt: string | null
   createdAt: string
+  description: string
+  thumbnailUrl: string | null
+  ogImageUrl: string | null
+  sku: string | null
+  seoTitle: string | null
+  seoDescription: string | null
+  level: DifficultyLevel | null
+  author: { id: string; name: string } | null
+  relatedItemCount: number
+  personas: { persona: { id: string; name: string } }[]
+  regions: { region: { id: string; name: string } }[]
+  subjects: { subject: { id: string; name: string; group: { slug: string } } }[]
   _count: { items: number }
 }
 
@@ -43,12 +56,14 @@ function ConfirmModal({
   title,
   message,
   confirmLabel,
+  loading,
   onConfirm,
   onCancel,
 }: {
   title: string
   message: string
   confirmLabel?: string
+  loading?: boolean
   onConfirm: () => void
   onCancel: () => void
 }) {
@@ -60,15 +75,17 @@ function ConfirmModal({
         <div className="mt-5 flex justify-end gap-3">
           <button
             onClick={onCancel}
-            className="rounded px-4 py-2 text-sm font-medium text-diligent-gray-4 hover:text-diligent-gray-5"
+            disabled={loading}
+            className="rounded px-4 py-2 text-sm font-medium text-diligent-gray-4 hover:text-diligent-gray-5 disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="rounded bg-diligent-red px-4 py-2 text-sm font-medium text-white hover:bg-diligent-red-2"
+            disabled={loading}
+            className="rounded bg-diligent-red px-4 py-2 text-sm font-medium text-white hover:bg-diligent-red-2 disabled:opacity-50"
           >
-            {confirmLabel || 'Delete'}
+            {loading ? 'Deleting...' : (confirmLabel || 'Delete')}
           </button>
         </div>
       </div>
@@ -95,6 +112,7 @@ export default function LearningPathList() {
     title: string
     progressCount?: number
   } | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -178,36 +196,33 @@ export default function LearningPathList() {
     }
   }
 
-  async function handleDelete(id: string, title: string) {
-    try {
-      const res = await fetch(`/api/admin/learning-paths/${id}`, { method: 'DELETE' })
-      const data = await res.json()
-
-      if (res.status === 409 && data.requiresConfirmation) {
-        setDeleteConfirm({ id, title, progressCount: data.progressCount })
-        return
-      }
-
-      if (res.ok) {
-        fetchLearningPaths()
-      }
-    } catch {
-      console.error('Failed to delete')
-    }
+  function handleDelete(id: string, title: string) {
+    setDeleteConfirm({ id, title })
   }
 
   async function confirmDelete() {
     if (!deleteConfirm) return
+    setDeleteLoading(true)
     try {
-      const res = await fetch(`/api/admin/learning-paths/${deleteConfirm.id}?confirm=true`, {
-        method: 'DELETE',
-      })
+      const useConfirmParam = deleteConfirm.progressCount != null
+      const url = `/api/admin/learning-paths/${deleteConfirm.id}${useConfirmParam ? '?confirm=true' : ''}`
+      const res = await fetch(url, { method: 'DELETE' })
+      const data = await res.json()
+
+      if (res.status === 409 && data.requiresConfirmation) {
+        setDeleteConfirm({ ...deleteConfirm, progressCount: data.progressCount })
+        setDeleteLoading(false)
+        return
+      }
+
       if (res.ok) {
         setDeleteConfirm(null)
         fetchLearningPaths()
       }
     } catch {
       console.error('Failed to delete')
+    } finally {
+      setDeleteLoading(false)
     }
   }
 
@@ -373,6 +388,9 @@ export default function LearningPathList() {
               <th className="px-4 py-3">
                 <SortHeader field="publishedAt" label="Published" />
               </th>
+              <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wider text-diligent-gray-3">
+                Author
+              </th>
               <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-diligent-gray-3">
                 Actions
               </th>
@@ -381,14 +399,14 @@ export default function LearningPathList() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={7} className="px-4 py-12 text-center text-diligent-gray-3">
+                <td colSpan={8} className="px-4 py-12 text-center text-diligent-gray-3">
                   <span className="material-symbols-sharp animate-pulse text-[32px]">hourglass_empty</span>
                   <p className="mt-2 text-sm">Loading learning paths...</p>
                 </td>
               </tr>
             ) : sortedPaths.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-12 text-center">
+                <td colSpan={8} className="px-4 py-12 text-center">
                   <span className="material-symbols-sharp text-[40px] text-diligent-gray-3">route</span>
                   <p className="mt-2 text-sm text-diligent-gray-4">
                     {debouncedSearch || statusFilter
@@ -409,12 +427,25 @@ export default function LearningPathList() {
                     />
                   </td>
                   <td className="px-4 py-3">
-                    <Link
-                      href={`/admin/learning-paths/${lp.id}`}
-                      className="font-medium text-diligent-gray-5 hover:text-link"
-                    >
-                      {lp.title}
-                    </Link>
+                    <div className="flex items-center gap-1.5">
+                      {(() => {
+                        const missing = checkLearningPathHealth(lp)
+                        return missing.length > 0 ? (
+                          <span
+                            className="material-symbols-sharp shrink-0 text-[18px] text-diligent-red"
+                            title={`Missing: ${missing.join(', ')}`}
+                          >
+                            error
+                          </span>
+                        ) : null
+                      })()}
+                      <Link
+                        href={`/admin/learning-paths/${lp.id}`}
+                        className="min-w-0 truncate font-medium text-diligent-gray-5 hover:text-link"
+                      >
+                        {lp.title}
+                      </Link>
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <StatusBadge status={lp.status} />
@@ -437,6 +468,9 @@ export default function LearningPathList() {
                     ) : (
                       formatDate(lp.publishedAt)
                     )}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-diligent-gray-4">
+                    {lp.author?.name ?? '—'}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-1">
@@ -491,12 +525,13 @@ export default function LearningPathList() {
       {/* Delete confirmation modal */}
       {deleteConfirm && (
         <ConfirmModal
-          title="Delete learning path"
+          title="Delete learning path?"
           message={
             deleteConfirm.progressCount
               ? `This learning path has ${deleteConfirm.progressCount} learner progress record(s). Deleting it will remove all learner progress data. Are you sure you want to delete "${deleteConfirm.title}"?`
               : `Are you sure you want to delete "${deleteConfirm.title}"? This action cannot be undone.`
           }
+          loading={deleteLoading}
           onConfirm={confirmDelete}
           onCancel={() => setDeleteConfirm(null)}
         />

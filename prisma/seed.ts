@@ -207,11 +207,6 @@ async function main() {
       librarySectionBody:
         'Explore educational courses, ready-to-use templates, and videos to develop your expertise and enhance board effectiveness across key governance, risk, and compliance topics.',
 
-      // Section 5: Certifications
-      certificationsSectionHeading: 'Professionally-accredited certifications',
-      certificationsSectionBody:
-        'Empower your business to achieve governance excellency. With Diligent One Platform, you can unlock unlimited access to Diligent\u2019s Education & Templates Library, featuring 600+ educational courses, templates and videos, alongside six professionally-accredited certifications.',
-
       // Section 7: Footer CTA
       footerHeading: 'Upskill your board today',
       footerBody:
@@ -225,62 +220,18 @@ async function main() {
   console.log('  Seeded hub settings')
 
   // ─────────────────────────────────────────────
-  // 6. Certification Badges
+  // 6. Authors
   // ─────────────────────────────────────────────
 
-  const badges = [
-    {
-      name: 'Cyber Risk Strategy & Leadership',
-      imageUrl: '',
-      linkUrl:
-        'https://www.diligent.com/platform/cyber-risk-strategy-leadership-certification',
-      order: 1,
-    },
-    {
-      name: 'AI Ethics & Board Oversight',
-      imageUrl: '',
-      linkUrl:
-        'https://www.diligent.com/platform/ai-ethics-board-oversight-certification',
-      order: 2,
-    },
-    {
-      name: 'Climate & Sustainability Strategy',
-      imageUrl: '',
-      linkUrl:
-        'https://www.diligent.com/platform/climate-and-sustainability-strategy-certification',
-      order: 3,
-    },
-    {
-      name: 'Human Capital, Compensation & Culture',
-      imageUrl: '',
-      linkUrl:
-        'https://www.diligent.com/platform/human-capital-compensation-and-culture-certificate',
-      order: 4,
-    },
-    {
-      name: 'Board Leadership',
-      imageUrl: '',
-      linkUrl: '', // TBC by Diligent team
-      order: 5,
-    },
-    {
-      name: 'Enterprise Risk Management',
-      imageUrl: '',
-      linkUrl:
-        'https://www.diligent.com/platform/enterprise-risk-management-certification',
-      order: 6,
-    },
-  ]
-
-  for (const badge of badges) {
-    const existing = await prisma.certificationBadge.findFirst({
-      where: { name: badge.name },
+  const authors = ['Alice Thompson', 'Rebecca Sherratt']
+  for (const name of authors) {
+    await prisma.author.upsert({
+      where: { name },
+      update: {},
+      create: { name },
     })
-    if (!existing) {
-      await prisma.certificationBadge.create({ data: badge })
-    }
   }
-  console.log(`  Seeded ${badges.length} certification badges`)
+  console.log(`  Seeded ${authors.length} authors`)
 
   console.log('Seeding complete.')
 }

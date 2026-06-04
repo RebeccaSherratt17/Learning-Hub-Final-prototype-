@@ -13,8 +13,7 @@ export default async function RedirectsPage() {
           Redirects
         </h1>
         <p className="mt-1 text-diligent-gray-4">
-          Manage 301 redirects. Visitors accessing a source path will be
-          permanently redirected to the destination.
+          Use this page to forward old or broken URLs to a new address. For example, if a page has moved, you can set up a redirect so anyone visiting the old link is automatically sent to the correct page — no dead ends for your visitors.
         </p>
       </div>
 

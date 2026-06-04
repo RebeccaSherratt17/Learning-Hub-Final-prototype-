@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { validateTemplatePublish } from '@/lib/admin/metadataHealth'
 import type { ContentStatus } from '@/lib/generated/prisma'
 
 function generateSlug(name: string): string {
@@ -39,9 +40,10 @@ export async function GET(request: Request) {
       prisma.template.findMany({
         where,
         include: {
+          author: true,
           personas: { include: { persona: true } },
           regions: { include: { region: true } },
-          subjects: { include: { subject: true } },
+          subjects: { include: { subject: { include: { group: true } } } },
         },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
@@ -50,8 +52,22 @@ export async function GET(request: Request) {
       prisma.template.count({ where }),
     ])
 
+    const templateIds = templates.map((t) => t.id)
+    const relatedCounts = templateIds.length > 0
+      ? await prisma.relatedItem.groupBy({
+          by: ['sourceId'],
+          where: { sourceType: 'TEMPLATE', sourceId: { in: templateIds } },
+          _count: { id: true },
+        })
+      : []
+    const relatedMap = new Map(relatedCounts.map((r) => [r.sourceId, r._count.id]))
+    const templatesWithHealth = templates.map((t) => ({
+      ...t,
+      relatedItemCount: relatedMap.get(t.id) ?? 0,
+    }))
+
     return NextResponse.json({
-      templates,
+      templates: templatesWithHealth,
       total,
       page,
       totalPages: Math.ceil(total / limit),
@@ -82,6 +98,7 @@ export async function POST(request: Request) {
       thumbnailUrl,
       thumbnailAlt,
       ogImageUrl,
+      ogImageAlt,
       accessTier,
       publishedAt,
       scheduledPublishAt,
@@ -89,6 +106,7 @@ export async function POST(request: Request) {
       seoTitle,
       seoDescription,
       sku,
+      authorId,
       credlyBadgeId,
       personaIds,
       regionIds,
@@ -105,6 +123,7 @@ export async function POST(request: Request) {
       thumbnailUrl?: string
       thumbnailAlt?: string
       ogImageUrl?: string
+      ogImageAlt?: string
       accessTier?: string
       publishedAt?: string
       scheduledPublishAt?: string
@@ -112,6 +131,7 @@ export async function POST(request: Request) {
       seoTitle?: string
       seoDescription?: string
       sku?: string
+      authorId?: string
       credlyBadgeId?: string
       personaIds?: string[]
       regionIds?: string[]
@@ -127,6 +147,30 @@ export async function POST(request: Request) {
     }
 
     const finalSlug = slug?.trim() || generateSlug(title)
+
+    if (status === 'PUBLISHED') {
+      const orgTypeGroup = await prisma.subjectGroup.findUnique({ where: { slug: 'organization-type' } })
+      const orgTypeIds = orgTypeGroup
+        ? (await prisma.subject.findMany({ where: { groupId: orgTypeGroup.id }, select: { id: true } })).map((s) => s.id)
+        : []
+      const hasOrgType = (subjectIds as string[] | undefined)?.some((id: string) => orgTypeIds.includes(id)) ?? false
+
+      const missing = validateTemplatePublish({
+        title: title.trim(),
+        slug: finalSlug,
+        description: description.trim(),
+        fileUrl: fileUrl?.trim() || null,
+        thumbnailUrl: thumbnailUrl?.trim() || null,
+        ogImageUrl: ogImageUrl?.trim() || null,
+        hasOrgType,
+      })
+      if (missing.length > 0) {
+        return NextResponse.json(
+          { error: `Required to publish: ${missing.join(', ')}` },
+          { status: 400 }
+        )
+      }
+    }
 
     const { relatedItems } = body as { relatedItems?: { type: string; id: string }[] }
 
@@ -144,6 +188,7 @@ export async function POST(request: Request) {
           thumbnailUrl: thumbnailUrl || null,
           thumbnailAlt: thumbnailAlt || null,
           ogImageUrl: ogImageUrl || null,
+          ogImageAlt: ogImageAlt || null,
           accessTier: (accessTier as 'FREE' | 'GATED' | 'PREMIUM') || 'GATED',
           publishedAt: publishedAt ? new Date(publishedAt) : null,
           scheduledPublishAt: scheduledPublishAt ? new Date(scheduledPublishAt) : null,
@@ -151,6 +196,7 @@ export async function POST(request: Request) {
           seoTitle: seoTitle?.trim() || null,
           seoDescription: seoDescription?.trim() || null,
           sku: sku?.trim() || null,
+          authorId: authorId?.trim() || null,
           credlyBadgeId: credlyBadgeId?.trim() || null,
         },
       })

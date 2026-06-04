@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import type { ContentStatus } from '@/lib/generated/prisma'
+import { validateLearningPathPublish } from '@/lib/admin/metadataHealth'
 
 function generateSlug(name: string): string {
   return name
@@ -39,9 +40,10 @@ export async function GET(request: Request) {
       prisma.learningPath.findMany({
         where,
         include: {
+          author: true,
           personas: { include: { persona: true } },
           regions: { include: { region: true } },
-          subjects: { include: { subject: true } },
+          subjects: { include: { subject: { include: { group: true } } } },
           _count: { select: { items: true } },
         },
         orderBy: { createdAt: 'desc' },
@@ -51,8 +53,22 @@ export async function GET(request: Request) {
       prisma.learningPath.count({ where }),
     ])
 
+    const lpIds = learningPaths.map((lp) => lp.id)
+    const relatedCounts = lpIds.length > 0
+      ? await prisma.relatedItem.groupBy({
+          by: ['sourceId'],
+          where: { sourceType: 'LEARNING_PATH', sourceId: { in: lpIds } },
+          _count: { id: true },
+        })
+      : []
+    const relatedMap = new Map(relatedCounts.map((r) => [r.sourceId, r._count.id]))
+    const learningPathsWithHealth = learningPaths.map((lp) => ({
+      ...lp,
+      relatedItemCount: relatedMap.get(lp.id) ?? 0,
+    }))
+
     return NextResponse.json({
-      learningPaths,
+      learningPaths: learningPathsWithHealth,
       total,
       page,
       totalPages: Math.ceil(total / limit),
@@ -80,6 +96,7 @@ export async function POST(request: Request) {
       thumbnailUrl,
       thumbnailAlt,
       ogImageUrl,
+      ogImageAlt,
       accessTier,
       publishedAt,
       scheduledPublishAt,
@@ -87,6 +104,7 @@ export async function POST(request: Request) {
       seoTitle,
       seoDescription,
       sku,
+      authorId,
       level,
       personaIds,
       regionIds,
@@ -101,6 +119,7 @@ export async function POST(request: Request) {
       thumbnailUrl?: string
       thumbnailAlt?: string
       ogImageUrl?: string
+      ogImageAlt?: string
       accessTier?: string
       publishedAt?: string
       scheduledPublishAt?: string
@@ -108,6 +127,7 @@ export async function POST(request: Request) {
       seoTitle?: string
       seoDescription?: string
       sku?: string
+      authorId?: string
       level?: string
       personaIds?: string[]
       regionIds?: string[]
@@ -125,6 +145,30 @@ export async function POST(request: Request) {
 
     const finalSlug = slug?.trim() || generateSlug(title)
 
+    if (status === 'PUBLISHED') {
+      const orgTypeGroup = await prisma.subjectGroup.findUnique({ where: { slug: 'organization-type' } })
+      const orgTypeIds = orgTypeGroup
+        ? (await prisma.subject.findMany({ where: { groupId: orgTypeGroup.id }, select: { id: true } })).map((s) => s.id)
+        : []
+      const hasOrgType = (subjectIds as string[] | undefined)?.some((id: string) => orgTypeIds.includes(id)) ?? false
+
+      const missing = validateLearningPathPublish({
+        title: title.trim(),
+        slug: finalSlug,
+        description: description.trim(),
+        thumbnailUrl: thumbnailUrl?.trim() || null,
+        ogImageUrl: ogImageUrl?.trim() || null,
+        level: level || null,
+        hasOrgType,
+      })
+      if (missing.length > 0) {
+        return NextResponse.json(
+          { error: `Required to publish: ${missing.join(', ')}` },
+          { status: 400 }
+        )
+      }
+    }
+
     const { relatedItems } = body as { relatedItems?: { type: string; id: string }[] }
 
     const learningPath = await prisma.$transaction(async (tx) => {
@@ -138,6 +182,7 @@ export async function POST(request: Request) {
           thumbnailUrl: thumbnailUrl || null,
           thumbnailAlt: thumbnailAlt || null,
           ogImageUrl: ogImageUrl || null,
+          ogImageAlt: ogImageAlt || null,
           accessTier: (accessTier as 'FREE' | 'GATED' | 'PREMIUM') || 'FREE',
           publishedAt: publishedAt ? new Date(publishedAt) : null,
           scheduledPublishAt: scheduledPublishAt ? new Date(scheduledPublishAt) : null,
@@ -145,6 +190,7 @@ export async function POST(request: Request) {
           seoTitle: seoTitle?.trim() || null,
           seoDescription: seoDescription?.trim() || null,
           sku: sku?.trim() || null,
+          authorId: authorId?.trim() || null,
           level: (level as 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED') || null,
         },
       })

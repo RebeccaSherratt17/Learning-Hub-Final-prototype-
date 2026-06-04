@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { validateCoursePublish } from '@/lib/admin/metadataHealth'
 import type { ContentStatus } from '@/lib/generated/prisma'
 
 function generateSlug(name: string): string {
@@ -39,9 +40,10 @@ export async function GET(request: Request) {
       prisma.course.findMany({
         where,
         include: {
+          author: true,
           personas: { include: { persona: true } },
           regions: { include: { region: true } },
-          subjects: { include: { subject: true } },
+          subjects: { include: { subject: { include: { group: true } } } },
         },
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
@@ -50,8 +52,23 @@ export async function GET(request: Request) {
       prisma.course.count({ where }),
     ])
 
+    // Attach related item counts for metadata health checks
+    const courseIds = courses.map((c) => c.id)
+    const relatedCounts = courseIds.length > 0
+      ? await prisma.relatedItem.groupBy({
+          by: ['sourceId'],
+          where: { sourceType: 'COURSE', sourceId: { in: courseIds } },
+          _count: { id: true },
+        })
+      : []
+    const relatedMap = new Map(relatedCounts.map((r) => [r.sourceId, r._count.id]))
+    const coursesWithHealth = courses.map((c) => ({
+      ...c,
+      relatedItemCount: relatedMap.get(c.id) ?? 0,
+    }))
+
     return NextResponse.json({
-      courses,
+      courses: coursesWithHealth,
       total,
       page,
       totalPages: Math.ceil(total / limit),
@@ -79,8 +96,9 @@ export async function POST(request: Request) {
       thumbnailUrl,
       thumbnailAlt,
       ogImageUrl,
+      ogImageAlt,
       accessTier,
-      author,
+      authorId,
       publishedAt,
       scheduledPublishAt,
       estimatedDuration,
@@ -104,8 +122,9 @@ export async function POST(request: Request) {
       thumbnailUrl?: string
       thumbnailAlt?: string
       ogImageUrl?: string
+      ogImageAlt?: string
       accessTier?: string
-      author?: string
+      authorId?: string
       publishedAt?: string
       scheduledPublishAt?: string
       estimatedDuration?: string
@@ -130,11 +149,30 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Description is required' }, { status: 400 })
     }
 
-    if (status === 'PUBLISHED' && (!launchFile || launchFile.trim().length === 0)) {
-      return NextResponse.json(
-        { error: 'A SCORM file must be uploaded before publishing a course.' },
-        { status: 400 }
-      )
+    // Publish-blocking validation
+    if (status === 'PUBLISHED') {
+      const orgTypeGroup = await prisma.subjectGroup.findUnique({ where: { slug: 'organization-type' } })
+      const orgTypeIds = orgTypeGroup
+        ? (await prisma.subject.findMany({ where: { groupId: orgTypeGroup.id }, select: { id: true } })).map((s) => s.id)
+        : []
+      const hasOrgType = subjectIds?.some((id: string) => orgTypeIds.includes(id)) ?? false
+
+      const missing = validateCoursePublish({
+        title: title.trim(),
+        slug: slug?.trim() || generateSlug(title),
+        description: description.trim(),
+        thumbnailUrl: thumbnailUrl?.trim() || null,
+        ogImageUrl: ogImageUrl?.trim() || null,
+        level: level || null,
+        launchFile: launchFile?.trim() || null,
+        hasOrgType,
+      })
+      if (missing.length > 0) {
+        return NextResponse.json(
+          { error: `Required to publish: ${missing.join(', ')}` },
+          { status: 400 }
+        )
+      }
     }
 
     const finalSlug = slug?.trim() || generateSlug(title)
@@ -152,8 +190,9 @@ export async function POST(request: Request) {
           thumbnailUrl: thumbnailUrl || null,
           thumbnailAlt: thumbnailAlt || null,
           ogImageUrl: ogImageUrl || null,
+          ogImageAlt: ogImageAlt || null,
           accessTier: (accessTier as 'FREE' | 'GATED' | 'PREMIUM') || 'FREE',
-          author: author?.trim() || null,
+          authorId: authorId?.trim() || null,
           publishedAt: publishedAt ? new Date(publishedAt) : null,
           scheduledPublishAt: scheduledPublishAt ? new Date(scheduledPublishAt) : null,
           estimatedDuration: estimatedDuration?.trim() || null,

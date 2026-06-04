@@ -25,7 +25,6 @@ const navSections = [
     links: [
       { href: '/admin/taxonomy', icon: 'label', label: 'Taxonomy' },
       { href: '/admin/partners', icon: 'handshake', label: 'Partners' },
-      { href: '/admin/badges', icon: 'workspace_premium', label: 'Badges' },
       { href: '/admin/redirects', icon: 'directions', label: 'Redirects' },
     ],
   },
