@@ -98,6 +98,9 @@ export default async function TemplatePage({ params, searchParams }: PageProps) 
   const resolvedParams = await params
   const resolvedSearchParams = await searchParams
 
+  // Token-based access for restricted templates
+  const tokenParam = resolvedSearchParams.token as string | undefined
+
   // Preview support
   const previewToken = resolvedSearchParams.preview
     ? await prisma.previewToken.findFirst({
@@ -112,15 +115,43 @@ export default async function TemplatePage({ params, searchParams }: PageProps) 
   const isPreview = !!previewToken
 
   // Fetch template
-  const template = isPreview
-    ? await prisma.template.findFirst({
-        where: { id: previewToken!.contentId },
-        include: TEMPLATE_INCLUDES,
-      })
-    : await prisma.template.findFirst({
-        where: { slug: resolvedParams.slug, status: ContentStatus.PUBLISHED },
-        include: TEMPLATE_INCLUDES,
-      })
+  let template
+  if (isPreview) {
+    template = await prisma.template.findFirst({
+      where: { id: previewToken!.contentId },
+      include: TEMPLATE_INCLUDES,
+    })
+  } else if (tokenParam) {
+    // Restricted template: validate token
+    template = await prisma.template.findFirst({
+      where: {
+        slug: resolvedParams.slug,
+        restricted: true,
+        accessToken: tokenParam,
+      },
+      include: TEMPLATE_INCLUDES,
+    })
+    if (!template) {
+      return (
+        <div className="mx-auto max-w-[var(--max-content-width)] px-6 py-24 text-center">
+          <span className="material-symbols-sharp text-[48px] text-diligent-gray-3">link_off</span>
+          <h1 className="mt-4 text-2xl font-bold text-diligent-gray-5">This link is not valid</h1>
+          <p className="mt-2 text-sm text-diligent-gray-4">
+            The access link you followed is invalid or has been revoked. Please contact the person who shared it with you.
+          </p>
+        </div>
+      )
+    }
+  } else {
+    template = await prisma.template.findFirst({
+      where: {
+        slug: resolvedParams.slug,
+        status: ContentStatus.PUBLISHED,
+        restricted: false,
+      },
+      include: TEMPLATE_INCLUDES,
+    })
+  }
 
   if (!template) notFound()
 

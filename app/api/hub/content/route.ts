@@ -104,6 +104,7 @@ export async function GET(request: NextRequest) {
         .findMany({
           where: {
             ...publishedFilter,
+            restricted: false,
             ...(andClauses.length > 0 ? { AND: andClauses } : {}),
           },
           include: taxonomyInclude,
@@ -124,6 +125,7 @@ export async function GET(request: NextRequest) {
         .findMany({
           where: {
             ...publishedFilter,
+            restricted: false,
             ...(andClauses.length > 0 ? { AND: andClauses } : {}),
           },
           include: taxonomyInclude,
@@ -144,6 +146,7 @@ export async function GET(request: NextRequest) {
         .findMany({
           where: {
             ...publishedFilter,
+            restricted: false,
             ...(andClauses.length > 0 ? { AND: andClauses } : {}),
           },
           include: taxonomyInclude,

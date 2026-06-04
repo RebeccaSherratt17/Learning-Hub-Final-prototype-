@@ -200,6 +200,9 @@ model Template {
   publishedAt        DateTime?
   scheduledPublishAt DateTime?
   status             ContentStatus @default(DRAFT)
+  restricted         Boolean       @default(false)
+  accessToken        String?       @unique
+  restrictedNote     String?
   seoTitle           String?
   seoDescription     String?       @db.Text
   sku                String?
@@ -237,6 +240,9 @@ model Video {
   publishedAt        DateTime?
   scheduledPublishAt DateTime?
   status             ContentStatus @default(DRAFT)
+  restricted         Boolean       @default(false)
+  accessToken        String?       @unique
+  restrictedNote     String?
   seoTitle           String?
   seoDescription     String?       @db.Text
   sku                String?
@@ -275,6 +281,9 @@ model LearningPath {
   publishedAt             DateTime?
   scheduledPublishAt      DateTime?
   status                  ContentStatus @default(DRAFT)
+  restricted              Boolean       @default(false)
+  accessToken             String?       @unique
+  restrictedNote          String?
   seoTitle                String?
   seoDescription          String?       @db.Text
   sku                     String?

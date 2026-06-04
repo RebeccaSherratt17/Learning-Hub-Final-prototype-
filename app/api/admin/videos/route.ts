@@ -28,12 +28,27 @@ export async function GET(request: Request) {
     const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10))
     const limit = Math.max(1, Math.min(100, parseInt(url.searchParams.get('limit') || '20', 10)))
 
+    const tier = url.searchParams.get('tier') || ''
+    const restricted = url.searchParams.get('restricted') || ''
+    const author = url.searchParams.get('author') || ''
+
     const where: Record<string, unknown> = {}
     if (search) {
       where.title = { contains: search, mode: 'insensitive' }
     }
     if (status) {
       where.status = status
+    }
+    if (tier) {
+      where.accessTier = tier
+    }
+    if (restricted === 'true') {
+      where.restricted = true
+    } else if (restricted === 'false') {
+      where.restricted = false
+    }
+    if (author) {
+      where.authorId = author
     }
 
     const [videos, total] = await Promise.all([
@@ -100,6 +115,8 @@ export async function POST(request: Request) {
       publishedAt,
       scheduledPublishAt,
       status,
+      restricted,
+      restrictedNote,
       seoTitle,
       seoDescription,
       sku,
@@ -123,6 +140,8 @@ export async function POST(request: Request) {
       publishedAt?: string
       scheduledPublishAt?: string
       status?: string
+      restricted?: boolean
+      restrictedNote?: string
       seoTitle?: string
       seoDescription?: string
       sku?: string
@@ -188,6 +207,8 @@ export async function POST(request: Request) {
           publishedAt: publishedAt ? new Date(publishedAt) : null,
           scheduledPublishAt: scheduledPublishAt ? new Date(scheduledPublishAt) : null,
           status: (status as ContentStatus) || 'DRAFT',
+          restricted: restricted ?? false,
+          restrictedNote: restrictedNote?.trim() || null,
           seoTitle: seoTitle?.trim() || null,
           seoDescription: seoDescription?.trim() || null,
           sku: sku?.trim() || null,

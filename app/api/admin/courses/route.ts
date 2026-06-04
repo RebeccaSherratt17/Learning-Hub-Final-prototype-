@@ -28,12 +28,27 @@ export async function GET(request: Request) {
     const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10))
     const limit = Math.max(1, Math.min(100, parseInt(url.searchParams.get('limit') || '20', 10)))
 
+    const tier = url.searchParams.get('tier') || ''
+    const restricted = url.searchParams.get('restricted') || ''
+    const author = url.searchParams.get('author') || ''
+
     const where: Record<string, unknown> = {}
     if (search) {
       where.title = { contains: search, mode: 'insensitive' }
     }
     if (status) {
       where.status = status
+    }
+    if (tier) {
+      where.accessTier = tier
+    }
+    if (restricted === 'true') {
+      where.restricted = true
+    } else if (restricted === 'false') {
+      where.restricted = false
+    }
+    if (author) {
+      where.authorId = author
     }
 
     const [courses, total] = await Promise.all([

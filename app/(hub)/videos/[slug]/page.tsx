@@ -85,6 +85,9 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
   const resolvedParams = await params
   const resolvedSearchParams = await searchParams
 
+  // Token-based access for restricted videos
+  const tokenParam = resolvedSearchParams.token as string | undefined
+
   // Preview support
   const previewToken = resolvedSearchParams.preview
     ? await prisma.previewToken.findFirst({
@@ -99,15 +102,43 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
   const isPreview = !!previewToken
 
   // Fetch video
-  const video = isPreview
-    ? await prisma.video.findFirst({
-        where: { id: previewToken!.contentId },
-        include: VIDEO_INCLUDES,
-      })
-    : await prisma.video.findFirst({
-        where: { slug: resolvedParams.slug, status: ContentStatus.PUBLISHED },
-        include: VIDEO_INCLUDES,
-      })
+  let video
+  if (isPreview) {
+    video = await prisma.video.findFirst({
+      where: { id: previewToken!.contentId },
+      include: VIDEO_INCLUDES,
+    })
+  } else if (tokenParam) {
+    // Restricted video: validate token
+    video = await prisma.video.findFirst({
+      where: {
+        slug: resolvedParams.slug,
+        restricted: true,
+        accessToken: tokenParam,
+      },
+      include: VIDEO_INCLUDES,
+    })
+    if (!video) {
+      return (
+        <div className="mx-auto max-w-[var(--max-content-width)] px-6 py-24 text-center">
+          <span className="material-symbols-sharp text-[48px] text-diligent-gray-3">link_off</span>
+          <h1 className="mt-4 text-2xl font-bold text-diligent-gray-5">This link is not valid</h1>
+          <p className="mt-2 text-sm text-diligent-gray-4">
+            The access link you followed is invalid or has been revoked. Please contact the person who shared it with you.
+          </p>
+        </div>
+      )
+    }
+  } else {
+    video = await prisma.video.findFirst({
+      where: {
+        slug: resolvedParams.slug,
+        status: ContentStatus.PUBLISHED,
+        restricted: false,
+      },
+      include: VIDEO_INCLUDES,
+    })
+  }
 
   if (!video) notFound()
 

@@ -101,6 +101,10 @@ export default function LearningPathList() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<ContentStatus | ''>('')
+  const [tierFilter, setTierFilter] = useState<AccessTier | ''>('')
+  const [restrictedFilter, setRestrictedFilter] = useState<'' | 'true' | 'false'>('')
+  const [authorFilter, setAuthorFilter] = useState('')
+  const [authors, setAuthors] = useState<{ id: string; name: string }[]>([])
   const [sortField, setSortField] = useState<SortField>('publishedAt')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -128,6 +132,13 @@ export default function LearningPathList() {
     }
   }, [search])
 
+  useEffect(() => {
+    fetch('/api/admin/authors')
+      .then((res) => res.ok ? res.json() : [])
+      .then((data) => setAuthors(data))
+      .catch(() => {})
+  }, [])
+
   const fetchLearningPaths = useCallback(async () => {
     setLoading(true)
     try {
@@ -135,6 +146,9 @@ export default function LearningPathList() {
       params.set('page', page.toString())
       if (debouncedSearch) params.set('search', debouncedSearch)
       if (statusFilter) params.set('status', statusFilter)
+      if (tierFilter) params.set('tier', tierFilter)
+      if (restrictedFilter) params.set('restricted', restrictedFilter)
+      if (authorFilter) params.set('author', authorFilter)
 
       const res = await fetch(`/api/admin/learning-paths?${params}`)
       if (!res.ok) throw new Error('Failed to fetch')
@@ -147,7 +161,7 @@ export default function LearningPathList() {
     } finally {
       setLoading(false)
     }
-  }, [page, debouncedSearch, statusFilter])
+  }, [page, debouncedSearch, statusFilter, tierFilter, restrictedFilter, authorFilter])
 
   useEffect(() => {
     fetchLearningPaths()
@@ -290,8 +304,8 @@ export default function LearningPathList() {
     <div>
       {/* Top bar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 gap-3">
-          <div className="relative flex-1 max-w-sm">
+        <div className="flex flex-1 flex-wrap gap-3">
+          <div className="relative flex-1 min-w-[180px] max-w-sm">
             <span className="material-symbols-sharp absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-diligent-gray-3">
               search
             </span>
@@ -317,6 +331,59 @@ export default function LearningPathList() {
             <option value="PUBLISHED">Published</option>
             <option value="ARCHIVED">Archived</option>
           </select>
+          <select
+            value={tierFilter}
+            onChange={(e) => {
+              setTierFilter(e.target.value as AccessTier | '')
+              setPage(1)
+            }}
+            className="border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
+          >
+            <option value="">All tiers</option>
+            <option value="FREE">Free</option>
+            <option value="GATED">Gated</option>
+            <option value="PREMIUM">Premium</option>
+          </select>
+          <select
+            value={restrictedFilter}
+            onChange={(e) => {
+              setRestrictedFilter(e.target.value as '' | 'true' | 'false')
+              setPage(1)
+            }}
+            className="border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
+          >
+            <option value="">Restricted: All</option>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </select>
+          <select
+            value={authorFilter}
+            onChange={(e) => {
+              setAuthorFilter(e.target.value)
+              setPage(1)
+            }}
+            className="border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
+          >
+            <option value="">All authors</option>
+            {authors.map((a) => (
+              <option key={a.id} value={a.id}>{a.name}</option>
+            ))}
+          </select>
+          {(statusFilter || tierFilter || restrictedFilter || authorFilter) && (
+            <button
+              type="button"
+              onClick={() => {
+                setStatusFilter('')
+                setTierFilter('')
+                setRestrictedFilter('')
+                setAuthorFilter('')
+                setPage(1)
+              }}
+              className="text-sm text-diligent-gray-4 hover:text-diligent-red"
+            >
+              Reset filters
+            </button>
+          )}
         </div>
       </div>
 
@@ -409,7 +476,7 @@ export default function LearningPathList() {
                 <td colSpan={8} className="px-4 py-12 text-center">
                   <span className="material-symbols-sharp text-[40px] text-diligent-gray-3">route</span>
                   <p className="mt-2 text-sm text-diligent-gray-4">
-                    {debouncedSearch || statusFilter
+                    {debouncedSearch || statusFilter || tierFilter || restrictedFilter || authorFilter
                       ? 'No learning paths match your filters.'
                       : 'No learning paths yet. Create your first learning path to get started.'}
                   </p>

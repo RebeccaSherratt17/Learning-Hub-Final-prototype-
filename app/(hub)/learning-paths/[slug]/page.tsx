@@ -95,6 +95,9 @@ export default async function LearningPathPage({ params, searchParams }: PagePro
   const resolvedParams = await params
   const resolvedSearchParams = await searchParams
 
+  // Token-based access for restricted learning paths
+  const tokenParam = resolvedSearchParams.token as string | undefined
+
   // Preview support
   const previewToken = resolvedSearchParams.preview
     ? await prisma.previewToken.findFirst({
@@ -109,15 +112,43 @@ export default async function LearningPathPage({ params, searchParams }: PagePro
   const isPreview = !!previewToken
 
   // Fetch learning path
-  const learningPath = isPreview
-    ? await prisma.learningPath.findFirst({
-        where: { id: previewToken!.contentId },
-        include: LP_INCLUDES,
-      })
-    : await prisma.learningPath.findFirst({
-        where: { slug: resolvedParams.slug, status: ContentStatus.PUBLISHED },
-        include: LP_INCLUDES,
-      })
+  let learningPath
+  if (isPreview) {
+    learningPath = await prisma.learningPath.findFirst({
+      where: { id: previewToken!.contentId },
+      include: LP_INCLUDES,
+    })
+  } else if (tokenParam) {
+    // Restricted learning path: validate token
+    learningPath = await prisma.learningPath.findFirst({
+      where: {
+        slug: resolvedParams.slug,
+        restricted: true,
+        accessToken: tokenParam,
+      },
+      include: LP_INCLUDES,
+    })
+    if (!learningPath) {
+      return (
+        <div className="mx-auto max-w-[var(--max-content-width)] px-6 py-24 text-center">
+          <span className="material-symbols-sharp text-[48px] text-diligent-gray-3">link_off</span>
+          <h1 className="mt-4 text-2xl font-bold text-diligent-gray-5">This link is not valid</h1>
+          <p className="mt-2 text-sm text-diligent-gray-4">
+            The access link you followed is invalid or has been revoked. Please contact the person who shared it with you.
+          </p>
+        </div>
+      )
+    }
+  } else {
+    learningPath = await prisma.learningPath.findFirst({
+      where: {
+        slug: resolvedParams.slug,
+        status: ContentStatus.PUBLISHED,
+        restricted: false,
+      },
+      include: LP_INCLUDES,
+    })
+  }
 
   if (!learningPath) notFound()
 

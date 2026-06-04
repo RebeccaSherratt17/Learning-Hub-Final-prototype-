@@ -117,6 +117,9 @@ export default async function EditLearningPathPage({
     status: learningPath.status,
     seoTitle: learningPath.seoTitle,
     seoDescription: learningPath.seoDescription,
+    restricted: learningPath.restricted,
+    accessToken: learningPath.accessToken,
+    restrictedNote: learningPath.restrictedNote,
     sku: learningPath.sku,
     authorId: learningPath.authorId,
     level: learningPath.level,
@@ -136,7 +139,20 @@ export default async function EditLearningPathPage({
           <span className="material-symbols-sharp text-[18px]">arrow_back</span>
           Back to learning paths
         </Link>
-        <h1 className="mt-2 text-2xl font-bold text-diligent-gray-5">Edit learning path</h1>
+        <div className="mt-2 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-diligent-gray-5">Edit learning path</h1>
+          {learningPath.status === 'PUBLISHED' && (
+            <a
+              href={`/learning-paths/${learningPath.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded border border-diligent-gray-2 bg-white px-4 py-2 text-sm font-medium text-diligent-gray-5 hover:border-diligent-gray-3"
+            >
+              Visit live page
+              <span className="material-symbols-sharp text-[18px]">open_in_new</span>
+            </a>
+          )}
+        </div>
       </div>
 
       <LearningPathForm

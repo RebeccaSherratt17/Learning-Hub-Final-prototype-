@@ -33,7 +33,7 @@ function fetchCourses() {
 
 function fetchTemplates() {
   return prisma.template.findMany({
-    where: publishedFilter,
+    where: { ...publishedFilter, restricted: false },
     include: taxonomyInclude,
     orderBy: { publishedAt: 'desc' },
   })
@@ -41,7 +41,7 @@ function fetchTemplates() {
 
 function fetchVideos() {
   return prisma.video.findMany({
-    where: publishedFilter,
+    where: { ...publishedFilter, restricted: false },
     include: taxonomyInclude,
     orderBy: { publishedAt: 'desc' },
   })
@@ -49,7 +49,7 @@ function fetchVideos() {
 
 function fetchLearningPaths() {
   return prisma.learningPath.findMany({
-    where: publishedFilter,
+    where: { ...publishedFilter, restricted: false },
     include: taxonomyInclude,
     orderBy: { publishedAt: 'desc' },
   })

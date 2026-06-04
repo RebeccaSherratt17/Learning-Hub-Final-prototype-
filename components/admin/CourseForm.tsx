@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { upload } from '@vercel/blob/client'
 import ImageUpload from './ImageUpload'
@@ -111,22 +111,21 @@ export default function CourseForm({
   const [relatedItems, setRelatedItems] = useState<RelatedItem[]>(initialRelatedItems ?? [])
 
   const [saving, setSaving] = useState(false)
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string; link?: string } | null>(null)
   const [publishError, setPublishError] = useState<string | null>(null)
   const [tokenLoading, setTokenLoading] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [showPublishDropdown, setShowPublishDropdown] = useState(false)
+  const [showSchedulePicker, setShowSchedulePicker] = useState(false)
+  const formRef = useRef<HTMLFormElement>(null)
 
   // Derive organization type subject IDs for validation
   const orgTypeSubjectIds = subjects.filter((s) => s.group.name === 'Organization Type').map((s) => s.id)
   const hasOrgTypeSelected = selectedSubjectIds.some((id) => orgTypeSubjectIds.includes(id))
 
   useEffect(() => {
-    if (status !== 'PUBLISHED') setPublishError(null)
-  }, [status])
-
-  useEffect(() => {
     if (message?.type === 'success') {
-      const timer = setTimeout(() => setMessage(null), 3000)
+      const timer = setTimeout(() => setMessage(null), 5000)
       return () => clearTimeout(timer)
     }
   }, [message])
@@ -137,13 +136,6 @@ export default function CourseForm({
       setSlug(generateSlug(value))
     }
   }, [slugManuallyEdited])
-
-  const handleStatusChange = useCallback((newStatus: string) => {
-    setStatus(newStatus as 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED')
-    if (newStatus === 'PUBLISHED' && !publishedAt) {
-      setPublishedAt(toDateTimeLocal(new Date().toISOString()))
-    }
-  }, [publishedAt])
 
   async function handleGenerateToken() {
     if (!course) return
@@ -230,11 +222,11 @@ export default function CourseForm({
     }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  async function saveItem(targetStatus: 'DRAFT' | 'PUBLISHED' | 'SCHEDULED' | 'ARCHIVED') {
+    if (!formRef.current?.reportValidity()) return
 
-    // Publish-blocking validation
-    if (status === 'PUBLISHED') {
+    // Publish-blocking validation (only for PUBLISHED and SCHEDULED)
+    if (targetStatus === 'PUBLISHED' || targetStatus === 'SCHEDULED') {
       const missing = validateCoursePublish({
         title,
         slug,
@@ -252,6 +244,10 @@ export default function CourseForm({
     }
     setPublishError(null)
 
+    const effectivePublishedAt = targetStatus === 'PUBLISHED' && !publishedAt
+      ? new Date().toISOString()
+      : publishedAt ? new Date(publishedAt).toISOString() : null
+
     setSaving(true)
     setMessage(null)
 
@@ -267,10 +263,10 @@ export default function CourseForm({
       ogImageAlt: ogImageAlt || null,
       accessTier,
       authorId: authorId || null,
-      publishedAt: publishedAt ? new Date(publishedAt).toISOString() : null,
+      publishedAt: effectivePublishedAt,
       scheduledPublishAt: scheduledPublishAt ? new Date(scheduledPublishAt).toISOString() : null,
       estimatedDuration: estimatedDuration || null,
-      status,
+      status: targetStatus,
       restricted,
       restrictedNote: restrictedNote || null,
       seoTitle: seoTitle || null,
@@ -300,8 +296,23 @@ export default function CourseForm({
         return
       }
 
+      const previousStatus = status
+      setStatus(targetStatus)
+      if (targetStatus === 'PUBLISHED' && !publishedAt) {
+        setPublishedAt(toDateTimeLocal(new Date().toISOString()))
+      }
+
       if (isEdit) {
-        setMessage({ type: 'success', text: 'Course saved successfully' })
+        const successMsg = targetStatus === 'PUBLISHED'
+          ? { type: 'success' as const, text: 'Course published successfully', link: `/courses/${slug}` }
+          : targetStatus === 'SCHEDULED'
+          ? { type: 'success' as const, text: 'Course scheduled successfully' }
+          : targetStatus === 'ARCHIVED'
+          ? { type: 'success' as const, text: 'Course archived successfully' }
+          : previousStatus === 'ARCHIVED'
+          ? { type: 'success' as const, text: 'Course restored to draft' }
+          : { type: 'success' as const, text: 'Course saved as draft' }
+        setMessage(successMsg)
         router.refresh()
       } else {
         const created = await res.json()
@@ -317,14 +328,10 @@ export default function CourseForm({
   const tokenUrl = accessToken ? `/courses/${slug}?token=${accessToken}` : null
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {message && (
+    <form ref={formRef} onSubmit={(e) => e.preventDefault()} className="space-y-6">
+      {message && message.type === 'error' && (
         <div
-          className={`rounded px-4 py-3 text-sm font-medium ${
-            message.type === 'success'
-              ? 'bg-green-50 text-green-800 border border-green-200'
-              : 'bg-red-50 text-diligent-red border border-red-200'
-          }`}
+          className="rounded px-4 py-3 text-sm font-medium bg-red-50 text-diligent-red border border-red-200"
           role="alert"
         >
           {message.text}
@@ -454,7 +461,7 @@ export default function CourseForm({
           </div>
         ) : (
           <p className="text-sm text-diligent-gray-3">
-            Save the course first, then upload a SCORM package.
+            Save this course as a draft first. Once the page reloads, you&apos;ll be able to upload your SCORM file here before publishing.
           </p>
         )}
       </div>
@@ -615,7 +622,11 @@ export default function CourseForm({
         </div>
 
         <div className="pt-4 border-t border-diligent-gray-1">
-          <label className="flex items-center gap-2 text-sm text-diligent-gray-5 cursor-pointer">
+          <p className="text-sm font-medium text-diligent-gray-5">Restricted access</p>
+          <p className="mt-1 text-sm text-diligent-gray-4">
+            Tick the checkbox to hide this item from the public library and generate a unique access link. Only people with the unique link can view this item. Use this for exclusive content only to be shared with specific cohorts. If restricted access is removed, the content will return to being publicly-accessible and the previous unique link will no longer function.
+          </p>
+          <label className="mt-3 flex items-center gap-2 text-sm text-diligent-gray-5 cursor-pointer">
             <input
               type="checkbox"
               checked={restricted}
@@ -776,86 +787,137 @@ export default function CourseForm({
         </div>
       )}
 
-      {/* Publishing */}
-      <div className="bg-white rounded-lg shadow-sm p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-diligent-gray-5">Publishing</h2>
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div>
-            <label htmlFor="status" className="block text-sm font-medium text-diligent-gray-5 mb-1">
-              Status
-            </label>
-            <select
-              id="status"
-              value={status}
-              onChange={(e) => handleStatusChange(e.target.value)}
-              className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
-            >
-              <option value="DRAFT">Draft</option>
-              <option value="SCHEDULED">Scheduled</option>
-              <option value="PUBLISHED">Published</option>
-              <option value="ARCHIVED">Archived</option>
-            </select>
-          </div>
-
-          <div>
-            <label htmlFor="publishedAt" className="block text-sm font-medium text-diligent-gray-5 mb-1">
-              Published date
-            </label>
-            <input
-              id="publishedAt"
-              type="datetime-local"
-              value={publishedAt}
-              onChange={(e) => setPublishedAt(e.target.value)}
-              className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
-            />
-          </div>
-        </div>
-
-        {status === 'SCHEDULED' && (
-          <div>
-            <label htmlFor="scheduledPublishAt" className="block text-sm font-medium text-diligent-gray-5 mb-1">
-              Scheduled publish date
-            </label>
-            <input
-              id="scheduledPublishAt"
-              type="datetime-local"
-              value={scheduledPublishAt}
-              onChange={(e) => setScheduledPublishAt(e.target.value)}
-              className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red md:w-1/2"
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Bottom message */}
-      {message && (
+      {/* Bottom error message */}
+      {message && message.type === 'error' && (
         <div
-          className={`rounded px-4 py-3 text-sm font-medium ${
-            message.type === 'success'
-              ? 'bg-green-50 text-green-800 border border-green-200'
-              : 'bg-red-50 text-diligent-red border border-red-200'
-          }`}
+          className="rounded px-4 py-3 text-sm font-medium bg-red-50 text-diligent-red border border-red-200"
           role="alert"
         >
           {message.text}
         </div>
       )}
 
-      {/* Submit */}
-      <div className="flex items-center justify-end gap-3">
-        {publishError && (
-          <span className="text-xs font-medium text-diligent-red">{publishError}</span>
-        )}
-        {previewButton}
-        <button
-          type="submit"
-          disabled={saving}
-          className="rounded bg-diligent-red px-6 py-2.5 text-sm font-medium text-white hover:bg-diligent-red-2 disabled:opacity-50"
-        >
-          {saving ? 'Saving...' : 'Save course'}
-        </button>
-      </div>
+      {/* Action buttons */}
+      {status === 'ARCHIVED' ? (
+        <div className="flex items-center justify-end gap-3">
+          {message && message.type === 'success' && (
+            <span className="text-sm text-diligent-gray-5">{message.text}</span>
+          )}
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => saveItem('DRAFT')}
+            className="rounded border border-diligent-gray-2 bg-white px-6 py-2.5 text-sm font-medium text-diligent-gray-5 hover:bg-diligent-gray-1 disabled:opacity-50"
+          >
+            {saving ? 'Saving...' : 'Restore to draft'}
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="flex items-center justify-end gap-3">
+            {message && message.type === 'success' && (
+              <span className="text-sm text-diligent-gray-5">
+                {message.text}
+                {message.link && (
+                  <>
+                    {' — '}
+                    <a href={message.link} target="_blank" rel="noopener noreferrer" className="text-link">
+                      View live page ↗
+                    </a>
+                  </>
+                )}
+              </span>
+            )}
+            {publishError && (
+              <span className="text-xs font-medium text-diligent-red">{publishError}</span>
+            )}
+            {launchFile && previewButton}
+            {!launchFile && (
+              <span className="text-sm text-diligent-gray-4">
+                Once this course is saved as a draft, you can upload the SCORM file and then Publish or Schedule.
+              </span>
+            )}
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => saveItem('DRAFT')}
+              className="rounded border border-diligent-gray-2 bg-white px-6 py-2.5 text-sm font-medium text-diligent-gray-5 hover:bg-diligent-gray-1 disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : 'Save as draft'}
+            </button>
+            {launchFile && (
+              <div className="relative">
+                <div className="flex">
+                  <button
+                    type="button"
+                    disabled={saving}
+                    onClick={() => {
+                      if (showSchedulePicker && scheduledPublishAt) {
+                        saveItem('SCHEDULED')
+                      } else {
+                        saveItem('PUBLISHED')
+                      }
+                    }}
+                    className="rounded-l bg-diligent-red px-6 py-2.5 text-sm font-medium text-white hover:bg-diligent-red-2 disabled:opacity-50"
+                  >
+                    {saving ? 'Saving...' : showSchedulePicker && scheduledPublishAt ? 'Schedule' : 'Publish'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowPublishDropdown(!showPublishDropdown)}
+                    className="rounded-r border-l border-white/30 bg-diligent-red px-2 py-2.5 text-white hover:bg-diligent-red-2"
+                  >
+                    <span className="material-symbols-sharp text-[18px]">arrow_drop_down</span>
+                  </button>
+                </div>
+                {showPublishDropdown && (
+                  <div className="absolute right-0 top-full z-10 mt-1 w-48 rounded border border-diligent-gray-2 bg-white py-1 shadow-lg">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowSchedulePicker(!showSchedulePicker)
+                        setShowPublishDropdown(false)
+                      }}
+                      className="w-full px-4 py-2 text-left text-sm text-diligent-gray-5 hover:bg-diligent-gray-1"
+                    >
+                      {showSchedulePicker ? 'Publish immediately' : 'Schedule for later'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          {showSchedulePicker && launchFile && (
+            <div className="flex items-center justify-end gap-3">
+              <label htmlFor="scheduledPublishAt" className="text-sm font-medium text-diligent-gray-5">
+                Schedule date
+              </label>
+              <input
+                id="scheduledPublishAt"
+                type="datetime-local"
+                value={scheduledPublishAt}
+                onChange={(e) => setScheduledPublishAt(e.target.value)}
+                className="border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
+              />
+            </div>
+          )}
+          {isEdit && (
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm('Are you sure you want to archive this item? It will be hidden from the public hub.')) {
+                    saveItem('ARCHIVED')
+                  }
+                }}
+                className="text-sm text-diligent-gray-4 hover:text-diligent-red"
+              >
+                Archive this item
+              </button>
+            </div>
+          )}
+        </>
+      )}
     </form>
   )
 }

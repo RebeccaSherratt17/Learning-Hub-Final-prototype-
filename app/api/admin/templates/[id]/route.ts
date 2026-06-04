@@ -66,6 +66,8 @@ export async function PUT(
       publishedAt,
       scheduledPublishAt,
       status,
+      restricted,
+      restrictedNote,
       seoTitle,
       seoDescription,
       sku,
@@ -91,6 +93,8 @@ export async function PUT(
       publishedAt?: string
       scheduledPublishAt?: string
       status?: string
+      restricted?: boolean
+      restrictedNote?: string
       seoTitle?: string
       seoDescription?: string
       sku?: string
@@ -169,6 +173,8 @@ export async function PUT(
           publishedAt: publishedAt ? new Date(publishedAt) : null,
           scheduledPublishAt: scheduledPublishAt ? new Date(scheduledPublishAt) : null,
           status: (status as ContentStatus) || 'DRAFT',
+          restricted: restricted ?? false,
+          restrictedNote: restrictedNote?.trim() || null,
           seoTitle: seoTitle?.trim() || null,
           seoDescription: seoDescription?.trim() || null,
           sku: sku?.trim() || null,
