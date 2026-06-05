@@ -5,12 +5,15 @@ interface FooterCTASectionProps {
   heading: string | null
   body: string | null
   ctaText: string | null
-  ctaUrl: string | null
 }
+
+const DEFAULT_BODY =
+  'Unlock unlimited access to the Education &amp; Templates Library &mdash; everything your board and governance team needs to stay informed, prepared and ahead of the curve.'
 
 export function FooterCTASection({
   heading,
   body,
+  ctaText,
 }: FooterCTASectionProps) {
   return (
     <section id="footer-cta" className="bg-diligent-gray-5 py-10">
@@ -20,11 +23,9 @@ export function FooterCTASection({
           <h2 className="text-heading-1 font-semibold text-white">
             {heading ?? 'Upskill your board today'}
           </h2>
-          <p className="mt-4 max-w-xl text-diligent-gray-3">
-            Unlock unlimited access to the Education &amp; Templates Library
-            &mdash; everything your board and governance team needs to stay
-            informed, prepared and ahead of the curve.
-          </p>
+          <div className="rich-text mt-4 max-w-xl text-diligent-gray-3">
+            <SafeHtml html={body ?? DEFAULT_BODY} />
+          </div>
           <p className="mt-3 max-w-xl text-diligent-gray-3">
             Got questions? Email{' '}
             <a
@@ -38,7 +39,7 @@ export function FooterCTASection({
 
         {/* Right column — demo request form */}
         <div>
-          <DemoRequestForm />
+          <DemoRequestForm ctaText={ctaText} />
         </div>
       </div>
     </section>

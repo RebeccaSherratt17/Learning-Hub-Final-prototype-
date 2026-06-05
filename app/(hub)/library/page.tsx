@@ -154,7 +154,6 @@ export default async function LibraryPage() {
         heading={settings?.footerHeading ?? null}
         body={settings?.footerBody ?? null}
         ctaText={settings?.footerCTAText ?? null}
-        ctaUrl={settings?.demoCTAUrl ?? null}
       />
     </>
   )

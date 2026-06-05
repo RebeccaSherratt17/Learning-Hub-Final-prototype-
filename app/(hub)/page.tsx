@@ -127,7 +127,6 @@ export default async function HubHomePage() {
         heading={settings?.footerHeading ?? null}
         body={settings?.footerBody ?? null}
         ctaText={settings?.footerCTAText ?? null}
-        ctaUrl={settings?.demoCTAUrl ?? null}
       />
     </>
   )

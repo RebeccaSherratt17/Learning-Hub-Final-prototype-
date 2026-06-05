@@ -472,30 +472,14 @@ model RelatedItem {
 model HubSettings {
   id String @id @default("hub_settings_singleton")
 
-  // Section 1: Hero
-  heroHeading    String? @db.Text
-  heroSubheading String? @db.Text
-  heroOverview   String? @db.Text
-  heroCTAText    String?
-  heroCTAUrl     String?
-
-  // Section 2: Popular & Featured
-  popularSectionHeading String?
-
-  // Section 3: Partners
-  partnersSectionHeading String?
-
-  // Section 4: Resource Library
+  // Resource Library
   librarySectionHeading String?
   librarySectionBody    String? @db.Text
 
-  // Section 7: Footer CTA
+  // Footer CTA
   footerHeading String?
   footerBody    String? @db.Text
   footerCTAText String?
-
-  // Global settings
-  demoCTAUrl String?
 
   updatedAt DateTime @updatedAt
 

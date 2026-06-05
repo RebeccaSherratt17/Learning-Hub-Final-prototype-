@@ -7,19 +7,11 @@ export default async function SettingsPage() {
   })
 
   const initialSettings = {
-    heroHeading: settings?.heroHeading ?? null,
-    heroSubheading: settings?.heroSubheading ?? null,
-    heroOverview: settings?.heroOverview ?? null,
-    heroCTAText: settings?.heroCTAText ?? null,
-    heroCTAUrl: settings?.heroCTAUrl ?? null,
-    popularSectionHeading: settings?.popularSectionHeading ?? null,
-    partnersSectionHeading: settings?.partnersSectionHeading ?? null,
     librarySectionHeading: settings?.librarySectionHeading ?? null,
     librarySectionBody: settings?.librarySectionBody ?? null,
     footerHeading: settings?.footerHeading ?? null,
     footerBody: settings?.footerBody ?? null,
     footerCTAText: settings?.footerCTAText ?? null,
-    demoCTAUrl: settings?.demoCTAUrl ?? null,
   }
 
   return (
@@ -29,7 +21,7 @@ export default async function SettingsPage() {
           Settings
         </h1>
         <p className="mt-1 text-diligent-gray-4">
-          Manage homepage copy and global settings.
+          Control key text across the Learning Hub — including the Resource Library heading and the footer call-to-action section.
         </p>
       </div>
 

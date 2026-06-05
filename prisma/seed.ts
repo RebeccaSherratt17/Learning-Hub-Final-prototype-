@@ -187,34 +187,16 @@ async function main() {
     create: {
       id: 'hub_settings_singleton',
 
-      // Section 1: Hero
-      heroHeading: 'Diligent Learning Hub',
-      heroSubheading:
-        'Explore educational courses, ready-to-use templates, and videos to develop your expertise and enhance board effectiveness across key governance, risk, and compliance topics.',
-      heroOverview:
-        'Our Learning Hub brings together practical tools and expert insights to help business leaders strengthen their governance, risk, and compliance practices. Here, you\u2019ll find a curated collection of ready-to-use templates, professionally crafted courses and videos drawn from our premium eLearning platform, the Education & Templates Library.\n\nWhether you\u2019re building foundational frameworks or refining board operations, these resources are designed to save time and improve effectiveness.',
-      heroCTAText: 'Explore Resource Library',
-      heroCTAUrl: '/library',
-
-      // Section 2: Popular & Featured
-      popularSectionHeading: 'Jump in: Popular and featured content',
-
-      // Section 3: Partners
-      partnersSectionHeading: 'Our educational partners',
-
-      // Section 4: Resource Library
+      // Resource Library
       librarySectionHeading: 'Full resource library',
       librarySectionBody:
         'Explore educational courses, ready-to-use templates, and videos to develop your expertise and enhance board effectiveness across key governance, risk, and compliance topics.',
 
-      // Section 7: Footer CTA
+      // Footer CTA
       footerHeading: 'Upskill your board today',
       footerBody:
         'Empower directors and executives with best practice education, templates and certifications \u2014 so every meeting is prepared, compliant and impactful.',
       footerCTAText: 'Request a demo',
-
-      // Global
-      demoCTAUrl: '', // TBC by Diligent team
     },
   })
   console.log('  Seeded hub settings')

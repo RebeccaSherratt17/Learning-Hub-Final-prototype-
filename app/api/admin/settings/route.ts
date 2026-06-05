@@ -35,19 +35,11 @@ export async function PUT(request: Request) {
 
     // Only allow known HubSettings fields
     const allowedFields = [
-      'heroHeading',
-      'heroSubheading',
-      'heroOverview',
-      'heroCTAText',
-      'heroCTAUrl',
-      'popularSectionHeading',
-      'partnersSectionHeading',
       'librarySectionHeading',
       'librarySectionBody',
       'footerHeading',
       'footerBody',
       'footerCTAText',
-      'demoCTAUrl',
     ] as const
 
     const data: Record<string, string | null> = {}

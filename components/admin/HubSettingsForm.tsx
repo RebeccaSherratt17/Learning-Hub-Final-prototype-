@@ -9,36 +9,20 @@ import RichTextEditor from '@/components/admin/RichTextEditor'
 
 interface HubSettingsFormProps {
   initialSettings: {
-    heroHeading: string | null
-    heroSubheading: string | null
-    heroOverview: string | null
-    heroCTAText: string | null
-    heroCTAUrl: string | null
-    popularSectionHeading: string | null
-    partnersSectionHeading: string | null
     librarySectionHeading: string | null
     librarySectionBody: string | null
     footerHeading: string | null
     footerBody: string | null
     footerCTAText: string | null
-    demoCTAUrl: string | null
   }
 }
 
 type SettingsData = {
-  heroHeading: string
-  heroSubheading: string
-  heroOverview: string
-  heroCTAText: string
-  heroCTAUrl: string
-  popularSectionHeading: string
-  partnersSectionHeading: string
   librarySectionHeading: string
   librarySectionBody: string
   footerHeading: string
   footerBody: string
   footerCTAText: string
-  demoCTAUrl: string
 }
 
 // ---------------------------------------------------------------------------
@@ -47,19 +31,11 @@ type SettingsData = {
 
 function toFormData(settings: HubSettingsFormProps['initialSettings']): SettingsData {
   return {
-    heroHeading: settings.heroHeading ?? '',
-    heroSubheading: settings.heroSubheading ?? '',
-    heroOverview: settings.heroOverview ?? '',
-    heroCTAText: settings.heroCTAText ?? '',
-    heroCTAUrl: settings.heroCTAUrl ?? '',
-    popularSectionHeading: settings.popularSectionHeading ?? '',
-    partnersSectionHeading: settings.partnersSectionHeading ?? '',
     librarySectionHeading: settings.librarySectionHeading ?? '',
     librarySectionBody: settings.librarySectionBody ?? '',
     footerHeading: settings.footerHeading ?? '',
     footerBody: settings.footerBody ?? '',
     footerCTAText: settings.footerCTAText ?? '',
-    demoCTAUrl: settings.demoCTAUrl ?? '',
   }
 }
 
@@ -97,27 +73,6 @@ function TextInput({
   )
 }
 
-function TextArea({
-  id,
-  value,
-  onChange,
-  rows,
-}: {
-  id: string
-  value: string
-  onChange: (value: string) => void
-  rows: number
-}) {
-  return (
-    <textarea
-      id={id}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      rows={rows}
-      className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
-    />
-  )
-}
 
 function SectionCard({ heading, children }: { heading: string; children: React.ReactNode }) {
   return (
@@ -196,82 +151,8 @@ export default function HubSettingsForm({ initialSettings }: HubSettingsFormProp
         </div>
       )}
 
-      {/* Section 1: Hero */}
-      <SectionCard heading="Section 1: Hero">
-        <div>
-          <FieldLabel htmlFor="heroHeading">Heading</FieldLabel>
-          <RichTextEditor
-            id="heroHeading"
-            value={formData.heroHeading}
-            onChange={(v) => updateField('heroHeading', v)}
-          />
-        </div>
-        <div>
-          <FieldLabel htmlFor="heroSubheading">Subheading</FieldLabel>
-          <RichTextEditor
-            id="heroSubheading"
-            value={formData.heroSubheading}
-            onChange={(v) => updateField('heroSubheading', v)}
-          />
-        </div>
-        <div>
-          <FieldLabel htmlFor="heroOverview">Overview text</FieldLabel>
-          <RichTextEditor
-            id="heroOverview"
-            value={formData.heroOverview}
-            onChange={(v) => updateField('heroOverview', v)}
-          />
-        </div>
-        <div>
-          <FieldLabel htmlFor="heroCTAText">CTA button label</FieldLabel>
-          <TextInput
-            id="heroCTAText"
-            value={formData.heroCTAText}
-            onChange={(v) => updateField('heroCTAText', v)}
-          />
-          <p className="mt-1 text-xs text-diligent-gray-3">
-            Leave empty to hide the button
-          </p>
-        </div>
-        <div>
-          <FieldLabel htmlFor="heroCTAUrl">CTA button link</FieldLabel>
-          <TextInput
-            id="heroCTAUrl"
-            value={formData.heroCTAUrl}
-            onChange={(v) => updateField('heroCTAUrl', v)}
-          />
-          <p className="mt-1 text-xs text-diligent-gray-3">
-            Use /library to link to the resource library, or a full URL
-          </p>
-        </div>
-      </SectionCard>
-
-      {/* Section 2: Popular & Featured */}
-      <SectionCard heading="Section 2: Popular & featured">
-        <div>
-          <FieldLabel htmlFor="popularSectionHeading">Section heading</FieldLabel>
-          <TextInput
-            id="popularSectionHeading"
-            value={formData.popularSectionHeading}
-            onChange={(v) => updateField('popularSectionHeading', v)}
-          />
-        </div>
-      </SectionCard>
-
-      {/* Section 3: Educational Partners */}
-      <SectionCard heading="Section 3: Educational partners">
-        <div>
-          <FieldLabel htmlFor="partnersSectionHeading">Section heading</FieldLabel>
-          <TextInput
-            id="partnersSectionHeading"
-            value={formData.partnersSectionHeading}
-            onChange={(v) => updateField('partnersSectionHeading', v)}
-          />
-        </div>
-      </SectionCard>
-
-      {/* Section 4: Resource Library */}
-      <SectionCard heading="Section 4: Resource library">
+      {/* Resource Library */}
+      <SectionCard heading="Resource library">
         <div>
           <FieldLabel htmlFor="librarySectionHeading">Section heading</FieldLabel>
           <TextInput
@@ -290,8 +171,8 @@ export default function HubSettingsForm({ initialSettings }: HubSettingsFormProp
         </div>
       </SectionCard>
 
-      {/* Section 7: Footer CTA */}
-      <SectionCard heading="Section 7: Footer CTA">
+      {/* Footer CTA */}
+      <SectionCard heading="Footer CTA">
         <div>
           <FieldLabel htmlFor="footerHeading">Heading</FieldLabel>
           <TextInput
@@ -315,22 +196,6 @@ export default function HubSettingsForm({ initialSettings }: HubSettingsFormProp
             value={formData.footerCTAText}
             onChange={(v) => updateField('footerCTAText', v)}
           />
-        </div>
-      </SectionCard>
-
-      {/* Global Settings */}
-      <SectionCard heading="Global settings">
-        <div>
-          <FieldLabel htmlFor="demoCTAUrl">Demo request URL</FieldLabel>
-          <TextInput
-            id="demoCTAUrl"
-            value={formData.demoCTAUrl}
-            onChange={(v) => updateField('demoCTAUrl', v)}
-            type="url"
-          />
-          <p className="mt-1 text-xs text-diligent-gray-3">
-            The URL visitors are sent to when clicking &quot;Request a demo&quot;
-          </p>
         </div>
       </SectionCard>
 

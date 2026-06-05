@@ -4,7 +4,7 @@ import { useState, type FormEvent } from 'react'
 
 type Status = 'idle' | 'submitting' | 'success' | 'error'
 
-export function DemoRequestForm() {
+export function DemoRequestForm({ ctaText }: { ctaText?: string | null }) {
   const [status, setStatus] = useState<Status>('idle')
   const [errorMsg, setErrorMsg] = useState('')
 
@@ -227,7 +227,7 @@ export function DemoRequestForm() {
         disabled={status === 'submitting'}
         className="mt-2 inline-flex w-full items-center justify-center rounded-sm bg-diligent-red px-6 py-3 text-sm font-medium text-white no-underline transition hover:bg-diligent-red-2 hover:no-underline focus-visible:bg-diligent-red-2 focus-visible:no-underline disabled:opacity-60"
       >
-        {status === 'submitting' ? 'Submitting...' : 'Request a demo'}
+        {status === 'submitting' ? 'Submitting...' : (ctaText || 'Request a demo')}
       </button>
     </form>
   )
