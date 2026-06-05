@@ -62,22 +62,27 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const resolvedParams = await params
-  const lp = await prisma.learningPath.findFirst({
-    where: { slug: resolvedParams.slug, status: ContentStatus.PUBLISHED },
-    select: {
-      title: true,
-      seoTitle: true,
-      seoDescription: true,
-      description: true,
-      ogImageUrl: true,
-      thumbnailUrl: true,
-    },
-  })
+  const [lp, settings] = await Promise.all([
+    prisma.learningPath.findFirst({
+      where: { slug: resolvedParams.slug, status: ContentStatus.PUBLISHED },
+      select: {
+        title: true,
+        seoTitle: true,
+        seoDescription: true,
+        description: true,
+        ogImageUrl: true,
+        thumbnailUrl: true,
+      },
+    }),
+    prisma.hubSettings.findFirst({
+      select: { defaultSeoTitle: true, defaultSeoDescription: true },
+    }),
+  ])
 
   if (!lp) return { title: 'Learning path not found' }
 
-  const title = lp.seoTitle || lp.title
-  const description = lp.seoDescription || lp.description?.slice(0, 160)
+  const title = lp.seoTitle || lp.title || settings?.defaultSeoTitle || undefined
+  const description = lp.seoDescription || lp.description?.slice(0, 160) || settings?.defaultSeoDescription || undefined
   const image = lp.ogImageUrl || lp.thumbnailUrl
 
   return {

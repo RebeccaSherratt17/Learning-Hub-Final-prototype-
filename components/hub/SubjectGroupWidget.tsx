@@ -6,20 +6,7 @@ import { Icon } from '@/components/ui/Icon'
 import { ContentCard } from '@/components/hub/ContentCard'
 import { subjectGroupConfig } from '@/components/hub/subjectGroupConfig'
 import type { ContentItem } from '@/types/content'
-
-/** Preserve acronyms (e.g. "AI") and lowercase the rest */
-const PRESERVE = new Set(['AI', 'ESG', 'ERM', 'GRC', 'IPO'])
-
-function toSentenceCase(str: string): string {
-  return str
-    .split(' ')
-    .map((word, i) => {
-      if (PRESERVE.has(word)) return word
-      if (i === 0) return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-      return word.toLowerCase()
-    })
-    .join(' ')
-}
+import { toSentenceCase } from '@/lib/toSentenceCase'
 
 interface SubjectInfo {
   id: string
@@ -33,7 +20,6 @@ interface SubjectGroupWidgetProps {
   subjects: SubjectInfo[]
   items: ContentItem[]
   activeOrgTypeId: string
-  activeOrgTypeSlug: string
 }
 
 export function SubjectGroupWidget({
@@ -42,7 +28,6 @@ export function SubjectGroupWidget({
   subjects,
   items,
   activeOrgTypeId,
-  activeOrgTypeSlug,
 }: SubjectGroupWidgetProps) {
   const router = useRouter()
   const config = subjectGroupConfig[groupSlug]
@@ -53,7 +38,12 @@ export function SubjectGroupWidget({
 
   if (!config) return null
 
-  const seeAllHref = `/library?subject=${groupSlug}&orgType=${activeOrgTypeSlug}`
+  const seeAllHref = (() => {
+    const params = new URLSearchParams()
+    subjects.forEach((s) => params.append('subject', s.id))
+    if (activeOrgTypeId) params.set('orgType', activeOrgTypeId)
+    return `/library?${params.toString()}`
+  })()
 
   // Fetch filtered content when a sub-topic pill is clicked
   useEffect(() => {

@@ -51,22 +51,27 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const resolvedParams = await params
-  const video = await prisma.video.findFirst({
-    where: { slug: resolvedParams.slug, status: ContentStatus.PUBLISHED },
-    select: {
-      title: true,
-      seoTitle: true,
-      seoDescription: true,
-      description: true,
-      ogImageUrl: true,
-      thumbnailUrl: true,
-    },
-  })
+  const [video, settings] = await Promise.all([
+    prisma.video.findFirst({
+      where: { slug: resolvedParams.slug, status: ContentStatus.PUBLISHED },
+      select: {
+        title: true,
+        seoTitle: true,
+        seoDescription: true,
+        description: true,
+        ogImageUrl: true,
+        thumbnailUrl: true,
+      },
+    }),
+    prisma.hubSettings.findFirst({
+      select: { defaultSeoTitle: true, defaultSeoDescription: true },
+    }),
+  ])
 
   if (!video) return { title: 'Video not found' }
 
-  const title = video.seoTitle || video.title
-  const description = video.seoDescription || video.description?.slice(0, 160)
+  const title = video.seoTitle || video.title || settings?.defaultSeoTitle || undefined
+  const description = video.seoDescription || video.description?.slice(0, 160) || settings?.defaultSeoDescription || undefined
   const image = video.ogImageUrl || video.thumbnailUrl
 
   return {

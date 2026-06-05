@@ -197,6 +197,12 @@ async function main() {
       footerBody:
         'Empower directors and executives with best practice education, templates and certifications \u2014 so every meeting is prepared, compliant and impactful.',
       footerCTAText: 'Request a demo',
+      footerEmail: 'certifications@diligent.com',
+
+      // Default SEO
+      defaultSeoTitle: 'Diligent Learning Hub',
+      defaultSeoDescription:
+        'Explore educational courses, ready-to-use templates, and videos to develop your expertise and enhance board effectiveness across key governance, risk, and compliance topics.',
     },
   })
   console.log('  Seeded hub settings')

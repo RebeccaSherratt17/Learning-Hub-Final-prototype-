@@ -12,6 +12,9 @@ export default async function SettingsPage() {
     footerHeading: settings?.footerHeading ?? null,
     footerBody: settings?.footerBody ?? null,
     footerCTAText: settings?.footerCTAText ?? null,
+    footerEmail: settings?.footerEmail ?? null,
+    defaultSeoTitle: settings?.defaultSeoTitle ?? null,
+    defaultSeoDescription: settings?.defaultSeoDescription ?? null,
   }
 
   return (

@@ -34,11 +34,6 @@ export function HomepageContent({
 
   const isLoading = isPending || isFetching
 
-  const activeOrgTypeSlug = useMemo(() => {
-    const active = orgTypes.find((o) => o.id === activeOrgTypeId)
-    return active?.slug ?? 'public-company'
-  }, [orgTypes, activeOrgTypeId])
-
   const handleOrgTypeChange = useCallback(
     (id: string) => {
       if (id === activeOrgTypeId) return
@@ -106,7 +101,6 @@ export function HomepageContent({
           subjects={group.subjects}
           items={itemsForGroup(group.slug)}
           activeOrgTypeId={activeOrgTypeId}
-          activeOrgTypeSlug={activeOrgTypeSlug}
         />
       ))}
     </div>

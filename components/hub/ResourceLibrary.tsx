@@ -59,7 +59,16 @@ export function filterItems(
   search: string,
   filters: FilterState,
   globalRegionId?: string,
+  orgTypeSubjectIds?: Set<string>,
 ): ContentItem[] {
+  // Split selected subjects into org-type IDs and topic IDs so they apply as AND
+  const selectedOrgTypes = orgTypeSubjectIds
+    ? filters.subjects.filter((id) => orgTypeSubjectIds.has(id))
+    : []
+  const selectedTopics = orgTypeSubjectIds
+    ? filters.subjects.filter((id) => !orgTypeSubjectIds.has(id))
+    : filters.subjects
+
   return items.filter((item) => {
     // Search term (case-insensitive substring match on title)
     if (search && !item.title?.toLowerCase().includes(search.toLowerCase())) {
@@ -87,10 +96,17 @@ export function filterItems(
         return false
       }
     }
-    // Subject filter (OR within)
-    if (filters.subjects.length > 0) {
+    // Organization type filter (OR within org types, AND with topic subjects)
+    if (selectedOrgTypes.length > 0) {
       const itemSubjectIds = item.subjects?.map((s) => s._id) ?? []
-      if (!filters.subjects.some((id) => itemSubjectIds.includes(id))) {
+      if (!selectedOrgTypes.some((id) => itemSubjectIds.includes(id))) {
+        return false
+      }
+    }
+    // Subject/topic filter (OR within topics, AND with org types)
+    if (selectedTopics.length > 0) {
+      const itemSubjectIds = item.subjects?.map((s) => s._id) ?? []
+      if (!selectedTopics.some((id) => itemSubjectIds.includes(id))) {
         return false
       }
     }
@@ -143,15 +159,23 @@ export function ResourceLibrary({
   const [sort, setSort] = useState<SortOption>(
     (searchParams.get('sort') as SortOption) || 'newest',
   )
-  const [filters, setFilters] = useState<FilterState>(() => ({
-    types: searchParams
-      .getAll('type')
-      .map((t) => typeParamMap[t] ?? t),
-    personas: searchParams.getAll('persona'),
-    regions: searchParams.getAll('region'),
-    subjects: searchParams.getAll('subject'),
-    level: searchParams.get('level') ?? '',
-  }))
+  const [filters, setFilters] = useState<FilterState>(() => {
+    const urlSubjects = searchParams.getAll('subject')
+    const orgType = searchParams.get('orgType')
+    // Merge orgType into subjects array — filterItems splits them back out using orgTypeSubjectIds
+    const allSubjects = orgType && !urlSubjects.includes(orgType)
+      ? [...urlSubjects, orgType]
+      : urlSubjects
+    return {
+      types: searchParams
+        .getAll('type')
+        .map((t) => typeParamMap[t] ?? t),
+      personas: searchParams.getAll('persona'),
+      regions: searchParams.getAll('region'),
+      subjects: allSubjects,
+      level: searchParams.get('level') ?? '',
+    }
+  })
   const [page, setPage] = useState(
     Number(searchParams.get('page')) || 1,
   )
@@ -194,15 +218,19 @@ export function ResourceLibrary({
     const urlPersonas = searchParams.getAll('persona')
     const urlRegions = searchParams.getAll('region')
     const urlSubjects = searchParams.getAll('subject')
+    const orgType = searchParams.get('orgType')
+    const combinedSubjects = orgType && !urlSubjects.includes(orgType)
+      ? [...urlSubjects, orgType]
+      : urlSubjects
     const changed =
       urlPersonas.length !== filters.personas.length ||
       urlPersonas.some((v, i) => v !== filters.personas[i]) ||
       urlRegions.length !== filters.regions.length ||
       urlRegions.some((v, i) => v !== filters.regions[i]) ||
-      urlSubjects.length !== filters.subjects.length ||
-      urlSubjects.some((v, i) => v !== filters.subjects[i])
+      combinedSubjects.length !== filters.subjects.length ||
+      combinedSubjects.some((v, i) => v !== filters.subjects[i])
     if (changed) {
-      setFilters((prev) => ({ ...prev, personas: urlPersonas, regions: urlRegions, subjects: urlSubjects }))
+      setFilters((prev) => ({ ...prev, personas: urlPersonas, regions: urlRegions, subjects: combinedSubjects }))
       setPage(1)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -295,10 +323,16 @@ export function ResourceLibrary({
     [regions],
   )
 
+  // Collect org-type subject IDs so filterItems can apply them as AND with topic subjects
+  const orgTypeSubjectIds = useMemo(
+    () => new Set(subjects.filter((s) => s.group === 'organization-type').map((s) => s._id)),
+    [subjects],
+  )
+
   // Compute filtered, sorted, paginated items
   const filtered = useMemo(
-    () => filterItems(items, search, filters, globalRegionId),
-    [items, search, filters, globalRegionId],
+    () => filterItems(items, search, filters, globalRegionId, orgTypeSubjectIds),
+    [items, search, filters, globalRegionId, orgTypeSubjectIds],
   )
   const sorted = useMemo(() => sortItems(filtered, sort), [filtered, sort])
   const totalPages = Math.ceil(sorted.length / ITEMS_PER_PAGE)

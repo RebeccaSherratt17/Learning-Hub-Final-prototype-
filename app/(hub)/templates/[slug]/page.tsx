@@ -67,21 +67,26 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const resolvedParams = await params
-  const template = await prisma.template.findFirst({
-    where: { slug: resolvedParams.slug, status: ContentStatus.PUBLISHED },
-    select: {
-      title: true,
-      seoTitle: true,
-      seoDescription: true,
-      description: true,
-      ogImageUrl: true,
-    },
-  })
+  const [template, settings] = await Promise.all([
+    prisma.template.findFirst({
+      where: { slug: resolvedParams.slug, status: ContentStatus.PUBLISHED },
+      select: {
+        title: true,
+        seoTitle: true,
+        seoDescription: true,
+        description: true,
+        ogImageUrl: true,
+      },
+    }),
+    prisma.hubSettings.findFirst({
+      select: { defaultSeoTitle: true, defaultSeoDescription: true },
+    }),
+  ])
 
   if (!template) return { title: 'Template not found' }
 
-  const title = template.seoTitle || template.title
-  const description = template.seoDescription || template.description?.slice(0, 160)
+  const title = template.seoTitle || template.title || settings?.defaultSeoTitle || undefined
+  const description = template.seoDescription || template.description?.slice(0, 160) || settings?.defaultSeoDescription || undefined
 
   return {
     title,

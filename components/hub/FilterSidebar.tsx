@@ -3,6 +3,7 @@
 import { Icon } from '@/components/ui/Icon'
 import { subjectGroupLabels } from '@/types/content'
 import type { FilterState } from '@/components/hub/FilterBar'
+import { toSentenceCase } from '@/lib/toSentenceCase'
 
 interface TaxonomyItem {
   _id: string
@@ -20,19 +21,6 @@ interface FilterSidebarProps {
   regions: TaxonomyItem[]
   subjects: SubjectItem[]
   filterCounts: Record<string, number>
-}
-
-function toSentenceCase(str: string): string {
-  if (!str) return str
-  return str
-    .split(' ')
-    .map((word, i) => {
-      if (word.length >= 2 && word === word.toUpperCase() && /^[A-Z]+$/.test(word)) return word
-      return i === 0
-        ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-        : word.toLowerCase()
-    })
-    .join(' ')
 }
 
 function toggleValue(arr: string[], value: string): string[] {

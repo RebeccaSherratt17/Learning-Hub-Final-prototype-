@@ -52,22 +52,27 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const resolvedParams = await params
-  const course = await prisma.course.findFirst({
-    where: { slug: resolvedParams.slug, status: ContentStatus.PUBLISHED },
-    select: {
-      title: true,
-      seoTitle: true,
-      seoDescription: true,
-      description: true,
-      ogImageUrl: true,
-      thumbnailUrl: true,
-    },
-  })
+  const [course, settings] = await Promise.all([
+    prisma.course.findFirst({
+      where: { slug: resolvedParams.slug, status: ContentStatus.PUBLISHED },
+      select: {
+        title: true,
+        seoTitle: true,
+        seoDescription: true,
+        description: true,
+        ogImageUrl: true,
+        thumbnailUrl: true,
+      },
+    }),
+    prisma.hubSettings.findFirst({
+      select: { defaultSeoTitle: true, defaultSeoDescription: true },
+    }),
+  ])
 
   if (!course) return { title: 'Course not found' }
 
-  const title = course.seoTitle || course.title
-  const description = course.seoDescription || course.description?.slice(0, 160)
+  const title = course.seoTitle || course.title || settings?.defaultSeoTitle || undefined
+  const description = course.seoDescription || course.description?.slice(0, 160) || settings?.defaultSeoDescription || undefined
   const image = course.ogImageUrl || course.thumbnailUrl
 
   return {

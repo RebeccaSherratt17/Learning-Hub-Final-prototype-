@@ -14,6 +14,9 @@ interface HubSettingsFormProps {
     footerHeading: string | null
     footerBody: string | null
     footerCTAText: string | null
+    footerEmail: string | null
+    defaultSeoTitle: string | null
+    defaultSeoDescription: string | null
   }
 }
 
@@ -23,6 +26,9 @@ type SettingsData = {
   footerHeading: string
   footerBody: string
   footerCTAText: string
+  footerEmail: string
+  defaultSeoTitle: string
+  defaultSeoDescription: string
 }
 
 // ---------------------------------------------------------------------------
@@ -36,6 +42,9 @@ function toFormData(settings: HubSettingsFormProps['initialSettings']): Settings
     footerHeading: settings.footerHeading ?? '',
     footerBody: settings.footerBody ?? '',
     footerCTAText: settings.footerCTAText ?? '',
+    footerEmail: settings.footerEmail ?? '',
+    defaultSeoTitle: settings.defaultSeoTitle ?? '',
+    defaultSeoDescription: settings.defaultSeoDescription ?? '',
   }
 }
 
@@ -197,6 +206,39 @@ export default function HubSettingsForm({ initialSettings }: HubSettingsFormProp
             onChange={(v) => updateField('footerCTAText', v)}
           />
         </div>
+        <div>
+          <FieldLabel htmlFor="footerEmail">Footer email address</FieldLabel>
+          <TextInput
+            id="footerEmail"
+            value={formData.footerEmail}
+            onChange={(v) => updateField('footerEmail', v)}
+          />
+        </div>
+      </SectionCard>
+
+      {/* Default SEO */}
+      <SectionCard heading="Default SEO">
+        <div>
+          <FieldLabel htmlFor="defaultSeoTitle">Default SEO meta title</FieldLabel>
+          <TextInput
+            id="defaultSeoTitle"
+            value={formData.defaultSeoTitle}
+            onChange={(v) => updateField('defaultSeoTitle', v)}
+          />
+        </div>
+        <div>
+          <FieldLabel htmlFor="defaultSeoDescription">Default SEO meta description</FieldLabel>
+          <textarea
+            id="defaultSeoDescription"
+            value={formData.defaultSeoDescription}
+            onChange={(e) => updateField('defaultSeoDescription', e.target.value)}
+            rows={3}
+            className="w-full border border-diligent-gray-2 rounded px-3 py-2 text-sm focus:border-diligent-red focus:outline-none focus:ring-1 focus:ring-diligent-red"
+          />
+        </div>
+        <p className="text-xs text-diligent-gray-3">
+          Used as a fallback when individual content items do not have their own SEO fields set.
+        </p>
       </SectionCard>
 
       {/* Submit */}

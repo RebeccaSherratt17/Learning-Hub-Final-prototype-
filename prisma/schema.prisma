@@ -480,6 +480,11 @@ model HubSettings {
   footerHeading String?
   footerBody    String? @db.Text
   footerCTAText String?
+  footerEmail   String?
+
+  // Default SEO
+  defaultSeoTitle       String?
+  defaultSeoDescription String? @db.Text
 
   updatedAt DateTime @updatedAt
 

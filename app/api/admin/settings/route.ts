@@ -40,6 +40,9 @@ export async function PUT(request: Request) {
       'footerHeading',
       'footerBody',
       'footerCTAText',
+      'footerEmail',
+      'defaultSeoTitle',
+      'defaultSeoDescription',
     ] as const
 
     const data: Record<string, string | null> = {}
