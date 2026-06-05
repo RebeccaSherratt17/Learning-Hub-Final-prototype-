@@ -15,6 +15,7 @@ import {
   LearningPathProgress,
   type LearningPathItemData,
 } from '@/components/hub/LearningPathProgress'
+import { buildLearningPathJsonLd, buildBreadcrumbJsonLd } from '@/lib/jsonld'
 
 const LP_INCLUDES = {
   subjects: {
@@ -171,25 +172,28 @@ export default async function LearningPathPage({ params, searchParams }: PagePro
   const mandatoryCount = contentItems.filter((i) => !i.isElective).length
   const electiveCount = contentItems.filter((i) => i.isElective).length
 
-  // JSON-LD structured data (Course schema)
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Course',
-    name: learningPath.title,
-    description: learningPath.description ?? undefined,
-    ...(learningPath.publishedAt
-      ? { datePublished: learningPath.publishedAt.toISOString() }
-      : {}),
-    ...(learningPath.estimatedCompletionTime
-      ? { timeRequired: learningPath.estimatedCompletionTime }
-      : {}),
-    numberOfCredits: contentItems.length,
-    provider: {
-      '@type': 'Organization',
-      name: 'Diligent',
-      url: 'https://www.diligent.com',
-    },
+  // JSON-LD
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://learning-hub-final-prototype-3zio4xt7t.vercel.app'
+  const itemTitles = new Map<string, string>()
+  for (const item of itemsWithContent) {
+    if (item.contentId && item.contentTitle) {
+      itemTitles.set(item.contentId, item.contentTitle)
+    }
   }
+  const jsonLd = buildLearningPathJsonLd({
+    title: learningPath.title,
+    description: learningPath.description,
+    thumbnailUrl: learningPath.thumbnailUrl,
+    publishedAt: learningPath.publishedAt,
+    estimatedCompletionTime: learningPath.estimatedCompletionTime,
+    items: learningPath.items,
+    itemTitles,
+  })
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: 'Home', url: siteUrl },
+    { name: 'Learning paths', url: `${siteUrl}/library?type=LEARNING_PATH` },
+    { name: learningPath.title, url: `${siteUrl}/learning-paths/${learningPath.slug}` },
+  ])
 
   return (
     <>
@@ -199,7 +203,7 @@ export default async function LearningPathPage({ params, searchParams }: PagePro
         <Breadcrumb
           items={[
             { label: 'Home', href: '/' },
-            { label: 'Learning Paths', href: '/?type=LEARNING_PATH' },
+            { label: 'Learning paths', href: '/library?type=LEARNING_PATH#resource-library' },
             { label: learningPath.title },
           ]}
         />
@@ -374,6 +378,10 @@ export default async function LearningPathPage({ params, searchParams }: PagePro
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
     </>
   )

@@ -6,6 +6,7 @@ import { prisma } from '@/lib/db'
 import type { ContentItem } from '@/types/content'
 import { ResourceLibrary } from '@/components/hub/ResourceLibrary'
 import { FooterCTASection } from '@/components/hub/FooterCTASection'
+import { buildCollectionPageJsonLd } from '@/lib/jsonld'
 import {
   toCourseItem,
   toTemplateItem,
@@ -133,6 +134,8 @@ export default async function LibraryPage() {
     })
   }
 
+  const collectionJsonLd = buildCollectionPageJsonLd(settings?.librarySectionBody)
+
   return (
     <>
       {/* Section 1: Full Resource Library */}
@@ -155,6 +158,11 @@ export default async function LibraryPage() {
         body={settings?.footerBody ?? null}
         ctaText={settings?.footerCTAText ?? null}
         email={settings?.footerEmail ?? null}
+      />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
       />
     </>
   )

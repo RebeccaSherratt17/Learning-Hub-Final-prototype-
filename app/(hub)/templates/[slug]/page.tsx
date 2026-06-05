@@ -15,6 +15,7 @@ import { TemplateShareButtons } from '@/components/hub/TemplateShareButtons'
 import { GateProvider } from '@/components/hub/GateContext'
 import { TemplateDownloadSection } from '@/components/hub/TemplateDownloadSection'
 import { TemplateRightColumn } from '@/components/hub/TemplateRightColumn'
+import { buildTemplateJsonLd, buildBreadcrumbJsonLd } from '@/lib/jsonld'
 
 const TEMPLATE_INCLUDES = {
   subjects: {
@@ -175,14 +176,20 @@ export default async function TemplatePage({ params, searchParams }: PageProps) 
     template.publishedAt ?? template.updatedAt,
   )
 
-  // JSON-LD structured data
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Article',
-    name: template.title,
-    description: template.description ?? undefined,
-    datePublished: template.publishedAt?.toISOString() ?? undefined,
-  }
+  // JSON-LD
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://learning-hub-final-prototype-3zio4xt7t.vercel.app'
+  const jsonLd = buildTemplateJsonLd({
+    title: template.title,
+    description: template.description,
+    thumbnailUrl: template.thumbnailUrl,
+    publishedAt: template.publishedAt,
+    fileType: template.fileType,
+  })
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: 'Home', url: siteUrl },
+    { name: 'Templates', url: `${siteUrl}/library?type=TEMPLATE` },
+    { name: template.title, url: `${siteUrl}/templates/${template.slug}` },
+  ])
 
   return (
     <>
@@ -192,7 +199,7 @@ export default async function TemplatePage({ params, searchParams }: PageProps) 
         <Breadcrumb
           items={[
             { label: 'Home', href: '/' },
-            { label: 'Templates', href: '/?type=TEMPLATE' },
+            { label: 'Templates', href: '/library?type=TEMPLATE#resource-library' },
             { label: template.title },
           ]}
         />
@@ -350,6 +357,10 @@ export default async function TemplatePage({ params, searchParams }: PageProps) 
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
     </>
   )

@@ -15,6 +15,7 @@ import { ShareButtons } from '@/components/hub/ShareButtons'
 import { GateProvider } from '@/components/hub/GateContext'
 import { VideoRightColumn } from '@/components/hub/VideoRightColumn'
 import { GatedPrompt } from '@/components/hub/GatedPrompt'
+import { buildVideoJsonLd, buildBreadcrumbJsonLd } from '@/lib/jsonld'
 
 const VIDEO_INCLUDES = {
   subjects: {
@@ -161,16 +162,21 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
     ? new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric' }).format(video.publishedAt)
     : null
 
-  // JSON-LD structured data (VideoObject)
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'VideoObject',
-    name: video.title,
-    description: video.description ?? undefined,
-    ...(video.thumbnailUrl ? { thumbnailUrl: video.thumbnailUrl } : {}),
-    ...(video.publishedAt ? { uploadDate: video.publishedAt.toISOString() } : {}),
-    ...(video.duration ? { duration: video.duration } : {}),
-  }
+  // JSON-LD
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://learning-hub-final-prototype-3zio4xt7t.vercel.app'
+  const jsonLd = buildVideoJsonLd({
+    title: video.title,
+    description: video.description,
+    thumbnailUrl: video.thumbnailUrl,
+    publishedAt: video.publishedAt,
+    duration: video.duration,
+    vidyardUrl: video.vidyardUrl,
+  })
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: 'Home', url: siteUrl },
+    { name: 'Videos', url: `${siteUrl}/library?type=VIDEO` },
+    { name: video.title, url: `${siteUrl}/videos/${video.slug}` },
+  ])
 
   return (
     <>
@@ -180,7 +186,7 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
         <Breadcrumb
           items={[
             { label: 'Home', href: '/' },
-            { label: 'Videos', href: '/?type=VIDEO' },
+            { label: 'Videos', href: '/library?type=VIDEO#resource-library' },
             { label: video.title },
           ]}
         />
@@ -346,6 +352,10 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
     </>
   )

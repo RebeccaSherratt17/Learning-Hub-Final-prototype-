@@ -15,6 +15,7 @@ import { ShareButtons } from '@/components/hub/ShareButtons'
 import { GateProvider } from '@/components/hub/GateContext'
 import { CourseRightColumn } from '@/components/hub/CourseRightColumn'
 import { GatedPrompt } from '@/components/hub/GatedPrompt'
+import { buildCourseJsonLd, buildBreadcrumbJsonLd } from '@/lib/jsonld'
 
 const COURSE_INCLUDES = {
   author: true,
@@ -162,17 +163,20 @@ export default async function CoursePage({ params, searchParams }: PageProps) {
     ? new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric' }).format(course.publishedAt)
     : null
 
-  // JSON-LD (Course schema)
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Course',
-    name: course.title,
-    description: course.description ?? undefined,
-    ...(course.thumbnailUrl ? { image: course.thumbnailUrl } : {}),
-    ...(course.publishedAt ? { datePublished: course.publishedAt.toISOString() } : {}),
-    ...(course.author ? { provider: { '@type': 'Organization', name: course.author.name } } : {}),
-    ...(course.estimatedDuration ? { timeRequired: course.estimatedDuration } : {}),
-  }
+  // JSON-LD
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://learning-hub-final-prototype-3zio4xt7t.vercel.app'
+  const jsonLd = buildCourseJsonLd({
+    title: course.title,
+    description: course.description,
+    thumbnailUrl: course.thumbnailUrl,
+    publishedAt: course.publishedAt,
+    estimatedDuration: course.estimatedDuration,
+  })
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: 'Home', url: siteUrl },
+    { name: 'Courses', url: `${siteUrl}/library?type=COURSE` },
+    { name: course.title, url: `${siteUrl}/courses/${course.slug}` },
+  ])
 
   return (
     <>
@@ -182,7 +186,7 @@ export default async function CoursePage({ params, searchParams }: PageProps) {
         <Breadcrumb
           items={[
             { label: 'Home', href: '/' },
-            { label: 'Courses', href: '/?type=COURSE' },
+            { label: 'Courses', href: '/library?type=COURSE#resource-library' },
             { label: course.title },
           ]}
         />
@@ -346,6 +350,10 @@ export default async function CoursePage({ params, searchParams }: PageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
     </>
   )

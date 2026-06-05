@@ -13,6 +13,7 @@ import {
 import { HomepageHero } from '@/components/hub/HomepageHero'
 import { HomepageContent } from '@/components/hub/HomepageContent'
 import { FooterCTASection } from '@/components/hub/FooterCTASection'
+import { buildWebsiteJsonLd } from '@/lib/jsonld'
 
 export default async function HubHomePage() {
   const [
@@ -109,6 +110,8 @@ export default async function HubHomePage() {
     url: p.linkUrl,
   }))
 
+  const websiteJsonLd = buildWebsiteJsonLd(settings?.defaultSeoDescription)
+
   return (
     <>
       {/* Section 1: Hero / Search */}
@@ -128,6 +131,11 @@ export default async function HubHomePage() {
         body={settings?.footerBody ?? null}
         ctaText={settings?.footerCTAText ?? null}
         email={settings?.footerEmail ?? null}
+      />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
       />
     </>
   )
