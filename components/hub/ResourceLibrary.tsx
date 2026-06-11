@@ -359,8 +359,7 @@ export function ResourceLibrary({
         {partners.length > 0 && (
           <div className="mb-6 flex items-center gap-4" style={{ height: '48px' }}>
             <span
-              className="flex-shrink-0 uppercase text-diligent-gray-4"
-              style={{ fontSize: '10px', letterSpacing: '0.08em' }}
+              className="flex-shrink-0 text-[11px] uppercase tracking-[0.08em] font-medium text-diligent-gray-4"
             >
               In partnership with
             </span>

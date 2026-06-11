@@ -159,10 +159,10 @@ export function SiteHeader({ subjectGroups = [] }: SiteHeaderProps) {
           </span>
         </Link>
 
-        {/* Desktop nav — centred, hidden on mobile */}
+        {/* Desktop nav — right-aligned, hidden on mobile */}
         <nav
           aria-label="Primary"
-          className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 lg:block"
+          className="ml-auto hidden lg:block"
         >
           <ul className="flex items-center gap-8 text-sm font-medium">
             {/* Library dropdown */}

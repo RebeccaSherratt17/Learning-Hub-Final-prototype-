@@ -23,9 +23,9 @@ export function OrgTypeSelector({
   onOrgTypeChange,
 }: OrgTypeSelectorProps) {
   return (
-    <section className="border-b border-diligent-gray-2">
+    <section>
       <div className="mx-auto max-w-[var(--max-content-width)] px-6">
-        <p className="pb-3 pt-12 text-[11px] font-bold uppercase tracking-[0.1em] text-diligent-gray-5">
+        <p className="pb-3 pt-12 text-[11px] uppercase tracking-[0.08em] font-medium text-diligent-gray-4">
           I work for a&hellip;
         </p>
       </div>

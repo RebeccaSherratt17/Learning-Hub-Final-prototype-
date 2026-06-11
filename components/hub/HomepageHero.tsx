@@ -270,7 +270,7 @@ export function HomepageHero({ partners = [] }: HomepageHeroProps) {
 
         {/* Suggestion pills */}
         <div className="mx-auto mt-5 flex max-w-3xl flex-nowrap items-center justify-center gap-2 overflow-x-auto whitespace-nowrap px-4">
-          <span className="text-xs font-semibold uppercase tracking-wider text-diligent-gray-3">
+          <span className="text-[11px] uppercase tracking-[0.08em] font-medium text-diligent-gray-4">
             Try:
           </span>
           {pills.map((term) => (
@@ -292,8 +292,7 @@ export function HomepageHero({ partners = [] }: HomepageHeroProps) {
     {partners.length > 0 && (
       <div className="mx-auto flex max-w-3xl items-center gap-4 px-4 py-2" style={{ height: '48px' }}>
         <span
-          className="flex-shrink-0 uppercase text-diligent-gray-4"
-          style={{ fontSize: '10px', letterSpacing: '0.08em' }}
+          className="flex-shrink-0 text-[11px] uppercase tracking-[0.08em] font-medium text-diligent-gray-4"
         >
           In partnership with
         </span>
