@@ -361,7 +361,7 @@ export function ResourceLibrary({
             <span
               className="flex-shrink-0 text-[11px] uppercase tracking-[0.08em] font-medium text-diligent-gray-4"
             >
-              In partnership with
+              In partnership with:
             </span>
             <div className="relative min-w-0 flex-1 overflow-hidden partner-scroller-mask" style={{ height: '48px' }}>
             <div

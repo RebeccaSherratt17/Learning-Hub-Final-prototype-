@@ -70,7 +70,7 @@ export function SubjectGroupWidget({
                 <h2 className="text-lg font-bold leading-tight text-diligent-gray-5">
                   {toSentenceCase(groupName)}
                 </h2>
-                <p className="text-sm font-normal text-diligent-gray-4">
+                <p className="text-sm font-normal text-[#5C5F63]">
                   {config.description}
                 </p>
               </div>

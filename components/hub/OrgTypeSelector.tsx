@@ -25,7 +25,7 @@ export function OrgTypeSelector({
   return (
     <section>
       <div className="mx-auto max-w-[var(--max-content-width)] px-6">
-        <p className="pb-3 pt-12 text-[11px] uppercase tracking-[0.08em] font-medium text-diligent-gray-4">
+        <p className="pb-3 pt-12 text-[11px] uppercase tracking-[0.08em] font-medium text-[#5C5F63]">
           I work for a&hellip;
         </p>
       </div>
@@ -72,20 +72,13 @@ export function OrgTypeSelector({
                     <p
                       className={cn(
                         'mt-0.5 text-[10px] font-semibold uppercase tracking-[0.08em]',
-                        isActive ? 'text-white/60' : 'text-diligent-gray-3',
+                        isActive ? 'text-white/90' : 'text-diligent-gray-3',
                       )}
                     >
                       {org.count} resources &middot; {config.subtitle}
                     </p>
                   </div>
 
-                  {/* Viewing badge — top-right */}
-                  {isActive && (
-                    <span className="absolute right-2.5 top-2.5 inline-flex items-center gap-0.5 rounded bg-white/20 px-1 py-px text-[7px] font-bold uppercase tracking-wider text-white">
-                      <Icon name="check" className="text-[12px]" />
-                      Viewing
-                    </span>
-                  )}
                 </button>
               )
             })}

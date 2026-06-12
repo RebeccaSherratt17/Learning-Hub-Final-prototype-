@@ -97,6 +97,8 @@ export function SiteHeader({ subjectGroups = [] }: SiteHeaderProps) {
 
   const certsRef = useRef<HTMLLIElement>(null)
   const libraryRef = useRef<HTMLLIElement>(null)
+  const certsTriggerRef = useRef<HTMLButtonElement>(null)
+  const libraryTriggerRef = useRef<HTMLButtonElement>(null)
   const certsCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
   const libraryCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -137,6 +139,17 @@ export function SiteHeader({ subjectGroups = [] }: SiteHeaderProps) {
     setLibraryFlyoutPanel(null)
   }, [])
 
+  const closeCertsAndFocus = useCallback(() => {
+    setDesktopCertsOpen(false)
+    certsTriggerRef.current?.focus()
+  }, [])
+
+  const closeLibraryAndFocus = useCallback(() => {
+    setDesktopLibraryOpen(false)
+    setLibraryFlyoutPanel(null)
+    libraryTriggerRef.current?.focus()
+  }, [])
+
   return (
     <header className="sticky top-0 z-40 border-b border-diligent-gray-2 bg-white">
       <div className="relative mx-auto flex h-[72px] max-w-[var(--max-content-width)] items-center px-6">
@@ -173,9 +186,18 @@ export function SiteHeader({ subjectGroups = [] }: SiteHeaderProps) {
               onMouseLeave={libraryMouseLeave}
             >
               <button
+                ref={libraryTriggerRef}
                 type="button"
+                aria-haspopup="true"
+                aria-expanded={desktopLibraryOpen}
                 className="flex items-center gap-0.5 p-0 leading-normal text-sm font-medium text-diligent-gray-5 hover:text-diligent-red"
                 onClick={() => setDesktopLibraryOpen((prev) => !prev)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape' && desktopLibraryOpen) {
+                    e.stopPropagation()
+                    closeLibraryAndFocus()
+                  }
+                }}
               >
                 Library
                 <Icon
@@ -185,7 +207,15 @@ export function SiteHeader({ subjectGroups = [] }: SiteHeaderProps) {
               </button>
 
               {desktopLibraryOpen && (
-                <div className="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-2">
+                <div
+                  className="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-2"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') {
+                      e.stopPropagation()
+                      closeLibraryAndFocus()
+                    }
+                  }}
+                >
                   <div className="relative w-[280px]">
                     {/* Left panel */}
                     <div className="w-[280px] rounded-lg border border-diligent-gray-2 bg-white py-2 shadow-lg">
@@ -193,6 +223,7 @@ export function SiteHeader({ subjectGroups = [] }: SiteHeaderProps) {
                         href="/library"
                         onClick={closeLibraryDropdown}
                         onMouseEnter={() => setLibraryFlyoutPanel(null)}
+                        onFocus={() => setLibraryFlyoutPanel(null)}
                         className="flex items-start gap-2.5 px-4 py-3 no-underline hover:bg-diligent-gray-1 hover:no-underline"
                       >
                         <Icon name="library_books" className="mt-0.5 text-[20px] text-diligent-red shrink-0" />
@@ -206,7 +237,10 @@ export function SiteHeader({ subjectGroups = [] }: SiteHeaderProps) {
 
                       <button
                         type="button"
+                        aria-expanded={libraryFlyoutPanel === 'type'}
                         onMouseEnter={() => setLibraryFlyoutPanel('type')}
+                        onFocus={() => setLibraryFlyoutPanel('type')}
+                        onClick={() => setLibraryFlyoutPanel((prev) => prev === 'type' ? null : 'type')}
                         className={`flex w-full items-center justify-between px-4 py-3 text-sm ${
                           libraryFlyoutPanel === 'type'
                             ? 'bg-diligent-gray-1 text-diligent-red'
@@ -222,7 +256,10 @@ export function SiteHeader({ subjectGroups = [] }: SiteHeaderProps) {
 
                       <button
                         type="button"
+                        aria-expanded={libraryFlyoutPanel === 'topic'}
                         onMouseEnter={() => setLibraryFlyoutPanel('topic')}
+                        onFocus={() => setLibraryFlyoutPanel('topic')}
+                        onClick={() => setLibraryFlyoutPanel((prev) => prev === 'topic' ? null : 'topic')}
                         className={`flex w-full items-center justify-between px-4 py-3 text-sm ${
                           libraryFlyoutPanel === 'topic'
                             ? 'bg-diligent-gray-1 text-diligent-red'
@@ -287,9 +324,18 @@ export function SiteHeader({ subjectGroups = [] }: SiteHeaderProps) {
               onMouseLeave={certsMouseLeave}
             >
               <button
+                ref={certsTriggerRef}
                 type="button"
+                aria-haspopup="true"
+                aria-expanded={desktopCertsOpen}
                 className="flex items-center gap-0.5 p-0 leading-normal text-sm font-medium text-diligent-gray-5 hover:text-diligent-red"
                 onClick={() => setDesktopCertsOpen((prev) => !prev)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape' && desktopCertsOpen) {
+                    e.stopPropagation()
+                    closeCertsAndFocus()
+                  }
+                }}
               >
                 Certifications
                 <Icon
@@ -299,7 +345,15 @@ export function SiteHeader({ subjectGroups = [] }: SiteHeaderProps) {
               </button>
 
               {desktopCertsOpen && (
-                <div className="absolute left-1/2 top-full z-50 min-w-[360px] -translate-x-1/2 pt-2">
+                <div
+                  className="absolute left-1/2 top-full z-50 min-w-[360px] -translate-x-1/2 pt-2"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') {
+                      e.stopPropagation()
+                      closeCertsAndFocus()
+                    }
+                  }}
+                >
                   <div className="rounded-lg border border-diligent-gray-2 bg-white py-2 shadow-lg">
                     {certifications.map((cert) =>
                       cert.href ? (

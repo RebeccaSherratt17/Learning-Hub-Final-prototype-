@@ -25,7 +25,7 @@ const TYPE_BADGE_COLORS: Record<Suggestion['type'], string> = {
   course: 'bg-diligent-red',
   video: 'bg-diligent-gray-5',
   template: 'bg-[#0B4CCE]',
-  learningPath: 'bg-diligent-gray-4',
+  learningPath: 'bg-[#5C5F63]',
 }
 
 interface Partner {
@@ -159,7 +159,7 @@ export function HomepageHero({ partners = [] }: HomepageHeroProps) {
 
   return (
     <>
-    <section className="bg-diligent-gray-1 py-8 md:py-12">
+    <section className="bg-diligent-gray-1 py-20">
       <div className="mx-auto px-4 text-center">
         {/* Heading */}
         <h1 className="whitespace-nowrap text-center text-3xl font-semibold text-diligent-gray-5 md:text-4xl lg:text-display-1">
@@ -168,13 +168,13 @@ export function HomepageHero({ partners = [] }: HomepageHeroProps) {
         </h1>
 
         {/* Subheading */}
-        <p className="mx-auto mt-4 max-w-2xl text-lg text-diligent-gray-4">
+        <p className="mx-auto mt-4 max-w-2xl text-lg text-[#5C5F63]">
           Browse a category, search a keyword, or click a subtopic to jump
           straight to what you need.
         </p>
 
         {/* Search bar with autocomplete */}
-        <div ref={containerRef} className="relative mx-auto mt-8 max-w-3xl">
+        <div ref={containerRef} className="relative mx-auto mt-12 max-w-3xl">
           <form onSubmit={handleSubmit} className="relative">
             <Icon
               name="search"
@@ -232,7 +232,7 @@ export function HomepageHero({ partners = [] }: HomepageHeroProps) {
                   <div className="flex min-w-0 flex-1 flex-col">
                     <span className="truncate text-diligent-gray-5">{s.title}</span>
                     {s.subTopics.length > 0 && (
-                      <span className="text-diligent-gray-4" style={{ fontSize: '11px' }}>
+                      <span className="text-[#5C5F63]" style={{ fontSize: '11px' }}>
                         {s.subTopics.slice(0, 3).join(' · ')}
                       </span>
                     )}
@@ -269,8 +269,8 @@ export function HomepageHero({ partners = [] }: HomepageHeroProps) {
         </div>
 
         {/* Suggestion pills */}
-        <div className="mx-auto mt-5 flex max-w-3xl flex-nowrap items-center justify-center gap-2 overflow-x-auto whitespace-nowrap px-4">
-          <span className="text-[11px] uppercase tracking-[0.08em] font-medium text-diligent-gray-4">
+        <div className="mx-auto mt-4 flex max-w-3xl items-center justify-center gap-2 overflow-x-hidden px-4">
+          <span className="text-[11px] uppercase tracking-[0.08em] font-medium text-[#5C5F63]">
             Try:
           </span>
           {pills.map((term) => (
@@ -278,7 +278,7 @@ export function HomepageHero({ partners = [] }: HomepageHeroProps) {
               key={term}
               type="button"
               onClick={() => handlePillClick(term)}
-              className="rounded-full border border-diligent-gray-2 bg-white px-3.5 py-1.5 text-sm text-diligent-gray-4 transition-colors hover:border-diligent-gray-3 hover:text-diligent-gray-5"
+              className="whitespace-nowrap rounded-full border border-diligent-gray-2 bg-white px-3.5 py-1.5 text-sm text-[#5C5F63] transition-colors hover:border-diligent-gray-3 hover:text-diligent-gray-5"
             >
               {term}
             </button>
@@ -290,11 +290,11 @@ export function HomepageHero({ partners = [] }: HomepageHeroProps) {
 
     {/* Compact partner logo scroller — outside grey hero, on white background */}
     {partners.length > 0 && (
-      <div className="mx-auto flex max-w-3xl items-center gap-4 px-4 py-2" style={{ height: '48px' }}>
+      <div className="mx-auto mt-8 flex max-w-3xl items-center gap-4 px-4 py-2" style={{ height: '48px' }}>
         <span
-          className="flex-shrink-0 text-[11px] uppercase tracking-[0.08em] font-medium text-diligent-gray-4"
+          className="flex-shrink-0 text-[11px] uppercase tracking-[0.08em] font-medium text-[#5C5F63]"
         >
-          In partnership with
+          In partnership with:
         </span>
         <div className="relative min-w-0 flex-1 overflow-hidden partner-scroller-mask" style={{ height: '48px' }}>
           <div

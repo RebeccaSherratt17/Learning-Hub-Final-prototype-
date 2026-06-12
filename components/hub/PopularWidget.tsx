@@ -46,7 +46,7 @@ export function PopularWidget({ items }: PopularWidgetProps) {
                 <h2 className="text-lg font-bold leading-tight text-diligent-gray-5">
                   Most popular
                 </h2>
-                <p className="text-sm font-normal text-diligent-gray-4">
+                <p className="text-sm font-normal text-[#5C5F63]">
                   The most-accessed resources across the hub
                 </p>
               </div>
