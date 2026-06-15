@@ -33,17 +33,17 @@ export function PopularWidget({ items }: PopularWidgetProps) {
   }, [items])
 
   return (
-    <section className="py-12">
+    <section className="py-8" aria-labelledby="popular-heading">
       <div className="mx-auto max-w-[var(--max-content-width)] px-6">
-        <div className="overflow-hidden">
+        <div>
           {/* Header row */}
           <div className="flex items-center justify-between px-5 py-4">
             <div className="flex items-center gap-3">
               <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-diligent-red">
-                <Icon name="star" className="text-[18px] text-white" fill />
+                <Icon variant="rounded" name="star" className="text-[18px] text-white" fill />
               </span>
               <div>
-                <h2 className="text-lg font-bold leading-tight text-diligent-gray-5">
+                <h2 id="popular-heading" className="text-lg font-bold leading-tight text-diligent-gray-5">
                   Most popular
                 </h2>
                 <p className="text-sm font-normal text-[#5C5F63]">
@@ -58,27 +58,22 @@ export function PopularWidget({ items }: PopularWidgetProps) {
             >
               See all popular
               <Icon
+                variant="rounded"
                 name="arrow_forward"
                 className="text-[18px] text-diligent-gray-5"
               />
             </a>
           </div>
 
-          {/* Divider */}
-          <div className="border-t border-[#DADADA]" />
-
-          {/* Card scroller */}
-          <div className="overflow-x-auto">
-            <div className="flex">
+          {/* Card grid */}
+          <div role="region" aria-label="Most popular resources">
+            <div className="grid grid-cols-2 gap-6 md:grid-cols-2 lg:grid-cols-4">
               {displayItems.map((item) => (
-                <div
-                  key={item._id}
-                  className="w-[260px] flex-shrink-0 border-l border-[#f0d4d3] first:border-l-0"
-                >
+                <div key={item._id}>
                   <ContentCard
                     item={item}
                     compact
-                    className="h-full rounded-none border-0 shadow-none hover:translate-y-0 hover:shadow-none"
+                    className="h-full"
                   />
                 </div>
               ))}
@@ -87,26 +82,11 @@ export function PopularWidget({ items }: PopularWidgetProps) {
                 Array.from({ length: 4 - displayItems.length }).map((_, i) => (
                   <div
                     key={`empty-${i}`}
-                    className="flex w-[260px] flex-shrink-0 items-center justify-center border-l border-[#f0d4d3] bg-white p-6"
+                    className="flex items-center justify-center rounded-xl border border-diligent-gray-2 bg-white p-6"
                   >
-                    <p className="text-sm text-diligent-gray-3">No content</p>
+                    <p className="text-sm text-diligent-gray-3">No popular resources available</p>
                   </div>
                 ))}
-
-              {/* "See all" end cap */}
-              <a
-                href="/library?sort=popular"
-                onClick={navigateToLibrary}
-                className="flex w-[160px] flex-shrink-0 flex-col items-center justify-center gap-3 border-l border-[#f0d4d3] bg-diligent-gray-1 px-4 text-center no-underline transition-colors hover:bg-diligent-gray-2"
-              >
-                <Icon
-                  name="arrow_forward"
-                  className="text-[28px] text-diligent-gray-5"
-                />
-                <span className="text-sm font-semibold leading-snug text-diligent-gray-5">
-                  See all
-                </span>
-              </a>
             </div>
           </div>
         </div>

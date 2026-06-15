@@ -74,7 +74,7 @@ export function HorizontalCardScroller({
           type="button"
           onClick={() => scroll('left')}
           aria-label="Scroll left"
-          className="absolute -left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-diligent-gray-2 bg-white shadow-md transition-colors hover:bg-diligent-gray-1"
+          className="absolute -left-3 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-diligent-gray-2 bg-white shadow-md transition-colors hover:bg-diligent-gray-1"
         >
           <Icon name="chevron_left" className="text-[20px] text-diligent-gray-5" />
         </button>
@@ -86,7 +86,7 @@ export function HorizontalCardScroller({
           type="button"
           onClick={() => scroll('right')}
           aria-label="Scroll right"
-          className="absolute -right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-diligent-gray-2 bg-white shadow-md transition-colors hover:bg-diligent-gray-1"
+          className="absolute -right-3 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-diligent-gray-2 bg-white shadow-md transition-colors hover:bg-diligent-gray-1"
         >
           <Icon name="chevron_right" className="text-[20px] text-diligent-gray-5" />
         </button>

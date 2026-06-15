@@ -21,15 +21,15 @@ export const subjectGroupConfig: Record<string, SubjectGroupMeta> = {
     description: 'Governance of AI, technology and cyber risk',
   },
   'risk-management': {
-    icon: 'shield',
+    icon: 'security',
     description: 'Managing risk across your organization',
   },
   'compliance-policy': {
-    icon: 'policy',
+    icon: 'verified',
     description: 'Stay ahead of regulatory obligations',
   },
   'governance-professionals': {
-    icon: 'person',
+    icon: 'badge',
     description: 'For the people who make governance work',
   },
 }
@@ -43,11 +43,11 @@ export const orgTypeConfig: Record<
   { icon: string; subtitle: string }
 > = {
   'public-company': {
-    icon: 'domain',
+    icon: 'corporate_fare',
     subtitle: 'LISTED \u00B7 PUBLIC MARKETS',
   },
   'private-company': {
-    icon: 'apartment',
+    icon: 'store',
     subtitle: 'PE-BACKED \u00B7 PRE-IPO',
   },
   nonprofit: {

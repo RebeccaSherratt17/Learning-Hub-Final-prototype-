@@ -114,24 +114,26 @@ export default async function HubHomePage() {
 
   return (
     <>
-      {/* Section 1: Hero / Search */}
-      <HomepageHero partners={mappedPartners} />
+      <main>
+        {/* Section 1: Hero / Search */}
+        <HomepageHero partners={mappedPartners} />
 
-      {/* Sections 2-4: Org type selector, Popular, Subject groups */}
-      <HomepageContent
-        orgTypes={orgTypes}
-        defaultOrgTypeId={defaultOrgTypeId}
-        subjectGroups={subjectGroups}
-        initialItems={initialItems}
-      />
+        {/* Sections 2-4: Org type selector, Popular, Subject groups */}
+        <HomepageContent
+          orgTypes={orgTypes}
+          defaultOrgTypeId={defaultOrgTypeId}
+          subjectGroups={subjectGroups}
+          initialItems={initialItems}
+        />
 
-      {/* Section 5: Footer CTA */}
-      <FooterCTASection
-        heading={settings?.footerHeading ?? null}
-        body={settings?.footerBody ?? null}
-        ctaText={settings?.footerCTAText ?? null}
-        email={settings?.footerEmail ?? null}
-      />
+        {/* Section 5: Footer CTA */}
+        <FooterCTASection
+          heading={settings?.footerHeading ?? null}
+          body={settings?.footerBody ?? null}
+          ctaText={settings?.footerCTAText ?? null}
+          email={settings?.footerEmail ?? null}
+        />
+      </main>
 
       <script
         type="application/ld+json"

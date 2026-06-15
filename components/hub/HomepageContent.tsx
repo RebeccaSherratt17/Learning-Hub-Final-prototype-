@@ -83,7 +83,7 @@ export function HomepageContent({
 
   return (
     <div
-      className={`transition-opacity duration-300 ${isLoading ? 'opacity-60' : 'opacity-100'}`}
+      className={`pb-16 transition-opacity duration-300 ${isLoading ? 'opacity-60' : 'opacity-100'}`}
     >
       <OrgTypeSelector
         orgTypes={orgTypes}

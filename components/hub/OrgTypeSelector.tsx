@@ -1,7 +1,6 @@
 'use client'
 
 import { orgTypeConfig } from '@/components/hub/subjectGroupConfig'
-import { Icon } from '@/components/ui/Icon'
 import { cn } from '@/lib/cn'
 
 export interface OrgType {
@@ -23,13 +22,13 @@ export function OrgTypeSelector({
   onOrgTypeChange,
 }: OrgTypeSelectorProps) {
   return (
-    <section>
+    <section aria-labelledby="org-type-heading">
       <div className="mx-auto max-w-[var(--max-content-width)] px-6">
-        <p className="pb-3 pt-12 text-[11px] uppercase tracking-[0.08em] font-medium text-[#5C5F63]">
+        <p id="org-type-heading" className="pb-3 pt-6 text-[11px] uppercase tracking-[0.08em] font-medium text-[#5C5F63]">
           I work for a&hellip;
         </p>
       </div>
-      <div className="mx-auto max-w-[var(--max-content-width)] px-6 pb-12">
+      <div className="mx-auto max-w-[var(--max-content-width)] px-6 pb-6">
         {/* Red top accent line + dark bar */}
         <div className="overflow-hidden rounded-md border-t-[3px] border-diligent-red bg-diligent-gray-5">
           <div className="grid grid-cols-1 sm:grid-cols-3">
@@ -61,7 +60,9 @@ export function OrgTypeSelector({
                       isActive ? 'bg-white/20' : 'bg-white/10',
                     )}
                   >
-                    <Icon name={config.icon} className="text-[20px] text-white" />
+                    <span className="material-symbols-rounded text-[20px] text-white" aria-hidden="true">
+                      {config.icon}
+                    </span>
                   </div>
 
                   {/* Text content */}

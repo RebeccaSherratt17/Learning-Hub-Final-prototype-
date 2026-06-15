@@ -30,6 +30,26 @@
     'opsz' 48;
 }
 
+/* Material Symbols Rounded — used selectively (e.g. org type selector) */
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded';
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 48;
+}
+
 /* Hyperlinks per brand spec: Blue 3, no underline */
 a {
   color: var(--color-link);

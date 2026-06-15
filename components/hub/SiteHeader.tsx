@@ -90,6 +90,8 @@ export function SiteHeader({ subjectGroups = [] }: SiteHeaderProps) {
   const [mobileLibraryOpen, setMobileLibraryOpen] = useState(false)
   const [mobileByTypeOpen, setMobileByTypeOpen] = useState(false)
   const [mobileByTopicOpen, setMobileByTopicOpen] = useState(false)
+  const hamburgerRef = useRef<HTMLButtonElement>(null)
+  const mobileFirstItemRef = useRef<HTMLButtonElement>(null)
 
   const [desktopCertsOpen, setDesktopCertsOpen] = useState(false)
   const [desktopLibraryOpen, setDesktopLibraryOpen] = useState(false)
@@ -101,6 +103,18 @@ export function SiteHeader({ subjectGroups = [] }: SiteHeaderProps) {
   const libraryTriggerRef = useRef<HTMLButtonElement>(null)
   const certsCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
   const libraryCloseTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Focus management for mobile menu
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      // Delay to allow the menu to render before focusing
+      requestAnimationFrame(() => {
+        mobileFirstItemRef.current?.focus()
+      })
+    } else {
+      hamburgerRef.current?.focus()
+    }
+  }, [mobileMenuOpen])
 
   // Close desktop dropdowns when clicking outside
   useEffect(() => {
@@ -201,6 +215,7 @@ export function SiteHeader({ subjectGroups = [] }: SiteHeaderProps) {
               >
                 Library
                 <Icon
+                  variant="rounded"
                   name="expand_more"
                   className={`text-[18px] transition-transform ${desktopLibraryOpen ? 'rotate-180' : ''}`}
                 />
@@ -226,7 +241,7 @@ export function SiteHeader({ subjectGroups = [] }: SiteHeaderProps) {
                         onFocus={() => setLibraryFlyoutPanel(null)}
                         className="flex items-start gap-2.5 px-4 py-3 no-underline hover:bg-diligent-gray-1 hover:no-underline"
                       >
-                        <Icon name="library_books" className="mt-0.5 text-[20px] text-diligent-red shrink-0" />
+                        <Icon variant="rounded" name="library_books" className="mt-0.5 text-[20px] text-diligent-red shrink-0" />
                         <div>
                           <span className="block text-sm text-diligent-gray-5">Resource library</span>
                           <span className="mt-0.5 block text-[11px] leading-snug font-normal text-diligent-gray-4">Browse all courses, templates, videos and learning paths</span>
@@ -249,6 +264,7 @@ export function SiteHeader({ subjectGroups = [] }: SiteHeaderProps) {
                       >
                         By content type
                         <Icon
+                          variant="rounded"
                           name="chevron_right"
                           className={`text-[18px] ${libraryFlyoutPanel === 'type' ? 'text-diligent-red' : ''}`}
                         />
@@ -268,6 +284,7 @@ export function SiteHeader({ subjectGroups = [] }: SiteHeaderProps) {
                       >
                         By topic
                         <Icon
+                          variant="rounded"
                           name="chevron_right"
                           className={`text-[18px] ${libraryFlyoutPanel === 'topic' ? 'text-diligent-red' : ''}`}
                         />
@@ -287,7 +304,7 @@ export function SiteHeader({ subjectGroups = [] }: SiteHeaderProps) {
                               onClick={closeLibraryDropdown}
                               className="flex items-start gap-2.5 px-4 py-2.5 no-underline hover:bg-diligent-gray-1 hover:no-underline"
                             >
-                              <Icon name={ct.icon} className="mt-0.5 text-[20px] text-diligent-red shrink-0" />
+                              <Icon variant="rounded" name={ct.icon} className="mt-0.5 text-[20px] text-diligent-red shrink-0" />
                               <div>
                                 <span className="block text-sm text-diligent-gray-5">{ct.label}</span>
                                 <span className="block text-xs font-normal text-diligent-gray-4">{ct.description}</span>
@@ -302,7 +319,7 @@ export function SiteHeader({ subjectGroups = [] }: SiteHeaderProps) {
                               onClick={closeLibraryDropdown}
                               className="flex items-start gap-2.5 px-4 py-2.5 no-underline hover:bg-diligent-gray-1 hover:no-underline"
                             >
-                              <Icon name={topicIcons[group.slug] ?? 'folder'} className="mt-0.5 text-[20px] text-diligent-red shrink-0" />
+                              <Icon variant="rounded" name={topicIcons[group.slug] ?? 'folder'} className="mt-0.5 text-[20px] text-diligent-red shrink-0" />
                               <div>
                                 <span className="block whitespace-nowrap text-sm text-diligent-gray-5">{toSentenceCase(group.name)}</span>
                                 <span className="block whitespace-nowrap text-xs font-normal text-diligent-gray-4">{topicDescriptions[group.slug] ?? ''}</span>
@@ -339,6 +356,7 @@ export function SiteHeader({ subjectGroups = [] }: SiteHeaderProps) {
               >
                 Certifications
                 <Icon
+                  variant="rounded"
                   name="expand_more"
                   className={`text-[18px] transition-transform ${desktopCertsOpen ? 'rotate-180' : ''}`}
                 />
@@ -398,6 +416,7 @@ export function SiteHeader({ subjectGroups = [] }: SiteHeaderProps) {
 
         {/* Mobile hamburger button */}
         <button
+          ref={hamburgerRef}
           type="button"
           className="ml-auto flex h-10 w-10 items-center justify-center rounded-md text-diligent-gray-5 hover:bg-diligent-gray-1 lg:hidden"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -426,6 +445,7 @@ export function SiteHeader({ subjectGroups = [] }: SiteHeaderProps) {
             {/* Library accordion */}
             <li>
               <button
+                ref={mobileFirstItemRef}
                 type="button"
                 className="flex w-full items-center justify-between rounded-md px-3 py-2.5 text-left text-diligent-gray-5 hover:bg-diligent-gray-1 hover:text-diligent-red"
                 onClick={() => setMobileLibraryOpen(!mobileLibraryOpen)}
@@ -433,6 +453,7 @@ export function SiteHeader({ subjectGroups = [] }: SiteHeaderProps) {
               >
                 Library
                 <Icon
+                  variant="rounded"
                   name="expand_more"
                   className={`text-[18px] transition-transform ${mobileLibraryOpen ? 'rotate-180' : ''}`}
                 />
@@ -524,6 +545,7 @@ export function SiteHeader({ subjectGroups = [] }: SiteHeaderProps) {
               >
                 Certifications
                 <Icon
+                  variant="rounded"
                   name="expand_more"
                   className={`text-[18px] transition-transform ${mobileCertsOpen ? 'rotate-180' : ''}`}
                 />

@@ -7,13 +7,16 @@ export interface IconProps {
   label?: string
   /** Render the filled variant of the icon */
   fill?: boolean
+  /** Font variant: 'sharp' (default) or 'rounded' */
+  variant?: 'sharp' | 'rounded'
 }
 
-export function Icon({ name, className, label, fill }: IconProps) {
+export function Icon({ name, className, label, fill, variant = 'sharp' }: IconProps) {
   const decorative = !label
+  const fontClass = variant === 'rounded' ? 'material-symbols-rounded' : 'material-symbols-sharp'
   return (
     <span
-      className={cn('material-symbols-sharp select-none', className)}
+      className={cn(fontClass, 'select-none', className)}
       style={fill ? { fontVariationSettings: "'FILL' 1" } : undefined}
       aria-hidden={decorative}
       aria-label={label}

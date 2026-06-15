@@ -49,12 +49,12 @@ export function ContentCard({ item, className, showDescription, compact }: Conte
   return (
     <article
       className={cn(
-        'group flex flex-col overflow-hidden rounded-md border border-diligent-gray-2 bg-white transition-all duration-200 hover:-translate-y-1 hover:border-diligent-gray-3 hover:shadow-md',
+        'group isolate flex flex-col rounded-xl border border-diligent-gray-2 bg-white transition-all duration-200 hover:-translate-y-1 hover:border-diligent-gray-3 hover:shadow-md',
         className,
       )}
     >
       <Link href={href} className="block no-underline hover:no-underline">
-        <div className={cn('relative w-full bg-white', compact ? 'aspect-[3/2]' : 'aspect-[16/9]')}>
+        <div className={cn('relative w-full overflow-hidden rounded-xl bg-white', compact ? 'aspect-[3/2]' : 'aspect-[16/9]')}>
           {thumbUrl ? (
             <Image
               src={thumbUrl}

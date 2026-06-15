@@ -10,10 +10,10 @@ export type BadgeVariant =
   | 'premium'
 
 const variantStyles: Record<BadgeVariant, string> = {
-  course: 'bg-diligent-gray-5 text-white',
-  template: 'bg-diligent-gray-2 text-diligent-gray-5',
-  video: 'bg-diligent-red-3 text-white',
-  learningPath: 'bg-diligent-blue-3 text-white',
+  course: 'bg-[#EE312E] text-white',
+  template: 'bg-[#0B4CCE] text-white',
+  video: 'bg-[#282E37] text-white',
+  learningPath: 'bg-[#6F7377] text-white',
   free: 'bg-diligent-gray-1 text-diligent-gray-5 ring-1 ring-diligent-gray-2',
   gated: 'bg-diligent-gray-5 text-white',
   premium: 'bg-diligent-red-3 text-white',

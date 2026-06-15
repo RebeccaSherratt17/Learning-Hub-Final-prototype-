@@ -57,17 +57,17 @@ export function SubjectGroupWidget({
   const displayItems = items.slice(0, 4)
 
   return (
-    <section className="py-6">
+    <section className="py-6" aria-labelledby={`subject-group-${groupSlug}-heading`}>
       <div className="mx-auto max-w-[var(--max-content-width)] px-6">
-        <div className="overflow-hidden">
+        <div>
           {/* Header row */}
           <div className="flex items-center justify-between px-5 py-4">
             <div className="flex items-center gap-3">
               <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-diligent-red">
-                <Icon name={config.icon} className="text-[18px] text-white" />
+                <Icon variant="rounded" name={config.icon} className="text-[18px] text-white" />
               </span>
               <div>
-                <h2 className="text-lg font-bold leading-tight text-diligent-gray-5">
+                <h2 id={`subject-group-${groupSlug}-heading`} className="text-lg font-bold leading-tight text-diligent-gray-5">
                   {toSentenceCase(groupName)}
                 </h2>
                 <p className="text-sm font-normal text-[#5C5F63]">
@@ -82,27 +82,22 @@ export function SubjectGroupWidget({
             >
               See all {items.length} items
               <Icon
+                variant="rounded"
                 name="arrow_forward"
                 className="text-[18px] text-diligent-gray-5"
               />
             </a>
           </div>
 
-          {/* Divider */}
-          <div className="border-t border-[#DADADA]" />
-
-          {/* Card scroller */}
-          <div className="overflow-x-auto">
-            <div className="flex">
+          {/* Card grid */}
+          <div role="region" aria-label={`${toSentenceCase(groupName)} resources`}>
+            <div className="grid grid-cols-2 gap-6 md:grid-cols-2 lg:grid-cols-4">
               {displayItems.map((item) => (
-                <div
-                  key={item._id}
-                  className="w-[260px] flex-shrink-0 border-l border-diligent-gray-2 first:border-l-0"
-                >
+                <div key={item._id}>
                   <ContentCard
                     item={item}
                     compact
-                    className="h-full rounded-none border-0 shadow-none hover:translate-y-0 hover:shadow-none"
+                    className="h-full"
                   />
                 </div>
               ))}
@@ -111,26 +106,11 @@ export function SubjectGroupWidget({
                 Array.from({ length: 4 - displayItems.length }).map((_, i) => (
                   <div
                     key={`empty-${i}`}
-                    className="flex w-[260px] flex-shrink-0 items-center justify-center border-l border-diligent-gray-2 bg-white p-6"
+                    className="flex items-center justify-center rounded-xl border border-diligent-gray-2 bg-white p-6"
                   >
-                    <p className="text-sm text-diligent-gray-3">No content</p>
+                    <p className="text-sm text-diligent-gray-3">No {toSentenceCase(groupName).toLowerCase()} resources available</p>
                   </div>
                 ))}
-
-              {/* "See all" end cap */}
-              <a
-                href={seeAllHref}
-                onClick={navigateToLibrary}
-                className="flex w-[160px] flex-shrink-0 flex-col items-center justify-center gap-3 border-l border-diligent-gray-2 bg-diligent-gray-1 px-4 text-center no-underline transition-colors hover:bg-diligent-gray-2"
-              >
-                <Icon
-                  name="arrow_forward"
-                  className="text-[28px] text-diligent-gray-5"
-                />
-                <span className="text-sm font-semibold leading-snug text-diligent-gray-5">
-                  See all
-                </span>
-              </a>
             </div>
           </div>
         </div>

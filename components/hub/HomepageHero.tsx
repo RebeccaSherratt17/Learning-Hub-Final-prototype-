@@ -174,9 +174,10 @@ export function HomepageHero({ partners = [] }: HomepageHeroProps) {
         </p>
 
         {/* Search bar with autocomplete */}
-        <div ref={containerRef} className="relative mx-auto mt-12 max-w-3xl">
+        <div ref={containerRef} className="relative mx-auto mt-16 max-w-3xl">
           <form onSubmit={handleSubmit} className="relative">
             <Icon
+              variant="rounded"
               name="search"
               className="absolute left-4 top-1/2 -translate-y-1/2 text-diligent-gray-3"
             />
@@ -189,12 +190,19 @@ export function HomepageHero({ partners = [] }: HomepageHeroProps) {
                 if (suggestions.length > 0) setShowDropdown(true)
               }}
               placeholder="Search courses, templates, videos..."
-              className="w-full rounded-lg border-2 border-diligent-gray-5 bg-white py-4 pl-12 pr-4 text-base shadow-sm placeholder:text-diligent-gray-3 focus:outline-none focus:ring-2 focus:ring-diligent-red/20"
+              className="w-full rounded-lg border-2 border-diligent-gray-5 bg-white py-4 pl-12 pr-4 text-base shadow-sm placeholder:text-diligent-gray-3 focus-visible:outline-none focus:ring-2 focus:ring-diligent-red"
               role="combobox"
+              aria-label="Search courses, templates, videos and learning paths"
               aria-expanded={showDropdown}
               aria-autocomplete="list"
-              aria-controls="search-suggestions"
-              aria-activedescendant={activeIndex >= 0 ? `suggestion-${activeIndex}` : undefined}
+              {...(showDropdown ? { 'aria-controls': 'search-suggestions' } : {})}
+              aria-activedescendant={
+                activeIndex >= 0
+                  ? activeIndex === suggestions.length
+                    ? 'suggestion-show-all'
+                    : `suggestion-${activeIndex}`
+                  : undefined
+              }
             />
           </form>
 
@@ -226,6 +234,7 @@ export function HomepageHero({ partners = [] }: HomepageHeroProps) {
                   }`}
                 >
                   <Icon
+                    variant="rounded"
                     name="chevron_right"
                     className="mr-3 flex-shrink-0 text-base text-diligent-gray-3"
                   />
@@ -247,7 +256,7 @@ export function HomepageHero({ partners = [] }: HomepageHeroProps) {
               ))}
               {/* Show all results button */}
               <div
-                id={`suggestion-${suggestions.length}`}
+                id="suggestion-show-all"
                 role="option"
                 aria-selected={activeIndex === suggestions.length}
                 onMouseEnter={() => setActiveIndex(suggestions.length)}
@@ -290,7 +299,12 @@ export function HomepageHero({ partners = [] }: HomepageHeroProps) {
 
     {/* Compact partner logo scroller — outside grey hero, on white background */}
     {partners.length > 0 && (
-      <div className="mx-auto mt-8 flex max-w-3xl items-center gap-4 px-4 py-2" style={{ height: '48px' }}>
+      <div
+        className="mx-auto mt-8 flex max-w-3xl items-center gap-4 px-4 py-2"
+        style={{ height: '48px' }}
+        aria-label="Our educational partners"
+        role="region"
+      >
         <span
           className="flex-shrink-0 text-[11px] uppercase tracking-[0.08em] font-medium text-[#5C5F63]"
         >
@@ -301,7 +315,7 @@ export function HomepageHero({ partners = [] }: HomepageHeroProps) {
             className="flex items-center gap-6 motion-safe:animate-[marquee_90s_linear_infinite]"
             style={{ width: 'max-content', height: '48px' }}
           >
-            {[...partners, ...partners].map((p, i) => {
+            {partners.map((p, i) => {
               if (!p.logoUrl) return null
               const img = (
                 <div className="flex h-8 w-[90px] flex-shrink-0 items-center justify-center">
@@ -322,6 +336,30 @@ export function HomepageHero({ partners = [] }: HomepageHeroProps) {
                 <span key={`${p._id}-${i}`} className="flex-shrink-0">{img}</span>
               )
             })}
+            {/* Duplicate set for seamless marquee loop — hidden from screen readers */}
+            <span aria-hidden="true" className="contents">
+              {partners.map((p, i) => {
+                if (!p.logoUrl) return null
+                const img = (
+                  <div className="flex h-8 w-[90px] flex-shrink-0 items-center justify-center">
+                    <Image
+                      src={p.logoUrl}
+                      alt=""
+                      width={90}
+                      height={32}
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
+                )
+                return p.url ? (
+                  <a key={`${p._id}-dup-${i}`} href={p.url} target="_blank" rel="noopener noreferrer" tabIndex={-1} className="flex-shrink-0 no-underline">
+                    {img}
+                  </a>
+                ) : (
+                  <span key={`${p._id}-dup-${i}`} className="flex-shrink-0">{img}</span>
+                )
+              })}
+            </span>
           </div>
         </div>
       </div>
