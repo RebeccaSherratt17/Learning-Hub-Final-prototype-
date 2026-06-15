@@ -41,16 +41,16 @@ function CheckboxOption({
   count?: number
 }) {
   return (
-    <label className="flex cursor-pointer items-center gap-2.5 py-1 text-[13px] text-diligent-gray-4 hover:text-diligent-gray-5">
+    <label className="flex cursor-pointer items-center gap-2.5 py-2.5 text-sm text-[#5C5F63] hover:text-diligent-gray-5">
       <input
         type="checkbox"
         checked={checked}
         onChange={onChange}
-        className="h-4 w-4 accent-diligent-red"
+        className="h-5 w-5 accent-diligent-red"
       />
       <span>{label}</span>
       {count !== undefined && (
-        <span className="ml-auto font-mono text-xs text-diligent-gray-3">{count}</span>
+        <span className="ml-auto font-mono text-xs text-[#5C5F63]">{count}</span>
       )}
     </label>
   )
@@ -167,7 +167,7 @@ export function FilterSidebar({
     <div>
       {/* Eyebrow + clear */}
       <div className="mb-2 flex items-center justify-between">
-        <p className="font-mono text-xs font-medium uppercase tracking-[0.12em] text-diligent-gray-4">
+        <p className="text-xs font-medium uppercase tracking-[0.08em] text-[#5C5F63]">
           Filters
           {activeCount > 0 && (
             <span className="ml-1.5 text-diligent-red">({activeCount})</span>
@@ -180,7 +180,7 @@ export function FilterSidebar({
               onFilterChange({ types: [], personas: [], regions: [], subjects: [], level: '' })
             }
             className="text-xs font-medium hover:opacity-80"
-            style={{ fontSize: '12px', color: '#0B4CCE' }}
+            style={{ color: '#0B4CCE' }}
           >
             Reset all
           </button>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import { Icon } from '@/components/ui/Icon'
 import { type FilterState } from '@/components/hub/FilterBar'
 import { FilterSidebar } from '@/components/hub/FilterSidebar'
@@ -25,6 +25,9 @@ interface FilterDrawerProps {
   filterCounts: Record<string, number>
 }
 
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+
 export function FilterDrawer({
   open,
   onClose,
@@ -36,22 +39,70 @@ export function FilterDrawer({
   filterCounts,
 }: FilterDrawerProps) {
   const drawerRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLElement | null>(null)
 
-  // Trap focus and handle Escape
+  // Capture the element that opened the drawer so we can restore focus
+  useEffect(() => {
+    if (open) {
+      triggerRef.current = document.activeElement as HTMLElement | null
+    }
+  }, [open])
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+        return
+      }
+
+      if (e.key === 'Tab' && drawerRef.current) {
+        const focusable = Array.from(
+          drawerRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+        )
+        if (focusable.length === 0) return
+
+        const first = focusable[0]
+        const last = focusable[focusable.length - 1]
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault()
+            last.focus()
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault()
+            first.focus()
+          }
+        }
+      }
+    },
+    [onClose],
+  )
+
+  // Focus management, keyboard handling, and scroll lock
   useEffect(() => {
     if (!open) return
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
     document.addEventListener('keydown', handleKeyDown)
     document.body.style.overflow = 'hidden'
+
+    // Move focus into the drawer
+    requestAnimationFrame(() => {
+      if (drawerRef.current) {
+        const firstFocusable =
+          drawerRef.current.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)
+        firstFocusable?.focus()
+      }
+    })
 
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
       document.body.style.overflow = ''
+      // Return focus to the trigger element
+      triggerRef.current?.focus()
     }
-  }, [open, onClose])
+  }, [open, handleKeyDown])
 
   if (!open) return null
 

@@ -48,7 +48,7 @@ export function Pagination({
         type="button"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="rounded-sm px-3 py-3 text-sm text-diligent-gray-4 transition hover:bg-diligent-gray-1 disabled:opacity-40 disabled:hover:bg-transparent"
+        className="rounded-sm px-3 py-3.5 text-sm text-diligent-gray-4 transition hover:bg-diligent-gray-1 disabled:opacity-40 disabled:hover:bg-transparent"
         aria-label="Previous page"
       >
         &lsaquo;
@@ -58,6 +58,7 @@ export function Pagination({
           <span
             key={`ellipsis-${i}`}
             className="px-2 py-3 text-sm text-diligent-gray-3"
+            aria-hidden="true"
           >
             &hellip;
           </span>
@@ -82,7 +83,7 @@ export function Pagination({
         type="button"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="rounded-sm px-3 py-3 text-sm text-diligent-gray-4 transition hover:bg-diligent-gray-1 disabled:opacity-40 disabled:hover:bg-transparent"
+        className="rounded-sm px-3 py-3.5 text-sm text-diligent-gray-4 transition hover:bg-diligent-gray-1 disabled:opacity-40 disabled:hover:bg-transparent"
         aria-label="Next page"
       >
         &rsaquo;

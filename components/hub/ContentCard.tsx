@@ -58,7 +58,7 @@ export function ContentCard({ item, className, showDescription, compact }: Conte
           {thumbUrl ? (
             <Image
               src={thumbUrl}
-              alt={item.thumbnailAlt ?? item.title ?? ''}
+              alt={item.thumbnailAlt ?? item.title ?? 'Content thumbnail'}
               fill
               sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
               className={compact ? 'object-contain' : (item._type === 'learningPath' ? 'object-contain' : 'object-cover')}

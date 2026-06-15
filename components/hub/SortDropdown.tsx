@@ -23,7 +23,6 @@ export function SortDropdown({ value, onChange }: SortDropdownProps) {
         className="pointer-events-none absolute left-3 text-[20px] text-diligent-gray-4"
       />
       <select
-        id="sort-select"
         value={value}
         onChange={(e) => onChange(e.target.value as SortOption)}
         aria-label="Sort by"

@@ -63,7 +63,6 @@ export default async function LibraryPage() {
     templates,
     videos,
     learningPaths,
-    partners,
     personas,
     regions,
     subjectsWithGroups,
@@ -73,7 +72,6 @@ export default async function LibraryPage() {
     fetchTemplates(),
     fetchVideos(),
     fetchLearningPaths(),
-    prisma.educationalPartner.findMany({ orderBy: { order: 'asc' } }),
     prisma.persona.findMany({ orderBy: { name: 'asc' } }),
     prisma.region.findMany({ orderBy: { name: 'asc' } }),
     prisma.subject.findMany({
@@ -89,15 +87,6 @@ export default async function LibraryPage() {
     ...videos.map(toVideoItem),
     ...learningPaths.map(toLearningPathItem),
   ]
-
-  // Map partners
-  const mappedPartners = partners.map((p) => ({
-    _id: p.id,
-    name: p.name,
-    logoUrl: p.logoUrl,
-    logoAlt: p.logoAlt,
-    url: p.linkUrl,
-  }))
 
   // Map taxonomy for filters
   const mappedPersonas = personas.map((p) => ({
@@ -148,7 +137,6 @@ export default async function LibraryPage() {
           regions={mappedRegions}
           subjects={mappedSubjects}
           filterCounts={filterCounts}
-          partners={mappedPartners}
         />
       </Suspense>
 

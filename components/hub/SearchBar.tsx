@@ -30,15 +30,16 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
   return (
     <div className="relative w-full">
       <Icon
+        variant="rounded"
         name="search"
-        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-diligent-gray-3"
+        className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-diligent-gray-3"
       />
       <input
         type="search"
         placeholder="Search courses, templates, videos..."
         value={localValue}
         onChange={handleChange}
-        className="w-full rounded-sm border-2 border-diligent-gray-5 bg-white py-2.5 pl-10 pr-4 text-sm text-diligent-gray-5 outline-none placeholder:text-diligent-gray-3 focus-visible:border-link focus-visible:ring-0"
+        className="w-full rounded-lg border-2 border-diligent-gray-5 bg-white py-4 pl-12 pr-4 text-base text-diligent-gray-5 shadow-sm outline-none placeholder:text-diligent-gray-3 focus-visible:outline-none focus:ring-2 focus:ring-diligent-red"
         aria-label="Search content by title"
       />
     </div>

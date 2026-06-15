@@ -29,10 +29,10 @@ export function FooterCTASection({
           <h2 className="text-heading-1 font-semibold text-white">
             {heading ?? 'Upskill your board today'}
           </h2>
-          <div className="rich-text mt-4 max-w-xl text-diligent-gray-3">
+          <div className="rich-text mt-4 max-w-xl text-white/80">
             <SafeHtml html={body ?? DEFAULT_BODY} />
           </div>
-          <p className="mt-3 max-w-xl text-diligent-gray-3">
+          <p className="mt-3 max-w-xl text-white/80">
             Got questions? Email{' '}
             <a
               href={`mailto:${contactEmail}`}

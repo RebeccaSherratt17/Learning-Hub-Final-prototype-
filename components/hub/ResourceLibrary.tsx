@@ -11,7 +11,6 @@ import { FilterDrawer } from '@/components/hub/FilterDrawer'
 import { Pagination } from '@/components/hub/Pagination'
 import { SafeHtml } from '@/components/hub/SafeHtml'
 import { Icon } from '@/components/ui/Icon'
-import Image from 'next/image'
 import type { ContentItem } from '@/types/content'
 import { SEARCH_SUGGESTION_POOL } from '@/lib/searchSuggestions'
 
@@ -34,14 +33,6 @@ interface SubjectItem extends TaxonomyItem {
   group: string | null
 }
 
-interface Partner {
-  _id: string
-  name: string | null
-  logoUrl: string | null
-  logoAlt: string | null
-  url: string | null
-}
-
 interface ResourceLibraryProps {
   heading: string | null
   body: string | null
@@ -50,7 +41,6 @@ interface ResourceLibraryProps {
   regions: TaxonomyItem[]
   subjects: SubjectItem[]
   filterCounts: Record<string, number>
-  partners?: Partner[]
 }
 
 /** Filter items by search term and multi-select filters. Exported for testing. */
@@ -148,7 +138,6 @@ export function ResourceLibrary({
   regions,
   subjects,
   filterCounts,
-  partners = [],
 }: ResourceLibraryProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -343,55 +332,16 @@ export function ResourceLibrary({
   )
 
   return (
-    <section id="resource-library" className="border-b border-diligent-gray-2 py-16">
+    <section id="resource-library" className="border-b border-diligent-gray-2 py-20">
       <div className="mx-auto max-w-[var(--max-content-width)] px-6">
-        <h2 className="mb-4 text-3xl font-semibold text-diligent-gray-5 md:text-4xl lg:text-display-1">
+        <h1 className="mb-4 text-3xl font-semibold text-diligent-gray-5 md:text-4xl lg:text-display-1">
           Resource <span style={{ color: '#EE312E' }}>library</span>
-        </h2>
+        </h1>
         {body && (
           <SafeHtml
             html={body}
-            className="mb-6 text-base text-diligent-gray-4 prose"
+            className="mb-8 text-base text-[#5C5F63] prose"
           />
-        )}
-
-        {/* Compact partner logo scroller */}
-        {partners.length > 0 && (
-          <div className="mb-6 flex items-center gap-4" style={{ height: '48px' }}>
-            <span
-              className="flex-shrink-0 text-[11px] uppercase tracking-[0.08em] font-medium text-diligent-gray-4"
-            >
-              In partnership with:
-            </span>
-            <div className="relative min-w-0 flex-1 overflow-hidden partner-scroller-mask" style={{ height: '48px' }}>
-            <div
-              className="flex items-center gap-6 motion-safe:animate-[marquee_90s_linear_infinite]"
-              style={{ width: 'max-content', height: '48px' }}
-            >
-              {[...partners, ...partners].map((p, i) => {
-                if (!p.logoUrl) return null
-                const img = (
-                  <div key={`${p._id}-${i}`} className="flex h-8 w-[90px] flex-shrink-0 items-center justify-center">
-                    <Image
-                      src={p.logoUrl}
-                      alt={p.logoAlt ?? p.name ?? 'Partner logo'}
-                      width={90}
-                      height={32}
-                      className="h-full w-full object-contain"
-                    />
-                  </div>
-                )
-                return p.url ? (
-                  <a key={`${p._id}-${i}`} href={p.url} target="_blank" rel="noopener noreferrer" className="flex-shrink-0 no-underline">
-                    {img}
-                  </a>
-                ) : (
-                  img
-                )
-              })}
-            </div>
-            </div>
-          </div>
         )}
 
         {/* Search bar — full width */}
@@ -400,10 +350,9 @@ export function ResourceLibrary({
         </div>
 
         {/* Popular searches */}
-        <div className="mb-8 flex flex-wrap items-center gap-2">
+        <div className="mb-12 flex flex-wrap items-center gap-2">
           <span
-            className="flex-shrink-0 uppercase text-diligent-gray-4"
-            style={{ fontSize: '10px', letterSpacing: '0.08em' }}
+            className="flex-shrink-0 text-[11px] uppercase tracking-[0.08em] font-medium text-[#5C5F63]"
           >
             Popular searches
           </span>
@@ -412,8 +361,7 @@ export function ResourceLibrary({
               key={term}
               type="button"
               onClick={() => handleSearchChange(term)}
-              className="rounded-full border border-diligent-gray-2 bg-white text-diligent-gray-5 transition-colors hover:border-diligent-gray-3"
-              style={{ fontSize: '12px', padding: '4px 10px' }}
+              className="rounded-full border border-diligent-gray-2 bg-white text-sm text-[#5C5F63] transition-colors hover:border-diligent-gray-3 hover:text-diligent-gray-5 py-2.5 px-3.5"
             >
               {term}
             </button>
@@ -512,11 +460,11 @@ export function ResourceLibrary({
                       key={tag.label}
                       type="button"
                       onClick={tag.onRemove}
-                      className="flex items-center gap-1.5 rounded bg-white border border-diligent-gray-2 text-diligent-gray-5 transition-colors hover:border-diligent-gray-3"
-                      style={{ fontSize: '12px', padding: '6px 10px' }}
+                      aria-label={`Remove ${tag.label} filter`}
+                      className="flex items-center gap-1.5 rounded bg-white border border-diligent-gray-2 text-xs font-medium text-diligent-gray-5 transition-colors hover:border-diligent-gray-3 py-2.5 px-3"
                     >
                       <span>{tag.label}</span>
-                      <span className="text-diligent-gray-4" style={{ fontSize: '12px' }}>×</span>
+                      <span className="text-diligent-gray-4 text-xs" aria-hidden="true">×</span>
                     </button>
                   ))}
                 </div>
