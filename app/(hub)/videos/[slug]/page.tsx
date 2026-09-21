@@ -7,6 +7,7 @@ import { prisma } from '@/lib/db'
 import { ContentStatus } from '@/lib/generated/prisma'
 import { incrementViewCount } from '@/lib/view-count'
 import { hasGateSession } from '@/lib/gate-session'
+import { getUnlockedPathIds, isItemUnlocked } from '@/lib/unlocked-paths'
 import { Breadcrumb } from '@/components/hub/Breadcrumb'
 import { PreviewBanner } from '@/components/hub/PreviewBanner'
 import { RelatedItems } from '@/components/hub/RelatedItems'
@@ -153,8 +154,17 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
     incrementViewCount('VIDEO', video.id)
   }
 
-  // Check gate session
-  const gated = await hasGateSession()
+  // Check gate session (site-wide unlock)
+  const siteWideGated = await hasGateSession()
+
+  // Check if unlocked via learning path
+  const unlockedPaths = await getUnlockedPathIds()
+  const pathUnlocked =
+    unlockedPaths.length > 0
+      ? await isItemUnlocked('VIDEO', video.id, unlockedPaths)
+      : false
+
+  const gated = siteWideGated || pathUnlocked
 
   // Derived data
   const { main: titleMain, accent: titleAccent } = splitTitleForAccent(video.title)

@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { prisma } from '@/lib/db'
 import { learnerSessionCookieHeader } from '@/lib/learner-session'
+import { unlockedPathsCookieHeader } from '@/lib/unlocked-paths'
 
 interface IdentifyBody {
   firstName: string
@@ -60,6 +62,27 @@ export async function POST(request: Request) {
       },
     })
 
+    // Update unlocked paths cookie — add this learning path to the list
+    const cookieStore = await cookies()
+    const existingCookie = cookieStore.get('hub_unlocked_paths')
+    let unlockedPaths: string[] = []
+
+    if (existingCookie?.value) {
+      try {
+        const parsed = JSON.parse(decodeURIComponent(existingCookie.value))
+        if (Array.isArray(parsed)) {
+          unlockedPaths = parsed.filter((id) => typeof id === 'string')
+        }
+      } catch {
+        // Invalid JSON — start fresh
+      }
+    }
+
+    // Add current learning path if not already present
+    if (!unlockedPaths.includes(body.learningPathId.trim())) {
+      unlockedPaths.push(body.learningPathId.trim())
+    }
+
     const response = NextResponse.json({
       learnerId: learner.id,
       firstName: learner.firstName,
@@ -67,6 +90,7 @@ export async function POST(request: Request) {
       email: learner.email,
     })
     response.headers.append('Set-Cookie', learnerSessionCookieHeader(learner.id))
+    response.headers.append('Set-Cookie', unlockedPathsCookieHeader(unlockedPaths))
     return response
   } catch (err) {
     console.error('Failed to identify learner:', err)
