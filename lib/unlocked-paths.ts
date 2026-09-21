@@ -15,7 +15,7 @@ export async function getUnlockedPathIds(): Promise<string[]> {
   if (!cookie?.value) return []
 
   try {
-    const parsed = JSON.parse(cookie.value)
+    const parsed = JSON.parse(decodeURIComponent(cookie.value))
     if (Array.isArray(parsed)) {
       return parsed.filter((id) => typeof id === 'string')
     }
