@@ -26,6 +26,7 @@ interface CourseFormProps {
     title: string
     slug: string
     description: string
+    learningObjectives: string | null
     launchFile: string | null
     scormVersion: string | null
     thumbnailUrl: string | null
@@ -83,6 +84,7 @@ export default function CourseForm({
   const [slug, setSlug] = useState(course?.slug ?? '')
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(isEdit)
   const [description, setDescription] = useState(course?.description ?? '')
+  const [learningObjectives, setLearningObjectives] = useState(course?.learningObjectives ?? '')
   const [launchFile, setLaunchFile] = useState(course?.launchFile ?? '')
   const [scormVersion, setScormVersion] = useState(course?.scormVersion ?? '')
   const [scormUploading, setScormUploading] = useState(false)
@@ -255,6 +257,7 @@ export default function CourseForm({
       title,
       slug,
       description,
+      learningObjectives,
       launchFile: launchFile || null,
       scormVersion: scormVersion || null,
       thumbnailUrl: thumbnailUrl || null,
@@ -396,6 +399,16 @@ export default function CourseForm({
             Description <span className="text-diligent-red">*</span>
           </label>
           <RichTextEditor id="description" value={description} onChange={setDescription} />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-diligent-gray-5 mb-1">
+            Learning Objectives
+          </label>
+          <RichTextEditor id="learningObjectives" value={learningObjectives} onChange={setLearningObjectives} />
+          <p className="mt-1 text-xs text-diligent-gray-3">
+            Optional. Define the key learning outcomes for this course. Supports bullet points, bold, italic, and links.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

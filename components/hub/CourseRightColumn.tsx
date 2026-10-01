@@ -120,12 +120,8 @@ export function CourseRightColumn({
       }
 
       const data = await res.json()
-      setScormState({
-        attemptId: data.attemptId,
-        launchToken: data.launchToken,
-        launchUrl: data.launchUrl,
-        scormVersion: data.scormVersion,
-      })
+      // Open SCORM course in new tab
+      window.open(data.launchUrl, '_blank')
     } catch {
       setError('Network error. Please try again.')
     } finally {

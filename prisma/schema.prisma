@@ -143,6 +143,7 @@ model Course {
   title              String
   slug               String        @unique
   description        String        @db.Text
+  learningObjectives String?
   launchFile         String?       // Vercel Blob path to SCORM entry point
   scormVersion       String?       // "1.2" or "2004", auto-detected from manifest
   thumbnailUrl       String?

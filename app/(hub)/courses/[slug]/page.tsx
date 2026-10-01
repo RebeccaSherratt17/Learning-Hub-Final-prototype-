@@ -17,8 +17,10 @@ import { GateProvider } from '@/components/hub/GateContext'
 import { CourseRightColumn } from '@/components/hub/CourseRightColumn'
 import { GatedPrompt } from '@/components/hub/GatedPrompt'
 import { buildCourseJsonLd, buildBreadcrumbJsonLd } from '@/lib/jsonld'
+import { CourseObjectivesAccordion } from '@/components/hub/CourseObjectivesAccordion'
 
 const COURSE_INCLUDES = {
+  learningObjectives: true,
   author: true,
   subjects: {
     select: {
@@ -223,6 +225,13 @@ export default async function CoursePage({ params, searchParams }: PageProps) {
               {course.description && (
                 <div className="mt-5 text-base leading-relaxed text-diligent-gray-5">
                   <SafeHtml html={course.description} />
+                </div>
+              )}
+
+              {/* Learning Objectives Accordion */}
+              {course.learningObjectives && (
+                <div className="mt-5">
+                  <CourseObjectivesAccordion learningObjectives={course.learningObjectives!} />
                 </div>
               )}
 
