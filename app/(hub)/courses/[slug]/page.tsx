@@ -20,7 +20,6 @@ import { buildCourseJsonLd, buildBreadcrumbJsonLd } from '@/lib/jsonld'
 import { CourseObjectivesAccordion } from '@/components/hub/CourseObjectivesAccordion'
 
 const COURSE_INCLUDES = {
-  learningObjectives: true,
   author: true,
   subjects: {
     select: {
