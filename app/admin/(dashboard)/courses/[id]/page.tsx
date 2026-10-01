@@ -17,6 +17,7 @@ export default async function EditCoursePage({
     prisma.course.findUnique({
       where: { id: params.id },
       include: {
+        learningObjectives: true,
         personas: { include: { persona: true } },
         regions: { include: { region: true } },
         subjects: { include: { subject: true } },
