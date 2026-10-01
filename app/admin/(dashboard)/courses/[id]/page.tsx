@@ -52,6 +52,7 @@ export default async function EditCoursePage({
     title: course.title,
     slug: course.slug,
     description: course.description,
+    learningObjectives: course.learningObjectives,
     launchFile: course.launchFile,
     scormVersion: course.scormVersion,
     thumbnailUrl: course.thumbnailUrl,
