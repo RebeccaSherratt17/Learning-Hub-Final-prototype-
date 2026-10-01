@@ -120,8 +120,12 @@ export function CourseRightColumn({
       }
 
       const data = await res.json()
-      // Open SCORM course in new tab
-      window.open(data.launchUrl, '_blank')
+      // Open SCORM course in new tab with auth tokens
+      const urlWithParams = new URL(data.launchUrl)
+      urlWithParams.searchParams.append('launchToken', data.launchToken)
+      urlWithParams.searchParams.append('attemptId', data.attemptId)
+      urlWithParams.searchParams.append('scormVersion', data.scormVersion)
+      window.open(urlWithParams.toString(), '_blank')
     } catch {
       setError('Network error. Please try again.')
     } finally {
