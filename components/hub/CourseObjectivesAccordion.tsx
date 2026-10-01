@@ -19,19 +19,19 @@ export function CourseObjectivesAccordion({ learningObjectives }: CourseObjectiv
             aria-expanded={objectivesOpen}
           >
             <h2 className="text-lg font-semibold text-gray-900">Learning Objectives</h2>
-           <span 
-  className={`material-symbols-sharp text-[20px] text-diligent-gray-4 transition-transform duration-300 ${
-    objectivesOpen ? 'rotate-180' : ''
-  }`}
->
-  expand_more
-</span>
+            <span 
+              className={`material-symbols-sharp text-[20px] text-diligent-gray-4 transition-transform duration-300 ${
+                objectivesOpen ? 'rotate-180' : ''
+              }`}
+            >
+              expand_more
+            </span>
           </button>
 
           {objectivesOpen && (
             <div className="px-6 py-4 bg-white border-t border-gray-200">
               <div
-                className="prose prose-sm max-w-none text-gray-700"
+                className="text-gray-700 space-y-2 [&_ul]:list-disc [&_ul]:ml-5 [&_ol]:list-decimal [&_ol]:ml-5 [&_li]:text-gray-700"
                 dangerouslySetInnerHTML={{ __html: learningObjectives }}
               />
             </div>
