@@ -375,8 +375,13 @@ Rendered via `SafeHtml` component (DOMPurify). List styling via `.rich-text` CSS
 
 ## Known Issues / Tech Debt
 
-- Homepage server query (`app/(hub)/page.tsx`) filters `restricted: false` for courses only — templates, videos and learning paths in the initial render are not filtered (the content API and library are)
-- `vercel.json` schedules `/api/cron/feedback-digest`, but the route doesn't exist yet
+- Homepage server query (`app/(hub)/page.tsx`) filters `restricted: false` for courses only — templates, videos and learning paths in the initial render are not filtered (the content API and library are). **Deliberately deferred** until restricted access is used for non-course content; the fix is adding `restricted: false` to those three `findMany` filters
+- `vercel.json` schedules `/api/cron/feedback-digest`, but the route doesn't exist yet (the monthly cron call errors)
+- Demo request form (`/api/demo-request`) only sends an email — submissions aren't stored, so they don't appear in reporting or the leads CSV
+- `/api/track` has no rate limiting — page view / download counts can be inflated by scripted requests
+- `analytics_events` has no retention period or clean-up job (awaiting legal decision — see Pending Team Decisions)
+- Out-of-date tests: `components/ui/__tests__/Badge.test.tsx` and `components/hub/__tests__/ContentCard.test.tsx` fail (3 tests) and `ResourceLibrary.test.tsx` has type errors (missing `level` in `FilterState`) since the design/filter changes; one lint error (unused `firstName`) in `app/admin/(dashboard)/page.tsx`
+- Course completion state isn't persisted: "Course completed" only shows if the course page is still open when the learner finishes; the course page has no "back" button beyond the breadcrumbs and the player's Exit button
 
 ---
 
@@ -395,6 +400,8 @@ Rendered via `SafeHtml` component (DOMPurify). List styling via `.rich-text` CSS
 - Navigation bar: possible "Request a demo" CTA
 - Content re-tagging with new taxonomy, authors and levels (manual work via admin dashboard)
 - Homepage: further design refinements ongoing
+- **Privacy Notice** (on diligent.com, owned by Diligent legal): wording for the Learning Hub's cookieless visit measurement was sent for review on 2026-10-15, with questions on legal basis, whether the daily visitor hash counts as pseudonymous personal data, the retention period for `analytics_events`, and the cookie banner text ("We use cookies to analyse site usage…" — no analytics cookies are set yet). Apply the retention period / banner changes once legal responds
+- Final production domain: currently `learning-hub-final-prototype.vercel.app`; an earlier plan names `learning.diligent.com`. Switching only requires setting `NEXT_PUBLIC_SITE_URL` in Vercel and redeploying
 
 ---
 
