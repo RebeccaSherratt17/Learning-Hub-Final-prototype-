@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useCookieConsent } from './CookieConsentProvider'
+import { PRIVACY_NOTICE_URL } from '@/lib/legal-links'
 
 export function CookieConsentBanner() {
   const { consentState, acceptCookies, declineCookies } = useCookieConsent()
@@ -24,7 +25,7 @@ export function CookieConsentBanner() {
           We use cookies to analyse site usage and improve your experience. Essential
           cookies are always active.{' '}
           <a
-            href="https://www.diligent.com/privacy-policy"
+            href={PRIVACY_NOTICE_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="text-link hover:underline"
