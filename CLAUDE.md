@@ -444,6 +444,8 @@ Rendered via `SafeHtml` component (DOMPurify). List styling via `.rich-text` CSS
 | `lib/credly.ts` | Credly badge helper |
 | `lib/content.ts` | Shared content mapping (`publishedFilter`, `toCourseItem` etc.) |
 | `lib/jsonld.ts` | JSON-LD builders |
+| `lib/site-url.ts` | Canonical site URL (`SITE_URL`) |
+| `lib/legal-links.ts` | Privacy Notice + Preference Center URLs (pages live on diligent.com, not in this repo) |
 | `lib/gate-session.ts` | Gate cookie helpers |
 | `lib/learner-session.ts` | Learner cookie helpers |
 | `lib/unlocked-paths.ts` | Learning path unlock cookie helpers |

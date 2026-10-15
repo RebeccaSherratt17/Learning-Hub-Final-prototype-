@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, type FormEvent } from 'react'
+import { PREFERENCE_CENTER_URL, PRIVACY_NOTICE_URL } from '@/lib/legal-links'
 
 type Status = 'idle' | 'submitting' | 'success' | 'error'
 
@@ -218,8 +219,8 @@ export function DemoRequestForm({ ctaText }: { ctaText?: string | null }) {
 
       <p className="text-[11px] leading-relaxed text-white/60">
         By submitting this form, you agree to receive the information requested as well as sales and/or marketing communication on resources, news, and events related to the Diligent suite of solutions. You can unsubscribe at any time or manage the types of communication you would like to receive by visiting our{' '}
-        <a href="https://learn.diligent.com/preference-center.html" target="_blank" rel="noopener noreferrer" className="text-white/70 no-underline hover:underline">Preference Center</a>. For further details regarding how Diligent processes your personal information, please refer to our{' '}
-        <a href="https://www.diligent.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-white/70 no-underline hover:underline">Privacy Notice</a>.
+        <a href={PREFERENCE_CENTER_URL} target="_blank" rel="noopener noreferrer" className="text-white/70 no-underline hover:underline">Preference Center</a>. For further details regarding how Diligent processes your personal information, please refer to our{' '}
+        <a href={PRIVACY_NOTICE_URL} target="_blank" rel="noopener noreferrer" className="text-white/70 no-underline hover:underline">Privacy Notice</a>.
       </p>
 
       {status === 'error' && (

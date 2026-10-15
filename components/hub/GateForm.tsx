@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { sendTrackingEvent } from '@/lib/analytics/track-client'
+import { PREFERENCE_CENTER_URL, PRIVACY_NOTICE_URL } from '@/lib/legal-links'
 
 interface GateFormProps {
   contentType: string
@@ -200,7 +201,7 @@ export default function GateForm({
             Diligent Corporation and its affiliates. You can update your
             preferences at any time via our{' '}
             <a
-              href="https://www.diligent.com/preference-center"
+              href={PREFERENCE_CENTER_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="text-link"
@@ -209,7 +210,7 @@ export default function GateForm({
             </a>{' '}
             or review our{' '}
             <a
-              href="https://www.diligent.com/privacy-notice"
+              href={PRIVACY_NOTICE_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="text-link"
