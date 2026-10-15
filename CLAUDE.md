@@ -20,6 +20,7 @@ Local paths: `C:\Users\rsherratt\Claude-Code-projects\learning-hub`, `C:\Users\a
 - **SCORM hosting**: Self-hosted via `scorm-again` npm package (no SCORM Cloud)
 - **Styling**: Tailwind CSS
 - **Language**: TypeScript throughout
+- **Node.js**: 24.x, pinned via `engines` in `package.json` (Vercel uses this over the dashboard setting). Do not lower it: `isomorphic-dompurify` → jsdom 29 needs Node ≥20.19/22.13, and on older runtimes every page using `SafeHtml` fails server rendering with `ERR_REQUIRE_ESM` (pages still render client-side but return HTTP 500)
 - **Lead management**: Marketo (REST API, server-side proxy — credentials pending)
 - **Analytics**: Amplitude (client-side SDK + server-side HTTP API, consent-aware — API key pending)
 - **Digital badges**: Credly (REST API — credentials set, badge templates being configured)
