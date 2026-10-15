@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { prisma } from '@/lib/db'
+import { SITE_URL } from '@/lib/site-url'
 import { ContentStatus } from '@/lib/generated/prisma'
 import { incrementViewCount } from '@/lib/view-count'
 import { hasGateSession } from '@/lib/gate-session'
@@ -175,7 +176,6 @@ export default async function CoursePage({ params, searchParams }: PageProps) {
     : null
 
   // JSON-LD
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://learning-hub-final-prototype-3zio4xt7t.vercel.app'
   const jsonLd = buildCourseJsonLd({
     title: course.title,
     description: course.description,
@@ -184,9 +184,9 @@ export default async function CoursePage({ params, searchParams }: PageProps) {
     estimatedDuration: course.estimatedDuration,
   })
   const breadcrumbJsonLd = buildBreadcrumbJsonLd([
-    { name: 'Home', url: siteUrl },
-    { name: 'Courses', url: `${siteUrl}/library?type=COURSE` },
-    { name: course.title, url: `${siteUrl}/courses/${course.slug}` },
+    { name: 'Home', url: SITE_URL },
+    { name: 'Courses', url: `${SITE_URL}/library?type=COURSE` },
+    { name: course.title, url: `${SITE_URL}/courses/${course.slug}` },
   ])
 
   return (

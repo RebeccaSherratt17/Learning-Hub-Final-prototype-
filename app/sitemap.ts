@@ -1,7 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { prisma } from '@/lib/db'
-
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://learning.diligent.com'
+import { SITE_URL as BASE_URL } from '@/lib/site-url'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [courses, templates, videos, learningPaths] = await Promise.all([

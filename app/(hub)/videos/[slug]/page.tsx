@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { prisma } from '@/lib/db'
+import { SITE_URL } from '@/lib/site-url'
 import { ContentStatus } from '@/lib/generated/prisma'
 import { incrementViewCount } from '@/lib/view-count'
 import { hasGateSession } from '@/lib/gate-session'
@@ -173,7 +174,6 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
     : null
 
   // JSON-LD
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://learning-hub-final-prototype-3zio4xt7t.vercel.app'
   const jsonLd = buildVideoJsonLd({
     title: video.title,
     description: video.description,
@@ -183,9 +183,9 @@ export default async function VideoPage({ params, searchParams }: PageProps) {
     vidyardUrl: video.vidyardUrl,
   })
   const breadcrumbJsonLd = buildBreadcrumbJsonLd([
-    { name: 'Home', url: siteUrl },
-    { name: 'Videos', url: `${siteUrl}/library?type=VIDEO` },
-    { name: video.title, url: `${siteUrl}/videos/${video.slug}` },
+    { name: 'Home', url: SITE_URL },
+    { name: 'Videos', url: `${SITE_URL}/library?type=VIDEO` },
+    { name: video.title, url: `${SITE_URL}/videos/${video.slug}` },
   ])
 
   return (

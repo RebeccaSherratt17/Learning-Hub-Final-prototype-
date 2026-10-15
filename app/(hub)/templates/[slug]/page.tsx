@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { prisma } from '@/lib/db'
+import { SITE_URL } from '@/lib/site-url'
 import { ContentStatus } from '@/lib/generated/prisma'
 import { incrementViewCount } from '@/lib/view-count'
 import { hasGateSession } from '@/lib/gate-session'
@@ -187,7 +188,6 @@ export default async function TemplatePage({ params, searchParams }: PageProps) 
   )
 
   // JSON-LD
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://learning-hub-final-prototype-3zio4xt7t.vercel.app'
   const jsonLd = buildTemplateJsonLd({
     title: template.title,
     description: template.description,
@@ -196,9 +196,9 @@ export default async function TemplatePage({ params, searchParams }: PageProps) 
     fileType: template.fileType,
   })
   const breadcrumbJsonLd = buildBreadcrumbJsonLd([
-    { name: 'Home', url: siteUrl },
-    { name: 'Templates', url: `${siteUrl}/library?type=TEMPLATE` },
-    { name: template.title, url: `${siteUrl}/templates/${template.slug}` },
+    { name: 'Home', url: SITE_URL },
+    { name: 'Templates', url: `${SITE_URL}/library?type=TEMPLATE` },
+    { name: template.title, url: `${SITE_URL}/templates/${template.slug}` },
   ])
 
   return (
