@@ -120,8 +120,18 @@ export function CourseRightColumn({
       }
 
       const data = await res.json()
-      // Open SCORM course in new tab
-      window.open(data.launchUrl, '_blank')
+// Hand the launch details to the player page, then open it in a new tab
+localStorage.setItem(
+  `scorm-launch:${data.attemptId}`,
+  JSON.stringify({
+    attemptId: data.attemptId,
+    launchToken: data.launchToken,
+    launchUrl: data.launchUrl,
+    scormVersion: data.scormVersion,
+    courseTitle: courseTitle,
+  })
+)
+window.open(`/play/${data.attemptId}`, '_blank')
     } catch {
       setError('Network error. Please try again.')
     } finally {
