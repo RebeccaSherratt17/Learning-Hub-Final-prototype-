@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getLeads, getReport } from '@/lib/admin/reporting'
-import { parseRange } from '@/lib/admin/reportingRanges'
+import { resolveRange, toDateParam } from '@/lib/admin/reportingRanges'
 import { toCsv } from '@/lib/admin/csv'
 
 const TYPE_LABELS = {
@@ -14,6 +14,7 @@ const TYPE_LABELS = {
 
 /**
  * GET /api/admin/reporting/export?report=items|learning-paths|leads&range=30d
+ *   (or &range=custom&from=YYYY-MM-DD&to=YYYY-MM-DD)
  * Downloads the selected reporting table as CSV.
  */
 export async function GET(request: Request) {
@@ -24,13 +25,17 @@ export async function GET(request: Request) {
 
   const url = new URL(request.url)
   const report = url.searchParams.get('report')
-  const range = parseRange(url.searchParams.get('range') ?? undefined)
+  const period = resolveRange({
+    range: url.searchParams.get('range'),
+    from: url.searchParams.get('from'),
+    to: url.searchParams.get('to'),
+  })
 
   try {
     let csv: string
 
     if (report === 'items') {
-      const { items } = await getReport(range)
+      const { items } = await getReport(period)
       csv = toCsv(
         ['Title', 'Type', 'Status', 'Views', 'Unique visitors', 'All-time views', 'Leads', 'Downloads', 'Course starts', 'Course completions', 'Badges issued'],
         items.map((i) => [
@@ -39,13 +44,13 @@ export async function GET(request: Request) {
         ]),
       )
     } else if (report === 'learning-paths') {
-      const { paths } = await getReport(range)
+      const { paths } = await getReport(period)
       csv = toCsv(
         ['Title', 'Status', 'Views', 'Enrolled', 'Active learners', 'Completions', 'Badges issued'],
         paths.map((p) => [p.title, p.status, p.views, p.enrolled, p.activeLearners, p.completions, p.badges]),
       )
     } else if (report === 'leads') {
-      const leads = await getLeads(range)
+      const leads = await getLeads(period)
       csv = toCsv(
         ['Submitted at', 'First name', 'Last name', 'Email', 'Organization', 'Job title', 'Content type', 'Content'],
         leads.map((l) => [
@@ -57,11 +62,13 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unknown report' }, { status: 400 })
     }
 
-    const date = new Date().toISOString().slice(0, 10)
+    const span = period.range === 'all'
+      ? `all-time-to-${toDateParam(period.to)}`
+      : `${toDateParam(period.from)}-to-${toDateParam(period.to)}`
     return new NextResponse(csv, {
       headers: {
         'Content-Type': 'text/csv; charset=utf-8',
-        'Content-Disposition': `attachment; filename="learning-hub-${report}-${range}-${date}.csv"`,
+        'Content-Disposition': `attachment; filename="learning-hub-${report}-${span}.csv"`,
         'Cache-Control': 'no-store',
       },
     })

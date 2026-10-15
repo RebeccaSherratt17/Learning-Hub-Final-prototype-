@@ -352,9 +352,10 @@ Rendered via `SafeHtml` component (DOMPurify). List styling via `.rich-text` CSS
 ## Reporting & First-Party Analytics
 
 **Reporting page** (`/admin/reporting`) — server-rendered from `lib/admin/reporting.ts`:
-- Date range pills (`?range=7d|30d|90d|12m|all`, default 30d) scope everything on the page
+- Date range pills (`?range=7d|30d|90d|12m|all`, default 30d) or a custom range (`?range=custom&from=YYYY-MM-DD&to=YYYY-MM-DD`, inclusive, UTC; `DateRangeFilter.tsx`) scope everything on the page. Resolved by `resolveRange()` in `lib/admin/reportingRanges.ts` into `{ from, to, end (exclusive), bucket }`; all queries use `>= from AND < end`. Custom trend buckets: daily ≤92 days, weekly ≤2 years, else monthly.
 - KPI tiles: unique visitors, page views, leads (gate submissions), course completions (with completion rate), template downloads, Credly badges issued
 - Trend chart (`components/admin/reporting/TrendChart.tsx`): visitors / page views, daily buckets up to 90d, weekly for 12m, monthly for all time; crosshair tooltip, keyboard arrows, table view. Single series in Blue3 `#0B4CCE`.
+- Most popular (`PopularContent.tsx`): separate top-10 ranked lists for Courses, Learning paths, Videos and Templates, toggling between the selected period (tracked page views) and all time (`viewCount` since launch)
 - Content performance table (`ItemsReportTable.tsx`): per item views, visitors, all-time `viewCount`, leads, downloads (templates), starts/completions/completion rate (courses); sortable, filter by type/status/search
 - Learning paths table: views, enrolled, active learners, completions (all mandatory items done), badges
 - CSV export: `/api/admin/reporting/export?report=items|learning-paths|leads&range=...` (admin-only; leads CSV contains PII; cells are escaped against formula injection)

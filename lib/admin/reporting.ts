@@ -4,10 +4,7 @@ import type { ContentStatus, ContentType } from '@/lib/generated/prisma'
 import { ANALYTICS_EVENTS } from '@/lib/analytics/events'
 import {
   bucketKeys,
-  rangeBucket,
-  rangeStart,
-  type ReportRange,
-  type TrendBucket,
+  type ResolvedRange,
 } from '@/lib/admin/reportingRanges'
 
 // ---------------------------------------------------------------------------
@@ -59,9 +56,7 @@ export interface PathReportRow {
 }
 
 export interface Report {
-  range: ReportRange
-  from: Date
-  bucket: TrendBucket
+  period: ResolvedRange
   trackingSince: Date | null
   overview: ReportOverview
   trend: TrendPoint[]
@@ -103,7 +98,7 @@ async function getTrackingSince(): Promise<Date | null> {
   return first?.createdAt ?? null
 }
 
-async function getEventTotals(from: Date) {
+async function getEventTotals({ from, end }: ResolvedRange) {
   const [row] = await prisma.$queryRaw<
     { views: bigint; visitors: bigint; downloads: bigint }[]
   >`
@@ -112,7 +107,7 @@ async function getEventTotals(from: Date) {
       COUNT(DISTINCT metadata->>'visitorHash') FILTER (WHERE "eventType" = ${ANALYTICS_EVENTS.PAGE_VIEW}) AS visitors,
       COUNT(*) FILTER (WHERE "eventType" = ${ANALYTICS_EVENTS.TEMPLATE_DOWNLOAD}) AS downloads
     FROM analytics_events
-    WHERE "createdAt" >= ${from}
+    WHERE "createdAt" >= ${from} AND "createdAt" < ${end}
   `
   return {
     views: Number(row?.views ?? 0),
@@ -121,7 +116,10 @@ async function getEventTotals(from: Date) {
   }
 }
 
-async function getTrend(from: Date, bucket: TrendBucket, trackingSince: Date | null): Promise<TrendPoint[]> {
+async function getTrend(
+  { from, to, end, bucket }: ResolvedRange,
+  trackingSince: Date | null,
+): Promise<TrendPoint[]> {
   if (!trackingSince) return []
 
   const rows = await prisma.$queryRaw<{ bucket: string; visitors: bigint; views: bigint }[]>`
@@ -130,7 +128,7 @@ async function getTrend(from: Date, bucket: TrendBucket, trackingSince: Date | n
       COUNT(DISTINCT metadata->>'visitorHash') AS visitors,
       COUNT(*) AS views
     FROM analytics_events
-    WHERE "eventType" = ${ANALYTICS_EVENTS.PAGE_VIEW} AND "createdAt" >= ${from}
+    WHERE "eventType" = ${ANALYTICS_EVENTS.PAGE_VIEW} AND "createdAt" >= ${from} AND "createdAt" < ${end}
     GROUP BY 1
     ORDER BY 1
   `
@@ -138,14 +136,14 @@ async function getTrend(from: Date, bucket: TrendBucket, trackingSince: Date | n
 
   // "All time" starts when tracking began rather than at the epoch
   const start = from.getTime() === 0 ? trackingSince : from
-  return bucketKeys(start, new Date(), bucket).map((date) => ({
+  return bucketKeys(start, to, bucket).map((date) => ({
     date,
     visitors: Number(byKey.get(date)?.visitors ?? 0),
     views: Number(byKey.get(date)?.views ?? 0),
   }))
 }
 
-async function getEventsByItem(from: Date) {
+async function getEventsByItem({ from, end }: ResolvedRange) {
   const rows = await prisma.$queryRaw<
     { contentId: string; eventType: string; total: bigint; visitors: bigint; learners: bigint }[]
   >`
@@ -156,7 +154,7 @@ async function getEventsByItem(from: Date) {
       COUNT(DISTINCT metadata->>'visitorHash') AS visitors,
       COUNT(DISTINCT metadata->>'learnerId') AS learners
     FROM analytics_events
-    WHERE "contentId" IS NOT NULL AND "createdAt" >= ${from}
+    WHERE "contentId" IS NOT NULL AND "createdAt" >= ${from} AND "createdAt" < ${end}
     GROUP BY 1, 2
   `
   const views = new Map<string, number>()
@@ -181,7 +179,8 @@ async function getEventsByItem(from: Date) {
  * completed a path once every mandatory, non-milestone item is done. The
  * completion date is when their last mandatory item was finished.
  */
-async function getPathProgress(from: Date) {
+async function getPathProgress({ from, end }: ResolvedRange) {
+  const inWindow = (d: Date) => d >= from && d < end
   const [mandatoryItems, progress] = await Promise.all([
     prisma.learningPathItem.findMany({
       where: { isElective: false, milestoneTitle: null },
@@ -204,7 +203,7 @@ async function getPathProgress(from: Date) {
     if (!perLearner.has(p.learningPathId)) perLearner.set(p.learningPathId, new Map())
     const learners = perLearner.get(p.learningPathId)!
     const entry = learners.get(p.learnerId) ?? { done: 0, last: new Date(0), active: false }
-    if (p.completedAt >= from) entry.active = true
+    if (inWindow(p.completedAt)) entry.active = true
     if (mandatoryByPath.get(p.learningPathId)?.has(p.learningPathItemId)) {
       entry.done += 1
       if (p.completedAt > entry.last) entry.last = p.completedAt
@@ -218,7 +217,7 @@ async function getPathProgress(from: Date) {
     const required = mandatoryByPath.get(pathId)?.size ?? 0
     learners.forEach((entry) => {
       if (entry.active) increment(activeLearners, pathId)
-      if (required > 0 && entry.done >= required && entry.last >= from) increment(completions, pathId)
+      if (required > 0 && entry.done >= required && inWindow(entry.last)) increment(completions, pathId)
     })
   })
 
@@ -229,9 +228,8 @@ async function getPathProgress(from: Date) {
 // Public API
 // ---------------------------------------------------------------------------
 
-export async function getReport(range: ReportRange): Promise<Report> {
-  const from = rangeStart(range)
-  const bucket = rangeBucket(range)
+export async function getReport(period: ResolvedRange): Promise<Report> {
+  const inRange = { gte: period.from, lt: period.end }
   const contentSelect = { id: true, title: true, status: true, viewCount: true } as const
 
   const [
@@ -248,21 +246,21 @@ export async function getReport(range: ReportRange): Promise<Report> {
     learningPaths,
   ] = await Promise.all([
     getTrackingSince(),
-    getEventTotals(from),
-    getEventsByItem(from),
-    getPathProgress(from),
+    getEventTotals(period),
+    getEventsByItem(period),
+    getPathProgress(period),
     prisma.gateSubmission.groupBy({
       by: ['contentId'],
-      where: { createdAt: { gte: from } },
+      where: { createdAt: inRange },
       _count: { _all: true },
     }),
     prisma.attempt.groupBy({
       by: ['courseId', 'status'],
-      where: { createdAt: { gte: from } },
+      where: { createdAt: inRange },
       _count: { _all: true },
     }),
     prisma.credlyBadgeIssuance.findMany({
-      where: { issuedAt: { gte: from } },
+      where: { issuedAt: inRange },
       select: { courseId: true, learningPathId: true },
     }),
     prisma.course.findMany({ select: contentSelect }),
@@ -271,7 +269,7 @@ export async function getReport(range: ReportRange): Promise<Report> {
     prisma.learningPath.findMany({ select: contentSelect }),
   ])
 
-  const trend = await getTrend(from, bucket, trackingSince)
+  const trend = await getTrend(period, trackingSince)
 
   const leads = new Map(leadGroups.map((g) => [g.contentId, g._count._all]))
 
@@ -332,9 +330,7 @@ export async function getReport(range: ReportRange): Promise<Report> {
   const sum = (values: Iterable<number>) => Array.from(values).reduce((a, b) => a + b, 0)
 
   return {
-    range,
-    from,
-    bucket,
+    period,
     trackingSince,
     overview: {
       visitors: totals.visitors,
@@ -354,10 +350,9 @@ export async function getReport(range: ReportRange): Promise<Report> {
 }
 
 /** Gate form submissions in range, newest first, with the item they unlocked. */
-export async function getLeads(range: ReportRange): Promise<LeadRow[]> {
-  const from = rangeStart(range)
+export async function getLeads(period: ResolvedRange): Promise<LeadRow[]> {
   const submissions = await prisma.gateSubmission.findMany({
-    where: { createdAt: { gte: from } },
+    where: { createdAt: { gte: period.from, lt: period.end } },
     orderBy: { createdAt: 'desc' },
   })
 

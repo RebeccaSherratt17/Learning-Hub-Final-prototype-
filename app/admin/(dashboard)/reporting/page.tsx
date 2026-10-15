@@ -5,11 +5,17 @@ import StatCard from '@/components/admin/StatCard'
 import StatusBadge from '@/components/admin/StatusBadge'
 import TrendChart from '@/components/admin/reporting/TrendChart'
 import ItemsReportTable from '@/components/admin/reporting/ItemsReportTable'
+import DateRangeFilter from '@/components/admin/reporting/DateRangeFilter'
+import PopularContent from '@/components/admin/reporting/PopularContent'
 import { getReport } from '@/lib/admin/reporting'
-import { REPORT_RANGES, parseRange } from '@/lib/admin/reportingRanges'
+import { REPORT_RANGES, rangeQuery, resolveRange, toDateParam } from '@/lib/admin/reportingRanges'
 
 function formatDate(date: Date): string {
-  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
+}
+
+function formatShortDate(date: Date): string {
+  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
 }
 
 interface PageProps {
@@ -18,19 +24,29 @@ interface PageProps {
 
 export default async function ReportingPage({ searchParams }: PageProps) {
   const resolvedSearchParams = await searchParams
-  const range = parseRange(resolvedSearchParams.range)
-  const report = await getReport(range)
-  const { overview } = report
+  const period = resolveRange(resolvedSearchParams)
+  const report = await getReport(period)
+  const { overview, trackingSince } = report
 
-  const trackingStartedLate =
-    report.trackingSince !== null && report.trackingSince > report.from
+  const isAllTime = period.range === 'all'
+  const dateSpan = isAllTime
+    ? `All time to ${formatShortDate(period.to)}`
+    : `${formatShortDate(period.from)} – ${formatShortDate(period.to)}`
+  const periodLabel =
+    period.range === 'custom'
+      ? dateSpan
+      : (REPORT_RANGES.find((r) => r.value === period.range)?.label ?? '').toLowerCase()
+
+  const noTrackingInWindow = trackingSince !== null && trackingSince >= period.end
+  const trackingStartedLate = trackingSince !== null && trackingSince > period.from
 
   const completionRate =
     overview.courseStarts > 0
       ? `${Math.round((overview.courseCompletions / overview.courseStarts) * 100)}% of ${overview.courseStarts.toLocaleString('en-GB')} started`
       : 'No courses started'
 
-  const exportLink = (report: string) => `/api/admin/reporting/export?report=${report}&range=${range}`
+  const query = rangeQuery(period)
+  const exportLink = (report: string) => `/api/admin/reporting/export?report=${report}&${query}`
 
   return (
     <div className="space-y-8">
@@ -52,34 +68,29 @@ export default async function ReportingPage({ searchParams }: PageProps) {
       </div>
 
       {/* Date range — scopes everything below */}
-      <nav aria-label="Date range" className="flex flex-wrap gap-2">
-        {REPORT_RANGES.map((r) => {
-          const isActive = r.value === range
-          return (
-            <Link
-              key={r.value}
-              href={`/admin/reporting?range=${r.value}`}
-              aria-current={isActive ? 'page' : undefined}
-              className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-diligent-gray-5 text-white'
-                  : 'bg-white text-diligent-gray-4 shadow-sm hover:text-diligent-gray-5'
-              }`}
-            >
-              {r.label}
-            </Link>
-          )
-        })}
-      </nav>
+      <div>
+        <DateRangeFilter
+          key={query}
+          range={period.range}
+          from={toDateParam(period.from)}
+          to={toDateParam(period.to)}
+          today={toDateParam(new Date())}
+        />
+        <p className="mt-3 text-sm text-diligent-gray-4">
+          Showing <span className="font-medium text-diligent-gray-5">{dateSpan}</span> (UTC)
+        </p>
+      </div>
 
       {/* Tracking notice */}
-      {(report.trackingSince === null || trackingStartedLate) && (
+      {(trackingSince === null || trackingStartedLate) && (
         <div className="flex items-start gap-3 rounded-lg border border-diligent-gray-2 bg-white p-4 text-sm text-diligent-gray-5">
           <span className="material-symbols-sharp text-[20px] text-diligent-gray-4">info</span>
           <p>
-            {report.trackingSince === null
+            {trackingSince === null
               ? 'Visitor and download tracking is switched on but no visits have been recorded yet. Figures will appear as people use the hub.'
-              : `Visitor and download tracking started on ${formatDate(report.trackingSince)}, so earlier visits aren't included.`}{' '}
+              : noTrackingInWindow
+                ? `Visitor and download tracking started on ${formatDate(trackingSince)}, after this period, so there is no visitor data for it.`
+                : `Visitor and download tracking started on ${formatDate(trackingSince)}, so earlier visits aren't included.`}{' '}
             Leads, course and learning path figures include all historical data.
           </p>
         </div>
@@ -96,10 +107,13 @@ export default async function ReportingPage({ searchParams }: PageProps) {
       </div>
 
       {/* Trend */}
-      <TrendChart points={report.trend} bucket={report.bucket} />
+      <TrendChart points={report.trend} bucket={period.bucket} />
+
+      {/* Most popular per content type */}
+      <PopularContent items={report.items} periodLabel={periodLabel} />
 
       {/* Per-item table */}
-      <ItemsReportTable items={report.items} range={range} />
+      <ItemsReportTable items={report.items} rangeQuery={query} />
 
       {/* Learning paths */}
       <div className="rounded-lg bg-white shadow-sm">

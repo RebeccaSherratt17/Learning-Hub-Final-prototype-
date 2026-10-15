@@ -5,7 +5,6 @@ import Link from 'next/link'
 import type { ContentStatus, ContentType } from '@/lib/generated/prisma'
 import StatusBadge from '@/components/admin/StatusBadge'
 import ContentTypeBadge from '@/components/admin/ContentTypeBadge'
-import type { ReportRange } from '@/lib/admin/reportingRanges'
 
 interface ItemRow {
   id: string
@@ -24,7 +23,8 @@ interface ItemRow {
 
 interface ItemsReportTableProps {
   items: ItemRow[]
-  range: ReportRange
+  /** Query string for the current date range, e.g. "range=30d" */
+  rangeQuery: string
 }
 
 type SortField = 'title' | 'views' | 'visitors' | 'allTimeViews' | 'leads' | 'downloads' | 'starts' | 'completions' | 'completionRate'
@@ -54,7 +54,7 @@ function formatCount(value: number | null): string {
   return value === null ? '—' : value.toLocaleString('en-GB')
 }
 
-export default function ItemsReportTable({ items, range }: ItemsReportTableProps) {
+export default function ItemsReportTable({ items, rangeQuery }: ItemsReportTableProps) {
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState<ContentType | ''>('')
   const [statusFilter, setStatusFilter] = useState<ContentStatus | ''>('PUBLISHED')
@@ -127,7 +127,7 @@ export default function ItemsReportTable({ items, range }: ItemsReportTableProps
           </p>
         </div>
         <a
-          href={`/api/admin/reporting/export?report=items&range=${range}`}
+          href={`/api/admin/reporting/export?report=items&${rangeQuery}`}
           className="inline-flex shrink-0 items-center gap-1.5 self-start rounded border border-diligent-gray-2 px-3 py-2 text-sm font-medium text-diligent-gray-5 hover:bg-diligent-gray-1 lg:self-auto"
         >
           <span className="material-symbols-sharp text-[18px]">download</span>

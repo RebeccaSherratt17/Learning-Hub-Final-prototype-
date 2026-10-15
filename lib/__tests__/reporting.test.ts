@@ -1,20 +1,39 @@
 import { describe, it, expect } from 'vitest'
-import { bucketKeys, bucketStart, parseRange, rangeStart } from '@/lib/admin/reportingRanges'
+import { bucketKeys, bucketStart, rangeQuery, resolveRange, toDateParam } from '@/lib/admin/reportingRanges'
 import { toCsv } from '@/lib/admin/csv'
 import { isBot, getClientIp, visitorHash } from '@/lib/analytics/visitor'
 
 describe('reporting ranges', () => {
   const now = new Date('2026-10-15T14:30:00Z')
 
+  const span = (r: ReturnType<typeof resolveRange>) => [toDateParam(r.from), toDateParam(r.to), toDateParam(r.end)]
+
   it('defaults unknown ranges to 30 days', () => {
-    expect(parseRange(undefined)).toBe('30d')
-    expect(parseRange('bogus')).toBe('30d')
-    expect(parseRange('12m')).toBe('12m')
+    expect(resolveRange({}, now).range).toBe('30d')
+    expect(resolveRange({ range: 'bogus' }, now).range).toBe('30d')
+    expect(resolveRange({ range: '12m' }, now)).toMatchObject({ range: '12m', bucket: 'week' })
   })
 
-  it('counts today as the first day of the range', () => {
-    expect(rangeStart('7d', now).toISOString()).toBe('2026-10-09T00:00:00.000Z')
-    expect(rangeStart('all', now).getTime()).toBe(0)
+  it('counts today as the first day of a preset and ends after today', () => {
+    expect(span(resolveRange({ range: '7d' }, now))).toEqual(['2026-10-09', '2026-10-15', '2026-10-16'])
+    expect(resolveRange({ range: 'all' }, now).from.getTime()).toBe(0)
+  })
+
+  it('resolves custom ranges inclusively and picks a bucket by span', () => {
+    const sept = resolveRange({ range: 'custom', from: '2026-09-01', to: '2026-09-30' }, now)
+    expect(span(sept)).toEqual(['2026-09-01', '2026-09-30', '2026-10-01'])
+    expect(sept.bucket).toBe('day')
+    expect(resolveRange({ range: 'custom', from: '2026-01-01', to: '2026-09-30' }, now).bucket).toBe('week')
+    expect(resolveRange({ range: 'custom', from: '2023-01-01', to: '2026-09-30' }, now).bucket).toBe('month')
+    expect(rangeQuery(sept)).toBe('range=custom&from=2026-09-01&to=2026-09-30')
+  })
+
+  it('swaps reversed dates, clamps the future and rejects bad input', () => {
+    expect(span(resolveRange({ range: 'custom', from: '2026-09-30', to: '2026-09-01' }, now)).slice(0, 2))
+      .toEqual(['2026-09-01', '2026-09-30'])
+    expect(toDateParam(resolveRange({ range: 'custom', from: '2026-10-01', to: '2027-01-01' }, now).to)).toBe('2026-10-15')
+    expect(resolveRange({ range: 'custom', from: '2026-02-30', to: '2026-03-01' }, now).range).toBe('30d')
+    expect(resolveRange({ range: 'custom', from: '2026-09-01' }, now).range).toBe('30d')
   })
 
   it('starts weeks on Monday like Postgres date_trunc', () => {
@@ -25,7 +44,7 @@ describe('reporting ranges', () => {
   })
 
   it('fills every bucket between two dates', () => {
-    expect(bucketKeys(rangeStart('7d', now), now, 'day')).toEqual([
+    expect(bucketKeys(resolveRange({ range: '7d' }, now).from, now, 'day')).toEqual([
       '2026-10-09', '2026-10-10', '2026-10-11', '2026-10-12', '2026-10-13', '2026-10-14', '2026-10-15',
     ])
     expect(bucketKeys(new Date('2026-08-20T00:00:00Z'), now, 'month')).toEqual(['2026-08-01', '2026-09-01', '2026-10-01'])
