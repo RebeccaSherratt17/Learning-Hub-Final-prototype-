@@ -6,10 +6,7 @@
  */
 
 import { stripHtmlTags } from '@/lib/admin/metadataHealth'
-
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  'https://learning-hub-final-prototype-3zio4xt7t.vercel.app'
+import { SITE_URL } from '@/lib/site-url'
 
 // ---------------------------------------------------------------------------
 // Shared fragments

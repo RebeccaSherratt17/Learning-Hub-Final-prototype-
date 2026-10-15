@@ -3,7 +3,7 @@
 ## Overview
 The Diligent Learning Hub is a publicly accessible educational resource hub for governance professionals including board directors, company secretaries, executives and general counsel. It hosts free and gated educational content about corporate governance, risk and compliance (GRC).
 
-The hub is fully built and deployed at `https://learning-hub-final-prototype-3zio4xt7t.vercel.app`. This CLAUDE.md reflects the **current state of the codebase** (last updated 2026-10-15) — not a spec for something yet to be built. Read it to understand what exists before making any changes.
+The hub is fully built and deployed at **`https://learning-hub-final-prototype.vercel.app`** (production domain — always serves the latest production deployment). Addresses like `learning-hub-final-prototype-<hash>.vercel.app` are individual deployments and change with every release; they're behind Vercel login (Deployment Protection). The canonical address used in absolute URLs comes from `SITE_URL` in `lib/site-url.ts` (`NEXT_PUBLIC_SITE_URL`, falling back to the production domain). This CLAUDE.md reflects the **current state of the codebase** (last updated 2026-10-15) — not a spec for something yet to be built. Read it to understand what exists before making any changes.
 
 GitHub repo: `RebeccaSherratt17/Learning-Hub-Final-prototype-`
 Local paths: `C:\Users\rsherratt\Claude-Code-projects\learning-hub`, `C:\Users\athompson\Claude-Code-projects\Learning-Hub-Final-prototype-`
@@ -119,7 +119,8 @@ Additional infrastructure:
 - SCORM proxy route (`/api/scorm/content/[...path]`) — serves course files inline with correct headers
 - **Restricted content** (all four types): `restricted` + `accessToken` + `restrictedNote` fields. Accessible only via `?token=` URL; invalid tokens show a "This link is not valid" page. Hidden from library, content API, homepage widgets and sitemap.
 - Sitemap (`/sitemap.xml`) — published non-restricted content only
-- Robots.txt — environment-aware (blocks crawling on non-production)
+- Robots.txt — environment-aware (blocks crawling unless `VERCEL_ENV=production`; previews are blocked)
+- Absolute URLs (sitemap, robots, JSON-LD, breadcrumbs, `metadataBase` for Open Graph) all use `SITE_URL` from `lib/site-url.ts` — never hard-code a domain
 - 301 redirects middleware
 - Cookie consent banner (GDPR, `hub_cookie_consent` 365-day cookie)
 - Branded 404 and 500 error pages

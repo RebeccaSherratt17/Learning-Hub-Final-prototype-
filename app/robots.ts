@@ -1,7 +1,11 @@
 import type { MetadataRoute } from 'next'
+import { SITE_URL as BASE_URL } from '@/lib/site-url'
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://learning.diligent.com'
-const isProduction = process.env.VERCEL_ENV === 'production' || process.env.NODE_ENV === 'production'
+// On Vercel, only the production deployment may be crawled (previews also run
+// with NODE_ENV=production, so it can't be used there)
+const isProduction = process.env.VERCEL_ENV
+  ? process.env.VERCEL_ENV === 'production'
+  : process.env.NODE_ENV === 'production'
 
 export default function robots(): MetadataRoute.Robots {
   if (!isProduction) {

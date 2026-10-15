@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { prisma } from '@/lib/db'
+import { SITE_URL } from '@/lib/site-url'
 import { ContentStatus } from '@/lib/generated/prisma'
 import { incrementViewCount } from '@/lib/view-count'
 import { Breadcrumb } from '@/components/hub/Breadcrumb'
@@ -173,7 +174,6 @@ export default async function LearningPathPage({ params, searchParams }: PagePro
   const electiveCount = contentItems.filter((i) => i.isElective).length
 
   // JSON-LD
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://learning-hub-final-prototype-3zio4xt7t.vercel.app'
   const itemTitles = new Map<string, string>()
   for (const item of itemsWithContent) {
     if (item.contentId && item.contentTitle) {
@@ -190,9 +190,9 @@ export default async function LearningPathPage({ params, searchParams }: PagePro
     itemTitles,
   })
   const breadcrumbJsonLd = buildBreadcrumbJsonLd([
-    { name: 'Home', url: siteUrl },
-    { name: 'Learning paths', url: `${siteUrl}/library?type=LEARNING_PATH` },
-    { name: learningPath.title, url: `${siteUrl}/learning-paths/${learningPath.slug}` },
+    { name: 'Home', url: SITE_URL },
+    { name: 'Learning paths', url: `${SITE_URL}/library?type=LEARNING_PATH` },
+    { name: learningPath.title, url: `${SITE_URL}/learning-paths/${learningPath.slug}` },
   ])
 
   return (
