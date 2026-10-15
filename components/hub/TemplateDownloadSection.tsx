@@ -1,13 +1,15 @@
 'use client'
 
 import { useGate } from './GateContext'
+import { sendTrackingEvent } from '@/lib/analytics/track-client'
 
 interface TemplateDownloadSectionProps {
   accessTier: string
+  templateId: string
   fileUrl?: string
 }
 
-export function TemplateDownloadSection({ accessTier, fileUrl }: TemplateDownloadSectionProps) {
+export function TemplateDownloadSection({ accessTier, templateId, fileUrl }: TemplateDownloadSectionProps) {
   const { gated } = useGate()
 
   if (accessTier === 'FREE' || gated) {
@@ -16,6 +18,9 @@ export function TemplateDownloadSection({ accessTier, fileUrl }: TemplateDownloa
         <a
           href={fileUrl ?? '#'}
           download
+          onClick={() => {
+            if (fileUrl) sendTrackingEvent({ event: 'template_download', contentId: templateId })
+          }}
           className="inline-flex items-center gap-2 rounded-lg bg-diligent-red px-8 py-3.5 text-sm font-medium text-white transition-colors hover:bg-diligent-red-2"
         >
           <span className="material-symbols-sharp text-[20px]">download</span>

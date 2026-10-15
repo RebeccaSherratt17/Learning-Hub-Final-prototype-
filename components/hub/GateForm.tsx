@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { sendTrackingEvent } from '@/lib/analytics/track-client'
 
 interface GateFormProps {
   contentType: string
@@ -67,6 +68,9 @@ export default function GateForm({
         document.body.appendChild(a)
         a.click()
         document.body.removeChild(a)
+        if (contentType === 'TEMPLATE') {
+          sendTrackingEvent({ event: 'template_download', contentId })
+        }
       }
 
       // Call onSuccess callback if provided
