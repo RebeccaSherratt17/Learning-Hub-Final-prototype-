@@ -249,6 +249,7 @@ export default async function TemplatePage({ params, searchParams }: PageProps) 
             <div className="mt-8">
               <TemplateDownloadSection
                 accessTier={template.accessTier}
+                templateId={template.id}
                 fileUrl={template.fileUrl ?? undefined}
               />
             </div>

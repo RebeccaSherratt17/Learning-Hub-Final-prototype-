@@ -3,6 +3,7 @@ import { SiteHeader } from '@/components/hub/SiteHeader'
 import { SiteFooter } from '@/components/hub/SiteFooter'
 import { CookieConsentProvider } from '@/components/hub/CookieConsentProvider'
 import { CookieConsentBanner } from '@/components/hub/CookieConsentBanner'
+import { PageViewTracker } from '@/components/hub/PageViewTracker'
 import { subjectGroupOrder } from '@/components/hub/subjectGroupConfig'
 
 export default async function HubLayout({
@@ -38,6 +39,7 @@ export default async function HubLayout({
         <main id="main-content" className="flex-1">{children}</main>
         <SiteFooter />
         <CookieConsentBanner />
+        <PageViewTracker />
       </div>
     </CookieConsentProvider>
   )

@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { prisma } from '@/lib/db'
 import { learnerSessionCookieHeader } from '@/lib/learner-session'
 import { unlockedPathsCookieHeader } from '@/lib/unlocked-paths'
+import { ANALYTICS_EVENTS, recordEvent } from '@/lib/analytics/events'
 
 interface IdentifyBody {
   firstName: string
@@ -82,6 +83,13 @@ export async function POST(request: Request) {
     if (!unlockedPaths.includes(body.learningPathId.trim())) {
       unlockedPaths.push(body.learningPathId.trim())
     }
+
+    await recordEvent({
+      eventType: ANALYTICS_EVENTS.LEARNING_PATH_ENROL,
+      contentType: 'LEARNING_PATH',
+      contentId: learningPath.id,
+      metadata: { learnerId: learner.id },
+    })
 
     const response = NextResponse.json({
       learnerId: learner.id,

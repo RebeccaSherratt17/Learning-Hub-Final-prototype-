@@ -12,7 +12,7 @@ export default function StatCard({ icon, label, total, breakdown }: StatCardProp
         {icon}
       </span>
       <div className="min-w-0">
-        <p className="text-3xl font-bold text-diligent-gray-5">{total}</p>
+        <p className="text-3xl font-bold text-diligent-gray-5">{total.toLocaleString('en-GB')}</p>
         <p className="mt-0.5 text-sm font-medium text-diligent-gray-5">{label}</p>
         <p className="mt-1 text-xs text-diligent-gray-4">{breakdown}</p>
       </div>
