@@ -274,13 +274,14 @@ Separately, any item can be **Restricted** (token-only access, hidden from publi
 ### How it works
 1. Admin saves course as draft → uploads `.zip` directly to Vercel Blob from the browser → server extracts → files stored in Vercel Blob
 2. Learner fills name/email/org form (`CourseRightColumn`) → `/api/gate/submit` (if not already gated) → `/api/scorm/launch` creates Attempt + HMAC token
-3. `CourseRightColumn` writes the launch details (`attemptId`, `launchToken`, `launchUrl`, `scormVersion`, `courseTitle`) to `localStorage` under `scorm-launch:[attemptId]`, then opens `/play/[attemptId]` in a new tab
-4. The player page (`app/play/[attemptId]/page.tsx`) reads and removes that `localStorage` entry, then renders `ScormEmbed` full-window. If the entry is missing it shows a "session has expired" message. This page exists so the `scorm-again` LMS API is on the window that hosts the course iframe.
+3. `CourseRightColumn` stores the launch details (`attemptId`, `courseId`, `launchToken`, `launchUrl`, `scormVersion`, `courseTitle`) in `localStorage` via `storeLaunchData()` (`lib/scorm/launchHandoff.ts`), then opens `/play/[attemptId]` in a new tab. The course page then shows "Course opened in a new tab" with a "Reopen course" button; if the browser blocks the tab, it shows an "Open course" link instead.
+4. The player page (`app/play/[attemptId]/page.tsx`) reads and removes that entry (`takeLaunchData()`), then renders `ScormEmbed` full-window. If the entry is missing it shows a branded "session has expired" message. This page exists so the `scorm-again` LMS API is on the window that hosts the course iframe.
 5. `ScormEmbed` initialises `scorm-again` BEFORE the iframe src is set (critical)
 6. Course files served via `/api/scorm/content/[...path]` proxy
 7. `scorm-again` POSTs CMI data to `/api/scorm/tracking/:attemptId`
 8. Tracking endpoint normalises SCORM 1.2/2004 CMI (nested object, not dot-notation) → updates Attempt table
-9. On completion: Credly badge issued if `credlyBadgeId` set. Closing the player calls `window.close()`.
+9. On completion: Credly badge issued if `credlyBadgeId` set. The player tab broadcasts completion on the `hub-scorm` `BroadcastChannel` (`broadcastCompletion()`) and the course page switches to its "Course completed" message (`onCourseCompleted()`). Closing the player calls `window.close()`.
+10. `ScormEmbed` keeps `onComplete` in a ref — never add callbacks to the API-initialisation effect deps, or the SCORM API is re-created mid-course.
 
 ### Security
 - Path traversal rejected at manifest parser + extractor levels
@@ -371,9 +372,6 @@ Rendered via `SafeHtml` component (DOMPurify). List styling via `.rich-text` CSS
 
 ## Known Issues / Tech Debt
 
-- `CourseObjectivesAccordion` renders `learningObjectives` with `dangerouslySetInnerHTML` instead of `SafeHtml` — should be switched to `SafeHtml` for sanitisation consistency
-- `CourseRightColumn` still contains the old in-page `ScormEmbed` overlay and "Course completed" message state; these are no longer reached now that courses open in `/play/[attemptId]`. The course page therefore doesn't show a completion message after finishing in the new tab.
-- `app/play/[attemptId]/page.tsx` has a leftover "IMPORTANT: copy the exact ScormEmbed import line" comment and uses inline styles rather than Tailwind/brand styling
 - Homepage server query (`app/(hub)/page.tsx`) filters `restricted: false` for courses only — templates, videos and learning paths in the initial render are not filtered (the content API and library are)
 - `vercel.json` schedules `/api/cron/feedback-digest`, but the route doesn't exist yet
 
@@ -424,7 +422,8 @@ Rendered via `SafeHtml` component (DOMPurify). List styling via `.rich-text` CSS
 | `components/hub/GateForm.tsx` | Gate form (templates, videos) |
 | `components/hub/TemplateRightColumn.tsx` | Template right column state |
 | `components/hub/CourseRightColumn.tsx` | Course launch form + new-tab launch |
-| `components/hub/CourseObjectivesAccordion.tsx` | Learning objectives accordion |
+| `components/hub/CourseObjectivesAccordion.tsx` | Learning objectives accordion (SafeHtml) |
+| `lib/scorm/launchHandoff.ts` | Course page ↔ player tab hand-off + completion broadcast |
 | `components/content/ScormEmbed.tsx` | SCORM runtime + iframe |
 | `components/content/VidyardEmbed.tsx` | Vidyard player |
 | `components/ui/Icon.tsx` | Material Symbols icon (`variant` sharp/rounded) |

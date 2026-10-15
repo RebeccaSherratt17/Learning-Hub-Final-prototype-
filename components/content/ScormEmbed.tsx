@@ -28,6 +28,12 @@ export default function ScormEmbed({
   const [ready, setReady] = useState(false)
   const apiRef = useRef<ScormAPI | null>(null)
 
+  // Keep the latest onComplete without re-initialising the SCORM API when it changes
+  const onCompleteRef = useRef(onComplete)
+  useEffect(() => {
+    onCompleteRef.current = onComplete
+  }, [onComplete])
+
   const sendTracking = useCallback(
     async (cmi: Record<string, unknown>) => {
       try {
@@ -60,7 +66,7 @@ export default function ScormEmbed({
           const completionStatus = api.getCMIValue('cmi.completion_status')
           const successStatus = api.getCMIValue('cmi.success_status')
           if (completionStatus === 'completed' || successStatus === 'passed') {
-            onComplete?.()
+            onCompleteRef.current?.()
           }
         })
 
@@ -83,7 +89,7 @@ export default function ScormEmbed({
 
           const lessonStatus = api.getCMIValue('cmi.core.lesson_status')
           if (lessonStatus === 'completed' || lessonStatus === 'passed') {
-            onComplete?.()
+            onCompleteRef.current?.()
           }
         })
 
@@ -112,7 +118,7 @@ export default function ScormEmbed({
         delete (window as unknown as Record<string, unknown>)['API']
       }
     }
-  }, [scormVersion, sendTracking, onComplete])
+  }, [scormVersion, sendTracking])
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {

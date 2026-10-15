@@ -230,7 +230,7 @@ export default async function CoursePage({ params, searchParams }: PageProps) {
               {/* Learning Objectives Accordion */}
               {course.learningObjectives && (
                 <div className="mt-5">
-                  <CourseObjectivesAccordion learningObjectives={course.learningObjectives!} />
+                  <CourseObjectivesAccordion learningObjectives={course.learningObjectives} />
                 </div>
               )}
 
@@ -330,7 +330,6 @@ export default async function CoursePage({ params, searchParams }: PageProps) {
               courseId={course.id}
               courseTitle={course.title}
               launchFile={course.launchFile ?? null}
-              scormVersion={course.scormVersion ?? null}
             />
           </div>
         </GateProvider>
