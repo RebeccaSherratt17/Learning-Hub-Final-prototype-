@@ -2,20 +2,13 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useGate } from './GateContext'
-import dynamic from 'next/dynamic'
-
-const ScormEmbed = dynamic(() => import('@/components/content/ScormEmbed'), {
-  ssr: false,
-})
+import { onCourseCompleted, storeLaunchData } from '@/lib/scorm/launchHandoff'
 
 interface CourseRightColumnProps {
   accessTier: string
   courseId: string
   courseTitle: string
   launchFile: string | null
-  scormVersion: string | null
-  thumbnailUrl?: string | null
-  thumbnailAlt?: string
 }
 
 export function CourseRightColumn({
@@ -34,13 +27,19 @@ export function CourseRightColumn({
   const [error, setError] = useState<string | null>(null)
   const [completed, setCompleted] = useState(false)
 
-  // SCORM embed state
-  const [scormState, setScormState] = useState<{
-    attemptId: string
-    launchToken: string
-    launchUrl: string
-    scormVersion: '1.2' | '2004'
-  } | null>(null)
+  // Set once the course has been opened in the player tab. `blocked` means the
+  // browser stopped the new tab, so the learner needs to open it themselves.
+  const [launched, setLaunched] = useState<{ attemptId: string; blocked: boolean } | null>(null)
+
+  // The player tab broadcasts when the course is completed
+  useEffect(
+    () =>
+      onCourseCompleted(courseId, () => {
+        setLaunched(null)
+        setCompleted(true)
+      }),
+    [courseId],
+  )
 
   // Restore learner identity from localStorage on mount
   useEffect(() => {
@@ -120,24 +119,25 @@ export function CourseRightColumn({
       }
 
       const data = await res.json()
-// Hand the launch details to the player page, then open it in a new tab
-localStorage.setItem(
-  `scorm-launch:${data.attemptId}`,
-  JSON.stringify({
-    attemptId: data.attemptId,
-    launchToken: data.launchToken,
-    launchUrl: data.launchUrl,
-    scormVersion: data.scormVersion,
-    courseTitle: courseTitle,
-  })
-)
-window.open(`/play/${data.attemptId}`, '_blank')
+
+      // Hand the launch details to the player page, then open it in a new tab
+      storeLaunchData({
+        attemptId: data.attemptId,
+        courseId,
+        launchToken: data.launchToken,
+        launchUrl: data.launchUrl,
+        scormVersion: data.scormVersion,
+        courseTitle,
+      })
+      const playerTab = window.open(`/play/${data.attemptId}`, '_blank')
+      setCompleted(false)
+      setLaunched({ attemptId: data.attemptId, blocked: !playerTab })
     } catch {
       setError('Network error. Please try again.')
     } finally {
       setLaunching(false)
     }
-  }, [courseId, hasGateSession, markGated])
+  }, [courseId, courseTitle, hasGateSession, markGated])
 
   async function handleLaunch(e: React.FormEvent) {
     e.preventDefault()
@@ -145,27 +145,46 @@ window.open(`/play/${data.attemptId}`, '_blank')
     await launchCourse(firstName.trim(), lastName.trim(), email.trim(), organization.trim())
   }
 
-  function handleScormClose() {
-    setScormState(null)
-  }
-
-  function handleScormComplete() {
-    setCompleted(true)
-    setScormState(null)
-  }
-
-  // Show SCORM embed overlay if launched
-  if (scormState) {
+  // Course is open (or ready to open) in the player tab
+  if (launched) {
     return (
-      <ScormEmbed
-        launchUrl={scormState.launchUrl}
-        scormVersion={scormState.scormVersion}
-        attemptId={scormState.attemptId}
-        launchToken={scormState.launchToken}
-        courseTitle={courseTitle}
-        onClose={handleScormClose}
-        onComplete={handleScormComplete}
-      />
+      <div className="rounded-xl border border-diligent-gray-2 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.08)] sm:p-8 text-center">
+        <span className="material-symbols-sharp text-[48px] text-diligent-red" aria-hidden="true">open_in_new</span>
+        {launched.blocked ? (
+          <>
+            <h3 className="mt-3 text-lg font-bold text-diligent-gray-5">Your course is ready</h3>
+            <p className="mt-2 text-sm text-diligent-gray-4">
+              Your browser stopped the course opening in a new tab. Select the button below to open it.
+            </p>
+            <a
+              href={`/play/${launched.attemptId}`}
+              target="_blank"
+              rel="noopener"
+              onClick={() => setLaunched({ ...launched, blocked: false })}
+              className="mt-4 inline-flex w-full items-center justify-center rounded bg-diligent-red px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-diligent-red-2"
+            >
+              Open course
+            </a>
+          </>
+        ) : (
+          <>
+            <h3 className="mt-3 text-lg font-bold text-diligent-gray-5">Course opened in a new tab</h3>
+            <p className="mt-2 text-sm text-diligent-gray-4" role="status">
+              Complete the course in the new tab. This page will update when you finish.
+            </p>
+            {error && (
+              <p className="mt-3 text-sm text-diligent-red" role="alert">{error}</p>
+            )}
+            <button
+              onClick={() => launchCourse(firstName, lastName, email, organization)}
+              disabled={launching}
+              className="mt-4 w-full rounded border border-diligent-gray-2 px-6 py-3 text-sm font-medium text-diligent-gray-5 transition-colors hover:bg-diligent-gray-1 disabled:opacity-50"
+            >
+              {launching ? 'Launching...' : 'Reopen course'}
+            </button>
+          </>
+        )}
+      </div>
     )
   }
 
